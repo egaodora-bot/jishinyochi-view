@@ -26,7 +26,7 @@
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, baseRadius: 120000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', strain: 'GEONET水平変位: 3.2cm/年', source: '防災科研 J-SHIS / 国土地理院', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.1 },
             { lat: 35.68, lon: 139.69, baseRadius: 55000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '電離圏TEC・地下水圧', strain: 'TEC電子数異常: 動的検知中', source: 'GEONET / 電離圏前兆モニタ', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.25 },
-            { lat: 41.5, lon: 143.5, baseRadius: 100000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', strain: 'プレート収束: 8.1cm/年', source: 'J-SHIS プレート収束モデル', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.05 },
+            { lat: 41.5, lon: 143.5, baseRadius: 100000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', strain: 'プレート押し合い: 8.1cm/年', source: 'J-SHIS プレートモデル', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.05 },
             { lat: 36.0, lon: 137.8, baseRadius: 70000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', strain: 'GEONETひずみ: 0.15過剰', source: '国土地理院 GEONET解析', color: '#800080', anim: 'animated-purple', badgeClass: 'risk-badge-purple', guideClass: 'tap-guide-purple', intensityFactor: 1.15 }
         ];
 
@@ -39,24 +39,24 @@
             }).addTo(map);
 
             circle.bindPopup(`
-                <b style="font-size:13px;">⚠️ ${a.name}</b><br><br>
-                📍 断層: ${a.fault}<br>
-                ⏳ 30年確率: <b>${a.prob}</b><br>
+                <b style="font-size:13px;">⚠️ ${a.name} (地震リスクエリア)</b><br><br>
+                📍 断層・構造: ${a.fault}<br>
+                ⏳ 発生確率: <b>${a.prob}</b><br>
                 🌊 地盤特性: ${a.ground}<br>
                 📐 変動・電磁波: <span style="color:#800080; font-weight:bold;">${a.strain}</span><br>
                 <span style="font-size:9px; color:#555;">🔗 データ元: ${a.source}</span>
-                <div class="risk-bar-container">
-                    <div class="risk-bar-label"><span>ハザード指数 (動的連動)</span><span>${a.prob}</span></div>
-                    <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${a.rate}%; background:${a.color};"></div></div>
+                <div class="risk-bar-container" style="margin-top:6px;">
+                    <div class="risk-bar-label" style="display:flex; justify-content:space-between; font-size:9px;"><span>危険リスク指数</span><span><b>${a.prob}</b></span></div>
+                    <div class="risk-bar-bg" style="background:#ddd; height:6px; border-radius:3px; overflow:hidden;"><div class="risk-bar-fill" style="width:${a.rate}%; height:100%; background:${a.color};"></div></div>
                 </div>
             `);
 
             var iconHtml = isMobile 
-                ? `<div class="${a.guideClass}">👆 ${a.name} (詳細)</div>` 
-                : `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">👆 タップで詳細表示</span><span class="strain-value">📐 ${a.strain}</span></div>`;
+                ? `<div class="${a.guideClass}">👆 ${a.name} (${a.prob})</div>` 
+                : `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">リスク: <b>${a.prob}</b></span><span class="strain-value">📐 ${a.strain}</span></div>`;
             
-            var iconSize = isMobile ? [105, 22] : [120, 50];
-            var iconAnchor = isMobile ? [52, 11] : [60, 25];
+            var iconSize = isMobile ? [115, 22] : [120, 50];
+            var iconAnchor = isMobile ? [57, 11] : [60, 25];
 
             L.marker([a.lat, a.lon], {
                 icon: L.divIcon({ 
@@ -68,46 +68,64 @@
             }).addTo(map);
         });
 
+        // 📐 ベクトル・ひずみマーカー（リスクの丸付き表示を追加）
         var vectorMarkers = [
-            { lat: 34.0, lon: 135.0, text: '➔ 3.2cm/y' },
-            { lat: 35.5, lon: 138.5, text: '↗ 1.5cm/y' },
-            { lat: 40.0, lon: 142.0, text: '⬅ 8.1cm/y' }
+            { lat: 34.0, lon: 135.0, text: '南海トラフ 3.2cm/年', risk: '高リスク (70-80%)', desc: 'フィリピン海プレートが年間約3.2cmのすさまじい勢いで陸側のプレートの下へ押し込んでおり、巨大地震のエネルギーが蓄積しています。', circleColor: '#ff4d4d', radius: 90000 },
+            { lat: 35.5, lon: 138.5, text: '中部ひずみ 1.5cm/年', risk: '活発な変動帯', desc: '糸魚川静岡構造線周辺。地殻のひずみが全国屈指のレベルで集中しており、内陸型地震への警戒が必要です。', circleColor: '#800080', radius: 50000 },
+            { lat: 40.0, lon: 142.0, text: '千島・日本海溝 8.1cm/年', risk: '超高リスク (80%超)', desc: '太平洋プレートが年間約8.1cmという世界トップクラスの猛スピードで押し寄せており、超巨大地震の切迫度が極めて高いエリアです。', circleColor: '#ff4d4d', radius: 110000 }
         ];
+
         vectorMarkers.forEach(function(v) {
-            L.marker([v.lat, v.lon], {
+            // ① リスク範囲を示す「〇（円）」をマップ上に表示
+            var riskCircle = L.circle([v.lat, v.lon], {
+                color: v.circleColor,
+                fillColor: v.circleColor,
+                fillOpacity: 0.15,
+                weight: 1.5,
+                dashArray: '3, 3',
+                radius: v.radius
+            }).addTo(map);
+
+            // ② マーカー（分かりやすい言葉に翻訳したラベル）を表示
+            var marker = L.marker([v.lat, v.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div style="background:rgba(128,0,128,0.85); color:#fff; font-size:8px; padding:1px 3px; border-radius:3px; font-weight:bold; white-space:nowrap;">${v.text}</div>`,
-                    iconSize: [45, 14],
-                    iconAnchor: [22, 7]
+                    html: `<div style="background:rgba(128,0,128,0.95); color:#fff; font-size:8px; padding:3px 6px; border-radius:4px; font-weight:bold; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">📍 ${v.text}<br><span style="color:#ffeb3b; font-size:7px;">⚠️ ${v.risk}</span></div>`,
+                    iconSize: [95, 26],
+                    iconAnchor: [47, 13]
                 })
             }).addTo(map);
+
+            // ③ タップするとリスクの詳しい解説が出るポップアップ
+            riskCircle.bindPopup(marker.getPopup());
+            marker.bindPopup(`
+                <b style="font-size:12px; color:#800080;">⚠️ プレート圧力・ひずみリスク詳細</b><br><br>
+                📌 <b>${v.text}</b><br>
+                🚨 評価: <span style="color:#d9534f; font-weight:bold;">${v.risk}</span><br><br>
+                ${v.desc}<br><br>
+                <span style="font-size:9px; color:#555;">🔗 出典: 国土地理院 GEONET / 防災科研 J-SHIS</span>
+            `);
         });
 
-        // 🛡️【ダブル抑制システムの設定】
+        // 📱 LINEへ自動通知を送る関数（重複ブロック＆クールタイム＆足切り付き）
         var lastNotifiedId = localStorage.getItem('lastNotifiedEqId') || "";
         var lastNotifiedTime = parseInt(localStorage.getItem('lastNotifiedTime') || "0", 10);
-        var COOLDOWN_TIME = 30 * 60 * 1000; // ① クールタイム: 30分間は連続通知しない
-        var MIN_MAGNITUDE = 4.0;            // ② 規模の足切り: M4.0未満は通知しない
+        var COOLDOWN_TIME = 30 * 60 * 1000; // 30分間は連続通知しない
+        var MIN_MAGNITUDE = 4.0;            // M4.0未満は通知しない
 
         function sendLineNotification(eqId, eqText, mag) {
             var now = Date.now();
 
-            // 対策1: すでに通知したことがある地震IDならここで完全にブロック（重複防止）
             if (eqId === lastNotifiedId) {
-                console.log("【抑制】すでに通知済みの地震のためスキップ:", eqId);
+                console.log("【抑制】既通知のためスキップ:", eqId);
                 return;
             }
-
-            // 対策2: 前回の通知から30分経っていなければここでブロック（頻度制限）
             if (now - lastNotifiedTime < COOLDOWN_TIME) {
-                console.log("【抑制】クールタイム中のため通知を見送ります");
+                console.log("【抑制】クールタイム中のためスキップ");
                 return;
             }
-
-            // 対策3: マグニチュードが4.0未満なら通知しない（小規模除外）
             if (mag && parseFloat(mag) < MIN_MAGNITUDE) {
-                console.log("【抑制】設定規模未満のためスキップ: M" + mag);
+                console.log("【抑制】指定規模未満のためスキップ: M" + mag);
                 return;
             }
 
@@ -120,8 +138,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: alertMessage })
             }).then(() => {
-                console.log("LINE通知送信成功・記録を保存:", eqId);
-                // 送信に成功したら、IDと時間をしっかりと記録・記憶させる
+                console.log("LINE通知成功:", eqId);
                 lastNotifiedId = eqId;
                 lastNotifiedTime = now;
                 localStorage.setItem('lastNotifiedEqId', eqId);
@@ -143,12 +160,11 @@
                     let eq = data[i];
                     
                     let displayName = eq.anm || eq.text || "震源情報";
-                    let eqId = eq.code || (eq.at + "_" + displayName); // 地震ごとの固有ID
+                    let eqId = eq.code || (eq.at + "_" + displayName);
                     let mag = eq.mag || "0";
 
                     html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
                     
-                    // 💡 最新の地震（i === 0）のみ、ダブルの抑制判定に通す
                     if (i === 0) {
                         sendLineNotification(eqId, displayName, mag);
                     }
