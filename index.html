@@ -50,18 +50,34 @@
         .color-box { width: 14px; height: 14px; margin-right: 8px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 18px; height: 4px; margin-right: 8px; flex-shrink: 0; }
 
-        /* 🏷️ マップ上のエリア名ラベル（デフォルトの白背景・枠線を完全に排除） */
-        .risk-label {
-            background: rgba(255, 255, 255, 0.9); border: 2px solid #b52b27; padding: 4px 8px;
-            font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #b52b27;
-            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        /* 🏷️ コンパクトなエリア名バッジ */
+        .risk-badge {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #b52b27;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-align: center;
+            color: #b52b27;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: inline-block;
         }
-        .risk-label-purple {
-            background: rgba(255, 255, 255, 0.9); border: 2px solid #6b21a8; padding: 4px 8px;
-            font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #6b21a8;
-            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        .risk-badge-purple {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #6b21a8;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-align: center;
+            color: #6b21a8;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: inline-block;
         }
-        .fault-subtext { font-size: 10px; color: #333; font-weight: normal; display: block; margin-top: 1px; }
+        .fault-subtext { font-size: 9px; color: #555; font-weight: normal; display: block; }
 
         /* 📊 ポップアップ内グラフ */
         .risk-bar-container { margin-top: 6px; font-size: 12px; width: 190px; }
@@ -134,10 +150,10 @@
 
         // リスクエリア ＆ 電波・地殻変動エリア
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', wave: 'VLF電波: 通常安定', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-label' },
-            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', wave: '電離圏GPS-TEC: 微小な電子数擾乱あり', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-label' },
-            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', wave: 'VLF電波: 異常なし', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-label' },
-            { lat: 36.0, lon: 137.8, radius: 75000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', wave: '地中電磁波パルス: 観測継続中', color: '#800080', anim: 'animated-purple', cssClass: 'risk-label-purple' }
+            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', wave: 'VLF電波: 通常安定', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-badge' },
+            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', wave: '電離圏GPS-TEC: 微小な電子数擾乱あり', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-badge' },
+            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', wave: 'VLF電波: 異常なし', color: '#ff4d4d', anim: 'animated-red', cssClass: 'risk-badge' },
+            { lat: 36.0, lon: 137.8, radius: 75000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', wave: '地中電磁波パルス: 観測継続中', color: '#800080', anim: 'animated-purple', cssClass: 'risk-badge-purple' }
         ];
 
         futureRiskAreas.forEach(function(a) {
@@ -157,11 +173,13 @@
                 </div>
             `);
 
-            // ⚠️ ポイント: リーフレット標準の余計な白枠スタイルを上書きして消去
+            // iconSizeを指定して縦長に崩れるのを防止
             L.marker([a.lat, a.lon], {
                 icon: L.divIcon({ 
-                    className: '', // 空にすることでデフォルトの白四角スタイルを無効化
-                    html: `<div class="${a.cssClass}">${a.name}<span class="fault-subtext">📍 ${a.fault}</span></div>` 
+                    className: '', 
+                    html: `<div class="${a.cssClass}">${a.name}<span class="fault-subtext">${a.fault}</span></div>`,
+                    iconSize: [110, 36],
+                    iconAnchor: [55, 18]
                 })
             }).addTo(map);
         });
