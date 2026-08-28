@@ -1,0 +1,408 @@
+import csv
+import math
+import random
+from pathlib import Path
+
+BASE = Path(r"C:\GEONET-monitor")
+
+DATA_FILE = BASE / "GEONET_3interval_commonmode_2026-06-01_04.csv"
+COORD_FILE = BASE / "nearby_stations.csv"
+
+OUT_FILE = BASE / "GEONET_polarity_boundary_29station_continuity_randomization_2026-06-01_04.csv"
+
+N_SIM = 100000
+SEED = 20260825
+
+
+def sign(v):
+    if v > 0:
+        return "+"
+    if v < 0:
+        return "-"
+    return "0"
+
+
+def pattern(a, b, c):
+    return sign(a) + sign(b) + sign(c)
+
+
+def distance_km(lat1, lon1, lat2, lon2):
+    R = 6371.0088
+    p1 = math.radians(lat1)
+    p2 = math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+
+    x = (
+        math.sin(dp / 2) ** 2
+        + math.cos(p1)
+        * math.cos(p2)
+        * math.sin(dl / 2) ** 2
+    )
+
+    return 2 * R * math.asin(math.sqrt(x))
+
+
+# ============================================================
+# 読み込み
+# ============================================================
+
+values = {}
+coords = {}
+
+with open(DATA_FILE, encoding="utf-8-sig") as f:
+    for r in csv.DictReader(f):
+        try:
+            values[r["station"]] = [
+                float(r["residual_0601_0602_mm"]),
+                float(r["residual_0602_0603_mm"]),
+                float(r["residual_0603_0604_mm"]),
+            ]
+        except Exception:
+            pass
+
+with open(COORD_FILE, encoding="utf-8-sig") as f:
+    for r in csv.DictReader(f):
+        try:
+            coords[r["station"]] = (
+                float(r["lat"]),
+                float(r["lon"]),
+            )
+        except Exception:
+            pass
+
+
+# ============================================================
+# 極性コア
+# ============================================================
+
+CORE_PLUS = ["161217", "93068", "95105"]
+CORE_MINUS = ["221248", "950229"]
+
+
+def center(names):
+    pts = [coords[x] for x in names if x in coords]
+    return (
+        sum(x[0] for x in pts) / len(pts),
+        sum(x[1] for x in pts) / len(pts),
+    )
+
+
+plus_center = center(CORE_PLUS)
+minus_center = center(CORE_MINUS)
+
+center_lat = (plus_center[0] + minus_center[0]) / 2
+center_lon = (plus_center[1] + minus_center[1]) / 2
+
+
+# ============================================================
+# 50 km母集団を再生成
+# ============================================================
+
+population = []
+
+for station, vals in values.items():
+
+    if station not in coords:
+        continue
+
+    lat, lon = coords[station]
+
+    d = distance_km(
+        lat,
+        lon,
+        center_lat,
+        center_lon,
+    )
+
+    if d <= 50:
+
+        population.append({
+            "station": station,
+            "lat": lat,
+            "lon": lon,
+            "pattern": pattern(*vals),
+            "d_center": d,
+        })
+
+
+# ============================================================
+# 実測反相点
+# ============================================================
+
+alternating = [
+    r for r in population
+    if r["pattern"] in ("+-+", "-+-")
+]
+
+obs_plus = sum(
+    r["pattern"] == "+-+"
+    for r in alternating
+)
+
+obs_minus = sum(
+    r["pattern"] == "-+-"
+    for r in alternating
+)
+
+obs_alt = len(alternating)
+
+
+print("=" * 72)
+print(" GEONET 中心50 km 29点 境界連続性ランダム化検定")
+print("=" * 72)
+
+print()
+print("入力観測点 :", len(values))
+print("50 km母集団 :", len(population))
+print("反相点 :", obs_alt)
+print("+-+ :", obs_plus)
+print("-+- :", obs_minus)
+
+
+if len(population) != 29:
+    print()
+    print("警告: 50 km母集団が29点ではありません。")
+    print("処理を中止します。")
+    raise SystemExit
+
+
+# ============================================================
+# 境界ネットワーク指標
+# ============================================================
+
+def metrics(data):
+
+    cross = []
+
+    for i in range(len(data)):
+        for j in range(i + 1, len(data)):
+
+            a = data[i]
+            b = data[j]
+
+            if a["pattern"] == b["pattern"]:
+                continue
+
+            d = distance_km(
+                a["lat"],
+                a["lon"],
+                b["lat"],
+                b["lon"],
+            )
+
+            cross.append(
+                (d, a["station"], b["station"])
+            )
+
+    cross.sort()
+
+    n10 = sum(d <= 10 for d, _, _ in cross)
+    n15 = sum(d <= 15 for d, _, _ in cross)
+    n20 = sum(d <= 20 for d, _, _ in cross)
+    n30 = sum(d <= 30 for d, _, _ in cross)
+
+    adj = {
+        r["station"]: set()
+        for r in data
+    }
+
+    for d, a, b in cross:
+
+        if d <= 20:
+            adj[a].add(b)
+            adj[b].add(a)
+
+    visited = set()
+    largest = 0
+
+    for start in adj:
+
+        if start in visited:
+            continue
+
+        stack = [start]
+        visited.add(start)
+        size = 0
+
+        while stack:
+
+            u = stack.pop()
+            size += 1
+
+            for v in adj[u]:
+
+                if v not in visited:
+                    visited.add(v)
+                    stack.append(v)
+
+        largest = max(largest, size)
+
+    return {
+        "n10": n10,
+        "n15": n15,
+        "n20": n20,
+        "n30": n30,
+        "largest_component": largest,
+        "min_cross": cross[0][0] if cross else float("inf"),
+    }
+
+
+obs = metrics(population)
+
+
+print()
+print("=" * 72)
+print("       実測境界ネットワーク")
+print("=" * 72)
+
+print("10 km以内 :", obs["n10"])
+print("15 km以内 :", obs["n15"])
+print("20 km以内 :", obs["n20"])
+print("30 km以内 :", obs["n30"])
+print("最大連結成分 :", obs["largest_component"])
+print("最短異極性距離 :", f"{obs['min_cross']:.3f} km")
+
+
+# ============================================================
+# ラベルシャッフル
+#
+# 29点の位置は固定。
+# 観測された極性ラベル数も固定。
+# ============================================================
+
+labels = [
+    r["pattern"]
+    for r in population
+]
+
+rng = random.Random(SEED)
+
+hit10 = 0
+hit15 = 0
+hit20 = 0
+hit30 = 0
+hit_component = 0
+hit_min = 0
+
+
+for _ in range(N_SIM):
+
+    shuffled = labels[:]
+    rng.shuffle(shuffled)
+
+    trial = []
+
+    for i, r in enumerate(population):
+
+        trial.append({
+            "station": r["station"],
+            "lat": r["lat"],
+            "lon": r["lon"],
+            "pattern": shuffled[i],
+        })
+
+    m = metrics(trial)
+
+    if m["n10"] >= obs["n10"]:
+        hit10 += 1
+
+    if m["n15"] >= obs["n15"]:
+        hit15 += 1
+
+    if m["n20"] >= obs["n20"]:
+        hit20 += 1
+
+    if m["n30"] >= obs["n30"]:
+        hit30 += 1
+
+    if m["largest_component"] >= obs["largest_component"]:
+        hit_component += 1
+
+    if m["min_cross"] <= obs["min_cross"]:
+        hit_min += 1
+
+
+# ============================================================
+# 結果
+# ============================================================
+
+print()
+print("=" * 72)
+print("       Monte Carlo 結果")
+print("=" * 72)
+
+
+def show(label, count):
+
+    print(
+        f"{label:<24}"
+        f"{count:,}/{N_SIM:,}"
+        f"  p = {count / N_SIM:.6f}"
+    )
+
+
+show("10 km以内異極性ペア", hit10)
+show("15 km以内異極性ペア", hit15)
+show("20 km以内異極性ペア", hit20)
+show("30 km以内異極性ペア", hit30)
+show("最大連結成分", hit_component)
+show("最短異極性距離", hit_min)
+
+
+# ============================================================
+# CSV
+# ============================================================
+
+with open(
+    OUT_FILE,
+    "w",
+    newline="",
+    encoding="utf-8-sig",
+) as f:
+
+    writer = csv.writer(f)
+
+    writer.writerow([
+        "metric",
+        "observed",
+        "count",
+        "n_sim",
+        "p_value",
+    ])
+
+    for metric, observed, count in [
+
+        ("cross_pairs_10km", obs["n10"], hit10),
+        ("cross_pairs_15km", obs["n15"], hit15),
+        ("cross_pairs_20km", obs["n20"], hit20),
+        ("cross_pairs_30km", obs["n30"], hit30),
+        (
+            "largest_component",
+            obs["largest_component"],
+            hit_component,
+        ),
+        (
+            "minimum_cross_distance_km",
+            obs["min_cross"],
+            hit_min,
+        ),
+
+    ]:
+
+        writer.writerow([
+            metric,
+            observed,
+            count,
+            N_SIM,
+            f"{count / N_SIM:.8f}",
+        ])
+
+
+print()
+print("--------------------------------------------")
+print("保存ファイル:")
+print(OUT_FILE)
+print("--------------------------------------------")
+print()
+print("===== 解析終了 =====")
