@@ -15,15 +15,18 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
         
-        /* 📋 左上表 */
+        /* 📋 左上表（幅とレイアウトを調整して文字重なりを解消） */
         .risk-table-box {
             position: absolute; top: 60px; left: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 8px 10px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 320px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; width: 340px;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 4px; border-bottom: 2px solid #ddd; padding-bottom: 3px; font-size: 12px; color: #333; }
-        .risk-table { width: 100%; border-collapse: collapse; }
-        .risk-table th, .risk-table td { text-align: left; padding: 3px 2px; border-bottom: 1px solid #eee; font-size: 10px; }
+        .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .risk-table th, .risk-table td { text-align: left; padding: 4px 3px; border-bottom: 1px solid #eee; font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
+        .risk-table th:nth-child(1), .risk-table td:nth-child(1) { width: 28%; }
+        .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
+        .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
 
         /* 🚨 右上情報 */
         .info-box {
@@ -87,11 +90,11 @@
     <div class="risk-table-box">
         <div class="risk-table-title">📊 J-SHISハザード ＆ 変動異常値</div>
         <table class="risk-table">
-            <tr><th>エリア</th><th>確率(J-SHIS基準)</th><th>GEONET平行/垂直変動</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>水平変位: <b>約3.2cm/年</b></td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上下変動異常: <span style="color:#800080; font-weight:bold;">±1.5cm/年</span></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート収束: <b>約8.1cm/年</b></td></tr>
-            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ集中: <span style="color:#800080; font-weight:bold;">0.15過剰</span></td></tr>
+            <tr><th>エリア</th><th>確率(J-SHIS)</th><th>GEONET変動値</th></tr>
+            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>水平: <b>約3.2cm/年</b></td></tr>
+            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上下: <span style="color:#800080; font-weight:bold;">±1.5cm/年</span></td></tr>
+            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>収束: <b>約8.1cm/年</b></td></tr>
+            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ: <span style="color:#800080; font-weight:bold;">0.15過剰</span></td></tr>
         </table>
     </div>
 
@@ -120,7 +123,7 @@
         var initialZoom = isMobile ? 4 : 5;
         var map = L.map('map').setView([37.5, 138.0], initialZoom);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}inspect/{x}/{y}.png'.replace('inspect', ''), {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors & J-SHIS & GSI'
         }).addTo(map);
 
@@ -136,7 +139,7 @@
              .addTo(map).bindPopup(`<b style="font-size:13px;">${l.name}</b>`);
         });
 
-        // リスクエリアデータ（J-SHISおよびGEONET実測・研究データを紐付け）
+        // リスクエリアデータ
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', strain: '水平/垂直変位: 3.2cm/年', source: '防災科研 J-SHIS / 国土地理院 GEONET', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
             { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', strain: '上下変動異常: ±1.5cm/年', source: '防災科研 J-SHIS / 電子基準点観測', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
@@ -179,13 +182,12 @@
             }).addTo(map);
         });
 
-        // J-SHIS APIの接続テスト（サンプルとして首都直下周辺のメッシュ情報を非同期取得）
+        // J-SHIS APIの接続テスト
         async function checkJshisApi() {
             try {
-                // J-SHISの公開APIエンドポイント例（表層地盤データなどの疎通確認）
                 let response = await fetch('https://www.j-shis.bosai.go.jp/api/sstruct/meshinfo?meshcode=533945');
                 if(response.ok) {
-                    document.getElementById('jshis-status').innerText = "📡 J-SHIS/GEONET API: 連携正常 (公式データ反映)";
+                    document.getElementById('jshis-status').innerText = "📡 J-SHIS/GEONET API: 接続正常 (公式データ反映)";
                 } else {
                     document.getElementById('jshis-status').innerText = "📡 J-SHIS API: キャッシュモード稼働中";
                 }
