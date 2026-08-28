@@ -18,12 +18,16 @@
         .info-box {
             position: absolute; top: 10px; right: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 10px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 280px; font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 300px; font-size: 12px;
         }
         .info-box h3 { margin-top: 0; font-size: 14px; color: #333; margin-bottom: 4px; }
         .update-time { font-size: 10px; color: #666; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 4px 0; }
+        
+        /* 🚨 発生時刻を目立たせるスタイル */
+        .eq-item { border-bottom: 1px solid #eee; padding: 6px 0; }
         .eq-item:last-child { border-bottom: none; }
+        .eq-time { font-weight: bold; color: #d9534f; font-size: 13px; display: block; margin-bottom: 2px; }
+        .eq-desc { color: #333; font-size: 11px; }
 
         .legend {
             position: absolute; bottom: 20px; right: 10px; z-index: 1000;
@@ -127,7 +131,7 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. 海溝および主要活断層のラインデータ（新規追加）
+        // 1. 海溝および主要活断層のラインデータ
         var tectonicLines = [
             {
                 name: '日本海溝・千島海溝（プレート境界）',
@@ -212,7 +216,14 @@
                 let htmlContent = "";
                 for(let i = 0; i < Math.min(3, data.length); i++) {
                     let eq = data[i];
-                    htmlContent += `<div class="eq-item"><b>${eq.at}</b><br>${eq.text || "震源情報"} (M${eq.mag || "不明"})</div>`;
+                    
+                    // 日時を見やすく独立・強調するHTML構造に変更
+                    htmlContent += `
+                        <div class="eq-item">
+                            <span class="eq-time">🕒 ${eq.at}</span>
+                            <span class="eq-desc">${eq.text || "震源情報"} (M${eq.mag || "不明"})</span>
+                        </div>
+                    `;
                     
                     var lat = 35.6895, lon = 139.6917;
                     if (i === 0) { lat = 35.6895; lon = 139.6917; }
@@ -249,7 +260,7 @@
                                  now.getMinutes().toString().padStart(2, '0') + ':' + 
                                  now.getSeconds().toString().padStart(2, '0');
                 
-                document.getElementById('update-time').innerText = "最終更新: " + timeString;
+                document.getElementById('update-time').innerText = "最終データ取得: " + timeString;
 
             } catch (error) {
                 console.error("地震情報の取得に失敗しました", error);
