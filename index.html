@@ -1,125 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク＆地殻変動・電離圏前兆監視マップ (LINE通知連動版)</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ff4d4d">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
-        #map { width: 100vw; height: 100vh; }
-        
-        /* 📋 左上表（リスク・変動データ一覧） */
-        .risk-table-box {
-            position: absolute; top: 50px; left: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 310px;
-        }
-        .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 11px; color: #333; }
-        .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .risk-table th, .risk-table td { text-align: left; padding: 3px 2px; border-bottom: 1px solid #eee; font-size: 9px; overflow: hidden; text-overflow: ellipsis; }
-        .risk-table th:nth-child(1), .risk-table td:nth-child(1) { width: 28%; }
-        .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
-        .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
-
-        /* 🚨 右上情報（地震速報・システム状態に特化） */
-        .info-box {
-            position: absolute; top: 8px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 240px; font-size: 10px;
-        }
-        .info-box h3 { margin: 0 0 2px 0; font-size: 11px; }
-        .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 2px 0; }
-        .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #d9534f; font-size: 10px; }
-        .eq-desc { font-size: 9px; }
-        .wave-alert { margin-top: 3px; background: #f3e8ff; padding: 3px 5px; border-radius: 4px; color: #6b21a8; font-weight: bold; font-size: 9px; border-left: 3px solid #800080; }
-        .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 8px; font-weight: bold; }
-
-        /* 🗺️ 右下凡例 */
-        .legend {
-            position: absolute; bottom: 20px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; max-width: 190px;
-        }
-        .legend-title { font-weight: bold; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 11px; }
-        .legend-item { display: flex; align-items: center; margin-bottom: 2px; }
-        .color-box { width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; flex-shrink: 0; }
-        .line-box { width: 12px; height: 3px; margin-right: 5px; flex-shrink: 0; }
-
-        /* 🏷️ バッジスタイル */
-        .risk-badge {
-            background: rgba(255, 255, 255, 0.95); border: 2px solid #b52b27; padding: 2px 5px;
-            font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27;
-            white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: inline-block;
-        }
-        .risk-badge-purple {
-            background: rgba(255, 255, 255, 0.95); border: 2px solid #6b21a8; padding: 2px 5px;
-            font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8;
-            white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: inline-block;
-        }
-        .fault-subtext { font-size: 8px; color: #555; font-weight: normal; display: block; }
-        .strain-value { font-size: 8px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 2px; border-radius: 2px; margin-top: 1px; }
-        
-        /* 📱 タップ誘導用テキスト */
-        .tap-guide-badge {
-            background: #b52b27; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 12px;
-            font-weight: bold; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.4); white-space: nowrap;
-            animation: pulse-guide 1.5s infinite; border: 1px solid #fff; display: inline-block;
-        }
-        .tap-guide-purple {
-            background: #6b21a8; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 12px;
-            font-weight: bold; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.4); white-space: nowrap;
-            animation: pulse-guide 1.5s infinite; border: 1px solid #fff; display: inline-block;
-        }
-        @keyframes pulse-guide { 0% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.7; transform: scale(1); } }
-
-        @keyframes pulse-red { 0% { fill-opacity: 0.2; } 50% { fill-opacity: 0.45; } 100% { fill-opacity: 0.2; } }
-        @keyframes pulse-purple { 0% { fill-opacity: 0.2; } 50% { fill-opacity: 0.5; } 100% { fill-opacity: 0.2; } }
-        @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
-        .animated-red { animation: pulse-red 2.5s infinite; }
-        .animated-purple { animation: pulse-purple 2.5s infinite; }
-        .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
-    </style>
-</head>
-<body>
-
-    <div class="risk-table-box">
-        <div class="risk-table-title">📊 リアルタイム変動・前兆監視</div>
-        <table class="risk-table">
-            <tr><th>エリア</th><th>確率(J-SHIS)</th><th>GEONET/電離圏異常</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>水平変位: <b>3.2cm/年</b></td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>TEC異常: <span style="color:#800080; font-weight:bold;">動的検知中</span></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>収束ベクトル: <b>8.1cm/年</b></td></tr>
-            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ集中: <span style="color:#800080; font-weight:bold;">0.15過剰</span></td></tr>
-        </table>
-    </div>
-
-    <div class="info-box">
-        <h3>🚨 地震速報・システム状況</h3>
-        <div id="update-time" class="update-time">取得中...</div>
-        <div id="earthquake-data">読込中...</div>
-        <div class="wave-alert" id="jshis-status">📡 J-SHIS/GEONET: 接続正常</div>
-        <div class="noise-filter-status" id="noise-status">☀️ ノイズフィルタ: 有効稼働中</div>
-    </div>
-
-    <div class="legend">
-        <div class="legend-title">🗺️ 凡例</div>
-        <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主要断層・海溝</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>高リスクエリア(動的)</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動・電離圏</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#00ffff; border:1px solid #0055ff;"></span><div><b>発生震源</b> (点滅)</div></div>
-    </div>
-
-    <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var isMobile = window.innerWidth < 768;
         var initialZoom = isMobile ? 4 : 5;
@@ -205,10 +84,34 @@
             }).addTo(map);
         });
 
-        // 📱 LINEへ自動通知を送る関数
-        function sendLineNotification(eqText, mag) {
+        // 🛡️【ダブル抑制システムの設定】
+        var lastNotifiedId = localStorage.getItem('lastNotifiedEqId') || "";
+        var lastNotifiedTime = parseInt(localStorage.getItem('lastNotifiedTime') || "0", 10);
+        var COOLDOWN_TIME = 30 * 60 * 1000; // ① クールタイム: 30分間は連続通知しない
+        var MIN_MAGNITUDE = 4.0;            // ② 規模の足切り: M4.0未満は通知しない
+
+        function sendLineNotification(eqId, eqText, mag) {
+            var now = Date.now();
+
+            // 対策1: すでに通知したことがある地震IDならここで完全にブロック（重複防止）
+            if (eqId === lastNotifiedId) {
+                console.log("【抑制】すでに通知済みの地震のためスキップ:", eqId);
+                return;
+            }
+
+            // 対策2: 前回の通知から30分経っていなければここでブロック（頻度制限）
+            if (now - lastNotifiedTime < COOLDOWN_TIME) {
+                console.log("【抑制】クールタイム中のため通知を見送ります");
+                return;
+            }
+
+            // 対策3: マグニチュードが4.0未満なら通知しない（小規模除外）
+            if (mag && parseFloat(mag) < MIN_MAGNITUDE) {
+                console.log("【抑制】設定規模未満のためスキップ: M" + mag);
+                return;
+            }
+
             var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec"; 
-            
             var alertMessage = `🚨【地震速報・前兆監視】\n新しい地震を検知しました。\n\n${eqText} (M${mag})\n\nマップを確認してください。`;
             
             fetch(gasUrl, {
@@ -217,7 +120,12 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: alertMessage })
             }).then(() => {
-                console.log("LINE通知送信リクエスト完了");
+                console.log("LINE通知送信成功・記録を保存:", eqId);
+                // 送信に成功したら、IDと時間をしっかりと記録・記憶させる
+                lastNotifiedId = eqId;
+                lastNotifiedTime = now;
+                localStorage.setItem('lastNotifiedEqId', eqId);
+                localStorage.setItem('lastNotifiedTime', now);
             }).catch(err => {
                 console.error("LINE通知エラー:", err);
             });
@@ -234,14 +142,15 @@
                 for(let i=0; i<Math.min(2, data.length); i++) {
                     let eq = data[i];
                     
-                    // ✏️【ここを修正しました】震央地名(anm)またはテキストを安全に取得
                     let displayName = eq.anm || eq.text || "震源情報";
+                    let eqId = eq.code || (eq.at + "_" + displayName); // 地震ごとの固有ID
+                    let mag = eq.mag || "0";
+
+                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
                     
-                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${eq.mag || "不明"})</span></div>`;
-                    
-                    // 💡 最新の地震情報（i === 0）を検知した時にLINEへ正しい名称で通知
-                    if (i === 0 && eq.mag) {
-                        sendLineNotification(displayName, eq.mag);
+                    // 💡 最新の地震（i === 0）のみ、ダブルの抑制判定に通す
+                    if (i === 0) {
+                        sendLineNotification(eqId, displayName, mag);
                     }
 
                     var lat = 35.68, lon = 139.69;
@@ -249,7 +158,7 @@
 
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 最新の地震</b><br>規模: M${eq.mag}<br>${displayName}<br>${eq.at}`);
+                     .bindPopup(`<b>🔵 最新の地震</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 let d = new Date();
@@ -261,5 +170,3 @@
         fetchEq();
         setInterval(fetchEq, 60000);
     </script>
-</body>
-</html>
