@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク＆リアルタイム監視マップ</title>
+    <title>地震リスク＆リアルタイム監視マップ（完全版）</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -66,8 +66,10 @@
         .risk-bar-label { display: flex; justify-content: space-between; margin-bottom: 2px; font-weight: bold; }
         .risk-bar-bg { background: #eee; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
         .risk-bar-fill { height: 100%; border-radius: 4px; }
+        
         .fault-tag { margin-top: 4px; font-size: 10px; background: #e2e8f0; color: #1e3a8a; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: bold; }
         .period-tag { margin-top: 3px; font-size: 10px; background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: bold; }
+        .ground-tag { margin-top: 3px; font-size: 10px; background: #e6f4ea; color: #137333; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: bold; }
 
         /* アニメーション */
         @keyframes pulse-red { 0% { fill-opacity: 0.15; stroke-opacity: 0.4; } 50% { fill-opacity: 0.35; stroke-opacity: 0.9; } 100% { fill-opacity: 0.15; stroke-opacity: 0.4; } }
@@ -80,7 +82,7 @@
 </head>
 <body>
 
-    <!-- 📋 左上にリスク概要の表を配置（30年以内評価を明記） -->
+    <!-- 📋 左上にリスク概要の表を配置 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 30年以内の地震発生確率</div>
         <table class="risk-table">
@@ -88,7 +90,7 @@
             <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70〜80%</b></td></tr>
             <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td></tr>
             <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%以上</b></td></tr>
-            <tr><td>日本海溝</td><td><b style="color:#e67e22;">ほぼ0〜20%</b></td></tr>
+            <tr><td>日本海溝</td><td><b style="color:#e67e22;">中長期評価</b></td></tr>
         </table>
     </div>
 
@@ -131,34 +133,38 @@
             polyline.bindPopup(`<b>🗺️ ${lineData.name}</b><br><br>${lineData.desc}`);
         });
 
-        // 2. 将来のリスクエリア（30年以内の確率・期間を的確に表記）
+        // 2. 将来のリスクエリア（断層名・30年評価・地盤沈降/上昇の傾向を統合）
         var futureRiskAreas = [
             { 
                 lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ想定震源域', 
-                desc: '政府の地震調査委員会による評価に基づく切迫エリアです。',
+                desc: '巨大地震発生時に広範囲で地盤の急激な沈降・隆起および液状化時の水圧上昇が発生しやすいエリアです。',
                 faultName: '南海トラフ巨大地震断層モデル',
                 periodText: '⏳ 評価期間: 今後30年以内',
+                groundTendency: '🌊 地盤特性: 沿岸部の沈降・津波・地殻変動',
                 prob30: '70%〜80%', probRate: 80, barColor: '#ff4d4d'
             },
             { 
                 lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア', 
-                desc: '南関東地域の活断層およびプレート境界の警戒エリアです。',
+                desc: '大学・研究センター等の観測網でも地殻変動や埋立地の地盤沈下・間隙水圧上昇が警戒されています。',
                 faultName: '立川断層帯 / 南関東直下地震群',
                 periodText: '⏳ 評価期間: 今後30年以内',
+                groundTendency: '⚠️ 地盤特性: デルタ地帯の液状化・間隙水圧上昇',
                 prob30: '約70%', probRate: 70, barColor: '#ff4d4d'
             },
             { 
                 lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア', 
-                desc: '超巨大地震の発生が懸念される海溝型の警戒範囲です。',
+                desc: '超巨大地震に伴うプレートの跳ね上がりによる隆起や沈降が懸念される海域です。',
                 faultName: '千島海溝沿いプレート境界',
                 periodText: '⏳ 評価期間: 今後30年以内',
+                groundTendency: '🏔️ 地盤特性: 沿岸部の隆起・大規模変動',
                 prob30: '80%以上', probRate: 85, barColor: '#ff4d4d'
             },
             { 
                 lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア', 
-                desc: '継続的な地殻変動や注意が必要な中リスク範囲です。',
+                desc: '継続的な地殻変動や余効変動による地盤の長期的変化が観測されています。',
                 faultName: '日本海溝海底断層系',
                 periodText: '⏳ 評価期間: 継続的長期評価',
+                groundTendency: '📊 地盤特性: 継続的な微小変動・余効変動',
                 prob30: '中程度', probRate: 40, barColor: '#ffa500'
             }
         ];
@@ -176,6 +182,7 @@
                 ${area.desc}
                 <br><span class="fault-tag">📍 ${area.faultName}</span>
                 <br><span class="period-tag">${area.periodText}</span>
+                <br><span class="ground-tag">${area.groundTendency}</span>
                 <div class="risk-bar-container">
                     <div class="risk-bar-label">
                         <span>30年以内の発生確率</span>
