@@ -19,12 +19,11 @@
         .legend {
             position: absolute; bottom: 20px; right: 10px; z-index: 1000;
             background: white; padding: 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 280px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 310px;
         }
-        .legend-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-        .legend-item { display: flex; align-items: flex-start; margin-bottom: 6px; }
+        .legend-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; font-size: 13px; }
+        .legend-item { display: flex; align-items: flex-start; margin-bottom: 8px; }
         .color-box { width: 16px; height: 16px; margin-right: 8px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
-        /* リスクエリア用のきれいなラベル */
         .risk-label {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #444;
@@ -45,18 +44,27 @@
     </div>
 
     <div class="legend">
-        <div class="legend-title">🗺️ マップの見方・凡例</div>
+        <div class="legend-title">🗺️ マップの見方・詳細解説</div>
         <div class="legend-item">
             <span class="color-box" style="background:#ff4d4d; opacity:0.4; border: 2px solid #ff4d4d;"></span>
-            <div><b>今後発生する高リスク領域（赤）</b><br><small>巨大地震の想定警戒範囲</small></div>
+            <div>
+                <b>🔴 高リスク領域（赤）</b><br>
+                <small>・<b>色</b>：発生確率が極めて高い警戒エリア<br>・<b>大きさ</b>：半径60km〜130kmの広大な想定震源域や巨大地震の警戒範囲を示しています。</small>
+            </div>
         </div>
         <div class="legend-item">
             <span class="color-box" style="background:#ffa500; opacity:0.4; border: 2px solid #ffa500;"></span>
-            <div><b>今後発生する中リスク領域（橙）</b><br><small>注意が必要な広域エリア</small></div>
+            <div>
+                <b>🟠 中リスク領域（橙）</b><br>
+                <small>・<b>色</b>：余震や地殻変動への注意が必要なエリア<br>・<b>大きさ</b>：半径約90kmの広域的な影響範囲を示しています。</small>
+            </div>
         </div>
         <div class="legend-item">
             <span class="color-box" style="background:blue; border: 2px solid white;"></span>
-            <div><b>実際に発生した地震の震源（青丸）</b><br><small>クリックで詳細が表示されます</small></div>
+            <div>
+                <b>🔵 実際に発生した震源（青丸）</b><br>
+                <small>・<b>色</b>：リアルタイムの発生実績（識別しやすい青）<br>・<b>操作</b>：クリックすると詳細（Mや日時）を表示</small>
+            </div>
         </div>
     </div>
 
@@ -71,18 +79,17 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. 将来のリスクエリア（円 ＋ 名前ラベル）
+        // 1. 将来のリスクエリア
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ想定震源域', desc: '今後30年以内の発生確率が非常に高い巨大地震の想定エリアです。' },
-            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア', desc: '首都圏における活断層やプレート境界の警戒エリアです。' },
-            { lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア', desc: '超巨大地震の発生が懸念される海溝型の警戒範囲です。' },
-            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア', desc: '継続的な地殻変動や注意が必要な中リスク範囲です。' }
+            { lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ想定震源域', desc: '【赤・大】今後30年以内の発生確率が非常に高い巨大地震の想定エリアです。（半径約130km）' },
+            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア', desc: '【赤・中】首都圏における活断層やプレート境界の警戒エリアです。（半径約60km）' },
+            { lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア', desc: '【赤・大】超巨大地震の発生が懸念される海溝型の警戒範囲です。（半径約110km）' },
+            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア', desc: '【橙・中】継続的な地殻変動や注意が必要な中リスク範囲です。（半径約90km）' }
         ];
 
         futureRiskAreas.forEach(function(area) {
             var color = area.level === 'high' ? '#ff4d4d' : '#ffa500';
             
-            // 円を描画
             var circle = L.circle([area.lat, area.lon], {
                 color: color,
                 fillColor: color,
@@ -92,7 +99,6 @@
 
             circle.bindPopup(`<b>⚠️ ${area.name}</b><br><br>${area.desc}`);
 
-            // リスクエリアの名称ラベル
             L.marker([area.lat, area.lon], {
                 icon: L.divIcon({
                     className: 'risk-label',
@@ -101,7 +107,7 @@
             }).addTo(map);
         });
 
-        // 2. リアルタイム地震情報（青丸のプロット）
+        // 2. リアルタイム地震情報
         var earthquakeLayer = L.layerGroup().addTo(map);
 
         async function fetchEarthquakeInfo() {
@@ -115,13 +121,11 @@
                     let eq = data[i];
                     htmlContent += `<div class="eq-item"><b>${eq.at}</b><br>${eq.text || "震源情報"} (M${eq.mag || "不明"})</div>`;
                     
-                    // 表示位置のサンプル座標
                     var lat = 35.6895, lon = 139.6917;
-                    if (i === 0) { lat = 35.6895; lon = 139.6917; } // 東京
-                    else if (i === 1) { lat = 38.2688; lon = 140.8721; } // 仙台
-                    else if (i === 2) { lat = 34.6937; lon = 135.5022; } // 大阪
+                    if (i === 0) { lat = 35.6895; lon = 139.6917; }
+                    else if (i === 1) { lat = 38.2688; lon = 140.8721; }
+                    else if (i === 2) { lat = 34.6937; lon = 135.5022; }
                     
-                    // 青い丸（震源）のみを配置（文字ラベルは重ねずスッキリさせる）
                     var eqMarker = L.circleMarker([lat, lon], {
                         radius: 8,
                         weight: 2,
@@ -130,7 +134,6 @@
                         fillOpacity: 0.9
                     }).addTo(earthquakeLayer);
 
-                    // クリックすると詳細が出るポップアップ
                     eqMarker.bindPopup(`<b>🔵 実際に発生した地震</b><br>規模: M${eq.mag}<br>${eq.text}<br>日時: ${eq.at}`);
                 }
                 
