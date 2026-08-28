@@ -52,9 +52,14 @@
         .color-box { width: 12px; height: 12px; margin-right: 6px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
         .line-box { width: 16px; height: 4px; margin-right: 6px; margin-top: 6px; flex-shrink: 0; }
         
+        /* マップ上のエリア名・断層名ラベル */
         .risk-label {
-            background: rgba(255, 255, 255, 0.9); border: 1px solid #444; padding: 1px 4px;
-            font-size: 10px; font-weight: bold; border-radius: 3px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.95); border: 1px solid #d9534f; padding: 3px 6px;
+            font-size: 10px; font-weight: bold; border-radius: 4px; white-space: nowrap; 
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3); text-align: center; color: #b52b27;
+        }
+        .fault-subtext {
+            font-size: 9px; color: #555; font-weight: normal; display: block;
         }
 
         .risk-bar-container { margin-top: 6px; font-size: 11px; width: 190px; }
@@ -125,7 +130,7 @@
             polyline.bindPopup(`<b>🗺️ ${lineData.name}</b><br><br>${lineData.desc}`);
         });
 
-        // 2. 将来のリスクエリア（期間を追加）
+        // 2. 将来のリスクエリア（円の中心に断層名を表示）
         var futureRiskAreas = [
             { 
                 lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ想定震源域', 
@@ -182,8 +187,14 @@
             `;
             circle.bindPopup(popupContent);
 
+            // 赤円の中に「エリア名」と「断層名」を同時に表示するカスタムラベル
+            var labelHtml = `
+                <div>${area.name}</div>
+                <span class="fault-subtext">📍 ${area.faultName}</span>
+            `;
+
             L.marker([area.lat, area.lon], {
-                icon: L.divIcon({ className: 'risk-label', html: area.name })
+                icon: L.divIcon({ className: 'risk-label', html: labelHtml })
             }).addTo(map);
         });
 
