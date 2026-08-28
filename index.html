@@ -1,151 +1,84 @@
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>地震リスク＆地殻変動監視マップ</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; }
+        #map { width: 100vw; height: 100vh; }
+        .risk-badge { background: rgba(255,255,255,0.95); border: 2px solid #b52b27; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .fault-subtext { font-size: 8px; color: #555; display: block; }
+        .strain-value { font-size: 8px; color: #800080; display: block; background: #f3e8ff; padding: 1px; margin-top: 1px; }
+        .info-box { position: absolute; top: 8px; right: 8px; z-index: 1000; background: rgba(255,255,255,0.95); padding: 6px; border-radius: 8px; font-size: 10px; max-width: 220px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .eq-item { border-bottom: 1px solid #eee; padding: 2px 0; }
+        .eq-time { font-weight: bold; color: #d9534f; }
+        @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
+        .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div class="info-box">
+        <h3>🚨 地震速報・状況</h3>
+        <div id="update-time" style="font-size:9px; color:#666;">取得中...</div>
+        <div id="earthquake-data">読込中...</div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var isMobile = window.innerWidth < 768;
-        var initialZoom = isMobile ? 4 : 5;
-        
-        var map = L.map('map', {
-            scrollWheelZoom: true,
-            wheelPxPerZoomLevel: 160
-        }).setView([37.5, 138.0], initialZoom);
+        var map = L.map('map').setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        var tectonicLines = [
-            { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
-            { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
-            { name: '糸魚川静岡構造線', color: '#003366', weight: 3, dashArray: null, latlngs: [[37.1, 137.9], [36.0, 138.1], [35.1, 138.4]] }
-        ];
-
-        tectonicLines.forEach(function(l) {
-            L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray })
-             .addTo(map).bindPopup(`<b style="font-size:12px;">${l.name}</b> (タップで詳細)`);
-        });
-
+        // リスクエリアの表示
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, baseRadius: 120000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', strain: 'GEONET水平変位: 3.2cm/年', source: '防災科研 J-SHIS / 国土地理院', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.1 },
-            { lat: 35.68, lon: 139.69, baseRadius: 55000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '電離圏TEC・地下水圧', strain: 'TEC電子数異常: 動的検知中', source: 'GEONET / 電離圏前兆モニタ', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.25 },
-            { lat: 41.5, lon: 143.5, baseRadius: 100000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', strain: 'プレート押し合い: 8.1cm/年', source: 'J-SHIS プレートモデル', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.05 },
-            { lat: 36.0, lon: 137.8, baseRadius: 70000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', strain: 'GEONETひずみ: 0.15過剰', source: '国土地理院 GEONET解析', color: '#800080', anim: 'animated-purple', badgeClass: 'risk-badge-purple', guideClass: 'tap-guide-purple', intensityFactor: 1.15 }
+            { lat: 33.5, lon: 134.5, radius: 120000, name: '南海トラフ', prob: '70〜80%', strain: '水平変位: 3.2cm/年' },
+            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: 'TEC異常検知中' },
+            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%以上', strain: 'プレート押し合い: 8.1cm/年' }
         ];
 
         futureRiskAreas.forEach(function(a) {
-            var dynamicRadius = a.baseRadius * a.intensityFactor;
-            var dynamicOpacity = 0.2 + (a.intensityFactor - 1.0) * 0.4;
-
-            var circle = L.circle([a.lat, a.lon], {
-                color: a.color, fillColor: a.color, fillOpacity: dynamicOpacity, radius: dynamicRadius, className: a.anim
-            }).addTo(map);
-
-            circle.bindPopup(`
-                <b style="font-size:13px;">⚠️ ${a.name} (地震リスクエリア)</b><br><br>
-                📍 断層・構造: ${a.fault}<br>
-                ⏳ 発生確率: <b>${a.prob}</b><br>
-                🌊 地盤特性: ${a.ground}<br>
-                📐 変動・電磁波: <span style="color:#800080; font-weight:bold;">${a.strain}</span><br>
-                <span style="font-size:9px; color:#555;">🔗 データ元: ${a.source}</span>
-                <div class="risk-bar-container" style="margin-top:6px;">
-                    <div class="risk-bar-label" style="display:flex; justify-content:space-between; font-size:9px;"><span>危険リスク指数</span><span><b>${a.prob}</b></span></div>
-                    <div class="risk-bar-bg" style="background:#ddd; height:6px; border-radius:3px; overflow:hidden;"><div class="risk-bar-fill" style="width:${a.rate}%; height:100%; background:${a.color};"></div></div>
-                </div>
-            `);
-
-            var iconHtml = isMobile 
-                ? `<div class="${a.guideClass}">👆 ${a.name} (${a.prob})</div>` 
-                : `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">リスク: <b>${a.prob}</b></span><span class="strain-value">📐 ${a.strain}</span></div>`;
-            
-            var iconSize = isMobile ? [115, 22] : [120, 50];
-            var iconAnchor = isMobile ? [57, 11] : [60, 25];
+            L.circle([a.lat, a.lon], {
+                color: '#ff4d4d', fillColor: '#ff4d4d', fillOpacity: 0.2, radius: a.radius
+            }).addTo(map).bindPopup(`<b>${a.name}</b><br>確率: ${a.prob}<br>${a.strain}`);
 
             L.marker([a.lat, a.lon], {
-                icon: L.divIcon({ 
-                    className: '', 
-                    html: iconHtml,
-                    iconSize: iconSize,
-                    iconAnchor: iconAnchor
-                })
-            }).addTo(map);
-        });
-
-        // 📐 ベクトル・ひずみマーカー（リスクの丸付き表示を追加）
-        var vectorMarkers = [
-            { lat: 34.0, lon: 135.0, text: '南海トラフ 3.2cm/年', risk: '高リスク (70-80%)', desc: 'フィリピン海プレートが年間約3.2cmのすさまじい勢いで陸側のプレートの下へ押し込んでおり、巨大地震のエネルギーが蓄積しています。', circleColor: '#ff4d4d', radius: 90000 },
-            { lat: 35.5, lon: 138.5, text: '中部ひずみ 1.5cm/年', risk: '活発な変動帯', desc: '糸魚川静岡構造線周辺。地殻のひずみが全国屈指のレベルで集中しており、内陸型地震への警戒が必要です。', circleColor: '#800080', radius: 50000 },
-            { lat: 40.0, lon: 142.0, text: '千島・日本海溝 8.1cm/年', risk: '超高リスク (80%超)', desc: '太平洋プレートが年間約8.1cmという世界トップクラスの猛スピードで押し寄せており、超巨大地震の切迫度が極めて高いエリアです。', circleColor: '#ff4d4d', radius: 110000 }
-        ];
-
-        vectorMarkers.forEach(function(v) {
-            // ① リスク範囲を示す「〇（円）」をマップ上に表示
-            var riskCircle = L.circle([v.lat, v.lon], {
-                color: v.circleColor,
-                fillColor: v.circleColor,
-                fillOpacity: 0.15,
-                weight: 1.5,
-                dashArray: '3, 3',
-                radius: v.radius
-            }).addTo(map);
-
-            // ② マーカー（分かりやすい言葉に翻訳したラベル）を表示
-            var marker = L.marker([v.lat, v.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div style="background:rgba(128,0,128,0.95); color:#fff; font-size:8px; padding:3px 6px; border-radius:4px; font-weight:bold; white-space:nowrap; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">📍 ${v.text}<br><span style="color:#ffeb3b; font-size:7px;">⚠️ ${v.risk}</span></div>`,
-                    iconSize: [95, 26],
-                    iconAnchor: [47, 13]
+                    html: `<div class="risk-badge">${a.name}<span class="fault-subtext">リスク: ${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
+                    iconSize: [110, 45],
+                    iconAnchor: [55, 22]
                 })
             }).addTo(map);
-
-            // ③ タップするとリスクの詳しい解説が出るポップアップ
-            riskCircle.bindPopup(marker.getPopup());
-            marker.bindPopup(`
-                <b style="font-size:12px; color:#800080;">⚠️ プレート圧力・ひずみリスク詳細</b><br><br>
-                📌 <b>${v.text}</b><br>
-                🚨 評価: <span style="color:#d9534f; font-weight:bold;">${v.risk}</span><br><br>
-                ${v.desc}<br><br>
-                <span style="font-size:9px; color:#555;">🔗 出典: 国土地理院 GEONET / 防災科研 J-SHIS</span>
-            `);
         });
 
-        // 📱 LINEへ自動通知を送る関数（重複ブロック＆クールタイム＆足切り付き）
+        // 抑制付きLINE通知用変数
         var lastNotifiedId = localStorage.getItem('lastNotifiedEqId') || "";
         var lastNotifiedTime = parseInt(localStorage.getItem('lastNotifiedTime') || "0", 10);
-        var COOLDOWN_TIME = 30 * 60 * 1000; // 30分間は連続通知しない
-        var MIN_MAGNITUDE = 4.0;            // M4.0未満は通知しない
+        var COOLDOWN_TIME = 30 * 60 * 1000; // 30分
 
         function sendLineNotification(eqId, eqText, mag) {
             var now = Date.now();
-
-            if (eqId === lastNotifiedId) {
-                console.log("【抑制】既通知のためスキップ:", eqId);
-                return;
-            }
-            if (now - lastNotifiedTime < COOLDOWN_TIME) {
-                console.log("【抑制】クールタイム中のためスキップ");
-                return;
-            }
-            if (mag && parseFloat(mag) < MIN_MAGNITUDE) {
-                console.log("【抑制】指定規模未満のためスキップ: M" + mag);
-                return;
+            if (eqId === lastNotifiedId || (now - lastNotifiedTime < COOLDOWN_TIME) || (mag && parseFloat(mag) < 4.0)) {
+                return; // 抑制条件に該当する場合はスルー
             }
 
-            var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec"; 
-            var alertMessage = `🚨【地震速報・前兆監視】\n新しい地震を検知しました。\n\n${eqText} (M${mag})\n\nマップを確認してください。`;
-            
+            var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec";
             fetch(gasUrl, {
                 method: "POST",
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: alertMessage })
+                body: JSON.stringify({ message: `🚨【地震速報】\n${eqText} (M${mag})` })
             }).then(() => {
-                console.log("LINE通知成功:", eqId);
-                lastNotifiedId = eqId;
-                lastNotifiedTime = now;
                 localStorage.setItem('lastNotifiedEqId', eqId);
                 localStorage.setItem('lastNotifiedTime', now);
-            }).catch(err => {
-                console.error("LINE通知エラー:", err);
-            });
+            }).catch(err => console.error(err));
         }
 
         var eqLayer = L.layerGroup().addTo(map);
@@ -158,23 +91,22 @@
                 
                 for(let i=0; i<Math.min(2, data.length); i++) {
                     let eq = data[i];
-                    
                     let displayName = eq.anm || eq.text || "震源情報";
                     let eqId = eq.code || (eq.at + "_" + displayName);
                     let mag = eq.mag || "0";
 
-                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
+                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br>${displayName} (M${mag})</div>`;
                     
                     if (i === 0) {
                         sendLineNotification(eqId, displayName, mag);
                     }
 
-                    var lat = 35.68, lon = 139.69;
-                    if(i===1) { lat = 38.2, lon = 140.8; }
+                    var lat = (i === 0) ? 35.68 : 38.2;
+                    var lon = (i === 0) ? 139.69 : 140.8;
 
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 最新の地震</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
+                     .bindPopup(`<b>最新の地震</b><br>${displayName} (M${mag})<br>${eq.at}`);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 let d = new Date();
@@ -186,3 +118,5 @@
         fetchEq();
         setInterval(fetchEq, 60000);
     </script>
+</body>
+</html>
