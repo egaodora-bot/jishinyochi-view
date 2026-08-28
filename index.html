@@ -19,11 +19,11 @@
         .risk-table-box {
             position: absolute; top: 60px; left: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 10px 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 270px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; width: 310px;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 6px; border-bottom: 2px solid #ddd; padding-bottom: 4px; font-size: 13px; color: #333; }
         .risk-table { width: 100%; border-collapse: collapse; }
-        .risk-table th, .risk-table td { text-align: left; padding: 4px 5px; border-bottom: 1px solid #eee; }
+        .risk-table th, .risk-table td { text-align: left; padding: 5px 4px; border-bottom: 1px solid #eee; font-size: 11px; }
 
         /* 🚨 右上情報 */
         .info-box {
@@ -50,18 +50,18 @@
         .color-box { width: 14px; height: 14px; margin-right: 8px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 18px; height: 4px; margin-right: 8px; flex-shrink: 0; }
 
-        /* 🏷️ マップ上のエリア名ラベル（見やすさを大幅強化） */
+        /* 🏷️ マップ上のエリア名ラベル（デフォルトの白背景・枠線を完全に排除） */
         .risk-label {
-            background: #ffffff; border: 2px solid #b52b27; padding: 5px 10px;
-            font-size: 13px; font-weight: bold; border-radius: 6px; text-align: center; color: #b52b27;
-            white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.9); border: 2px solid #b52b27; padding: 4px 8px;
+            font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #b52b27;
+            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         .risk-label-purple {
-            background: #ffffff; border: 2px solid #6b21a8; padding: 5px 10px;
-            font-size: 13px; font-weight: bold; border-radius: 6px; text-align: center; color: #6b21a8;
-            white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.9); border: 2px solid #6b21a8; padding: 4px 8px;
+            font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #6b21a8;
+            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
-        .fault-subtext { font-size: 11px; color: #333; font-weight: normal; display: block; margin-top: 2px; }
+        .fault-subtext { font-size: 10px; color: #333; font-weight: normal; display: block; margin-top: 1px; }
 
         /* 📊 ポップアップ内グラフ */
         .risk-bar-container { margin-top: 6px; font-size: 12px; width: 190px; }
@@ -157,8 +157,12 @@
                 </div>
             `);
 
+            // ⚠️ ポイント: リーフレット標準の余計な白枠スタイルを上書きして消去
             L.marker([a.lat, a.lon], {
-                icon: L.divIcon({ className: a.cssClass, html: `${a.name}<span class="fault-subtext">📍 ${a.fault}</span>` })
+                icon: L.divIcon({ 
+                    className: '', // 空にすることでデフォルトの白四角スタイルを無効化
+                    html: `<div class="${a.cssClass}">${a.name}<span class="fault-subtext">📍 ${a.fault}</span></div>` 
+                })
             }).addTo(map);
         });
 
