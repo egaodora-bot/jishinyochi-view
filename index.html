@@ -18,25 +18,35 @@
         .eq-item { border-bottom: 1px solid #eee; padding: 6px 0; }
         .legend {
             position: absolute; bottom: 20px; right: 10px; z-index: 1000;
-            background: white; padding: 10px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px;
+            background: white; padding: 12px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 280px;
         }
-        .legend-item { display: flex; align-items: center; margin-bottom: 4px; }
-        .color-box { width: 14px; height: 14px; margin-right: 6px; display: inline-block; border-radius: 3px; }
+        .legend-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+        .legend-item { display: flex; align-items: flex-start; margin-bottom: 6px; }
+        .color-box { width: 16px; height: 16px; margin-right: 8px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
     </style>
 </head>
 <body>
 
     <div class="info-box">
-        <h3>🚨 リアルタイム地震情報</h3>
+        <h3>🚨 最近発生した地震（気象庁）</h3>
         <div id="earthquake-data">最新情報を取得中...</div>
     </div>
 
     <div class="legend">
-        <b>【マップ凡例】</b>
-        <div class="legend-item"><span class="color-box" style="background:#ff4d4d; opacity:0.5;"></span>今後高リスク・要警戒エリア</div>
-        <div class="legend-item"><span class="color-box" style="background:#ffa500; opacity:0.5;"></span>中リスク・注意エリア</div>
-        <div class="legend-item"><span class="color-box" style="background:#ff0000;"></span>実際に発生した最新地震の震源</div>
+        <div class="legend-title">🗺️ マップの見方・凡例</div>
+        <div class="legend-item">
+            <span class="color-box" style="background:#ff4d4d; opacity:0.4; border: 2px solid #ff4d4d;"></span>
+            <div><b>今後発生する高リスク領域</b><br><small>円の大きさが「想定される警戒・影響範囲」を示します（巨大地震の想定震源域など）</small></div>
+        </div>
+        <div class="legend-item">
+            <span class="color-box" style="background:#ffa500; opacity:0.4; border: 2px solid #ffa500;"></span>
+            <div><b>今後発生する中リスク領域</b><br><small>余震や地殻変動の注意が必要な広域エリア</small></div>
+        </div>
+        <div class="legend-item">
+            <span class="color-box" style="background:#ff0000;"></span>
+            <div><b>実際に発生した地震の震源</b><br><small>ピンポイントで発生した位置</small></div>
+        </div>
     </div>
 
     <div id="map"></div>
@@ -44,19 +54,18 @@
     <!-- Leaflet.js の JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. 地図の初期化（日本中心）
         var map = L.map('map').setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 2. 今後発生するリスクのある主なエリア（色と円の大きさで危険度を表現）
+        // 今後発生するリスクエリア（円の大きさを警戒範囲の広さに設定）
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, level: 'high', radius: 120000, name: '南海トラフ地震 想定震源域 (高リスク)' },
-            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア (高リスク)' },
-            { lat: 41.5, lon: 143.5, level: 'high', radius: 100000, name: '千島海溝周辺 警戒エリア (高リスク)' },
-            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝余震・変動エリア (中リスク)' }
+            { lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ地震 想定震源域', desc: '今後30年以内の発生確率が非常に高い巨大地震の想定エリアです。広範囲に大きな円で表示しています。' },
+            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア', desc: '首都圏における活断層やプレート境界の警戒エリアです。' },
+            { lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア', desc: '超巨大地震の発生が懸念される海溝型の警戒範囲です。' },
+            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア', desc: '継続的な地殻変動や注意が必要な中リスク範囲です。' }
         ];
 
         futureRiskAreas.forEach(function(area) {
@@ -64,12 +73,12 @@
             L.circle([area.lat, area.lon], {
                 color: color,
                 fillColor: color,
-                fillOpacity: 0.3,
-                radius: area.radius
-            }).addTo(map).bindPopup(`<b>⚠️ リスクエリア</b><br>${area.name}`);
+                fillOpacity: 0.25,
+                radius: area.radius // 円の大きさ（メートル単位：130000m = 半径130km）
+            }).addTo(map).bindPopup(`<b>⚠️ ${area.name}</b><br><br>${area.desc}`);
         });
 
-        // 3. 気象庁のリアルタイム地震情報を取得してプロット
+        // リアルタイム地震情報
         async function fetchEarthquakeInfo() {
             try {
                 let response = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json');
@@ -78,18 +87,11 @@
                 let htmlContent = "";
                 for(let i = 0; i < Math.min(3, data.length); i++) {
                     let eq = data[i];
-                    let eqTime = eq.at;
-                    let eqTitle = eq.text || "震源・震度情報";
-                    let mag = eq.mag || "不明";
-                    
-                    htmlContent += `<div class="eq-item"><b>${eqTime}</b><br>${eqTitle} (M${mag})</div>`;
+                    htmlContent += `<div class="eq-item"><b>${eq.at}</b><br>${eq.text || "震源情報"} (M${eq.mag || "不明"})</div>`;
                 }
-                
                 document.getElementById('earthquake-data').innerHTML = htmlContent;
-
             } catch (error) {
-                console.error("地震情報の取得に失敗しました", error);
-                document.getElementById('earthquake-data').innerText = "地震情報の取得に失敗しました";
+                document.getElementById('earthquake-data').innerText = "取得失敗";
             }
         }
 
