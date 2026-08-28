@@ -233,11 +233,15 @@
                 
                 for(let i=0; i<Math.min(2, data.length); i++) {
                     let eq = data[i];
-                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${eq.text || "震源情報"} (M${eq.mag || "不明"})</span></div>`;
                     
-                    // 💡 最新の地震情報（i === 0）を検知した時にLINEへ自動通知を送る
+                    // ✏️【ここを修正しました】震央地名(anm)またはテキストを安全に取得
+                    let displayName = eq.anm || eq.text || "震源情報";
+                    
+                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${eq.mag || "不明"})</span></div>`;
+                    
+                    // 💡 最新の地震情報（i === 0）を検知した時にLINEへ正しい名称で通知
                     if (i === 0 && eq.mag) {
-                        sendLineNotification(eq.text, eq.mag);
+                        sendLineNotification(displayName, eq.mag);
                     }
 
                     var lat = 35.68, lon = 139.69;
@@ -245,7 +249,7 @@
 
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 最新の地震</b><br>規模: M${eq.mag}<br>${eq.text}<br>${eq.at}`);
+                     .bindPopup(`<b>🔵 最新の地震</b><br>規模: M${eq.mag}<br>${displayName}<br>${eq.at}`);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 let d = new Date();
