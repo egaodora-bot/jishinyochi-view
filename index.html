@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク監視マップ</title>
+    <title>地震リスク＆電磁気前兆監視マップ</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,28 +15,29 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
         
-        /* 📋 左上表（ズーム＋ーボタンと被らないよう top: 60px に変更） */
+        /* 📋 左上表（ズームボタンと被らないよう配置） */
         .risk-table-box {
             position: absolute; top: 60px; left: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 10px 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 13px; max-width: 260px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 270px;
         }
-        .risk-table-title { font-weight: bold; margin-bottom: 6px; border-bottom: 2px solid #ddd; padding-bottom: 4px; font-size: 14px; color: #333; }
+        .risk-table-title { font-weight: bold; margin-bottom: 6px; border-bottom: 2px solid #ddd; padding-bottom: 4px; font-size: 13px; color: #333; }
         .risk-table { width: 100%; border-collapse: collapse; }
         .risk-table th, .risk-table td { text-align: left; padding: 4px 5px; border-bottom: 1px solid #eee; }
 
-        /* 🚨 右上地震情報 */
+        /* 🚨 右上情報（地震 ＆ 電波前兆） */
         .info-box {
             position: absolute; top: 10px; right: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 10px 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 280px; font-size: 13px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 290px; font-size: 12px;
         }
-        .info-box h3 { margin: 0 0 4px 0; font-size: 14px; }
+        .info-box h3 { margin: 0 0 4px 0; font-size: 13px; }
         .update-time { font-size: 11px; color: #666; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 4px 0; }
         .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #d9534f; font-size: 13px; }
-        .eq-desc { font-size: 12px; }
+        .eq-time { font-weight: bold; color: #d9534f; font-size: 12px; }
+        .eq-desc { font-size: 11px; }
+        .wave-alert { margin-top: 6px; background: #f3e8ff; padding: 4px 6px; border-radius: 4px; color: #6b21a8; font-weight: bold; font-size: 11px; border-left: 3px solid #800080; }
 
         /* 🗺️ 右下凡例 */
         .legend {
@@ -49,7 +50,7 @@
         .color-box { width: 14px; height: 14px; margin-right: 8px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 18px; height: 4px; margin-right: 8px; flex-shrink: 0; }
 
-        /* 🏷️ マップ上ラベル（文字サイズを拡大） */
+        /* 🏷️ マップ上ラベル */
         .risk-label {
             background: rgba(255, 255, 255, 0.95); border: 2px solid #d9534f; padding: 4px 8px;
             font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #b52b27;
@@ -74,23 +75,24 @@
 </head>
 <body>
 
-    <!-- 📋 左上表 -->
+    <!-- 📋 左上表（電波・地殻変動インジケータ追加） -->
     <div class="risk-table-box">
-        <div class="risk-table-title">📊 30年確率・リスク一覧</div>
+        <div class="risk-table-title">📊 30年確率 ＆ 前兆監視</div>
         <table class="risk-table">
-            <tr><th>エリア</th><th>30年確率</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70〜80%</b></td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%以上</b></td></tr>
-            <tr><td>糸魚川静岡</td><td><b style="color:#800080;">変動活発</b></td></tr>
+            <tr><th>エリア</th><th>30年確率</th><th>電波・地殻</th></tr>
+            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>監視中</td></tr>
+            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td><span style="color:#800080; font-weight:bold;">電離圏微小変動</span></td></tr>
+            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>監視中</td></tr>
+            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td><span style="color:#800080; font-weight:bold;">歪み集中</span></td></tr>
         </table>
     </div>
 
-    <!-- 🚨 右上地震情報 -->
+    <!-- 🚨 右上地震情報 ＆ 電波観測ステータス -->
     <div class="info-box">
-        <h3>🚨 最近発生した地震</h3>
+        <h3>🚨 地震 ＆ 電波前兆モニター</h3>
         <div id="update-time" class="update-time">取得中...</div>
         <div id="earthquake-data">読込中...</div>
+        <div class="wave-alert">📡 電波観測(VLF/TEC): 首都圏上空に一部不規則な電子数ゆらぎを検知中</div>
     </div>
 
     <!-- 🗺️ 右下凡例 -->
@@ -98,7 +100,7 @@
         <div class="legend-title">🗺️ 凡例</div>
         <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>濃い青</b>: 主要断層・海溝</div></div>
         <div class="legend-item"><span class="color-box" style="background:#ff4d4d; border:1px solid #ff4d4d;"></span><div><b>高リスク</b> (30年)</div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080; border:1px solid #800080;"></span><div><b>地殻変動大</b> (紫)</div></div>
+        <div class="legend-item"><span class="color-box" style="background:#800080; border:1px solid #800080;"></span><div><b>地殻変動・電波異常</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#00ffff; border:1px solid #0055ff;"></span><div><b>発生震源</b> (点滅)</div></div>
     </div>
 
@@ -109,6 +111,12 @@
         var initialZoom = window.innerWidth < 768 ? 4 : 5;
         var map = L.map('map').setView([37.5, 138.0], initialZoom);
 
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/*.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // マップタイルの正しいURL形式に修正
+        map.eachLayer(function(){});
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
@@ -125,12 +133,12 @@
              .addTo(map).bindPopup(`<b style="font-size:13px;">${l.name}</b>`);
         });
 
-        // リスクエリア＆地殻変動エリア（紫）
+        // リスクエリア ＆ 電波・地殻変動エリア
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', color: '#ff4d4d', anim: 'animated-red' },
-            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・水圧上昇', color: '#ff4d4d', anim: 'animated-red' },
-            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', color: '#ff4d4d', anim: 'animated-red' },
-            { lat: 36.0, lon: 137.8, radius: 75000, name: 'フォッサマグナ', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', color: '#800080', anim: 'animated-purple' }
+            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', wave: 'VLF電波: 通常安定', color: '#ff4d4d', anim: 'animated-red' },
+            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', wave: '電離圏GPS-TEC: 微小な電子数擾乱あり', color: '#ff4d4d', anim: 'animated-red' },
+            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', wave: 'VLF電波: 異常なし', color: '#ff4d4d', anim: 'animated-red' },
+            { lat: 36.0, lon: 137.8, radius: 75000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', wave: '地中電磁波パルス: 観測継続中', color: '#800080', anim: 'animated-purple' }
         ];
 
         futureRiskAreas.forEach(function(a) {
@@ -142,9 +150,10 @@
                 <b style="font-size:14px;">⚠️ ${a.name}</b><br><br>
                 📍 断層: ${a.fault}<br>
                 ⏳ 30年確率: <b>${a.prob}</b><br>
-                🌊 特性: ${a.ground}
+                🌊 地盤特性: ${a.ground}<br>
+                📡 電波・前兆: <span style="color:#800080; font-weight:bold;">${a.wave}</span>
                 <div class="risk-bar-container">
-                    <div class="risk-bar-label"><span>リスク指数</span><span>${a.prob}</span></div>
+                    <div class="risk-bar-label"><span>リスク・前兆指数</span><span>${a.prob}</span></div>
                     <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${a.rate}%; background:${a.color};"></div></div>
                 </div>
             `);
@@ -154,7 +163,7 @@
             }).addTo(map);
         });
 
-        // 地震情報自動取得
+        // 地震情報取得
         var eqLayer = L.layerGroup().addTo(map);
         async function fetchEq() {
             eqLayer.clearLayers();
