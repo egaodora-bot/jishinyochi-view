@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク＆地殻変動・電離圏前兆監視マップ (スクロール感度調整版)</title>
+    <title>地震リスク＆地殻変動・電離圏前兆監視マップ (重複整理版)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,7 +14,7 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
         
-        /* 📋 左上表 */
+        /* 📋 左上表（リスク・変動データ一覧） */
         .risk-table-box {
             position: absolute; top: 50px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
@@ -27,7 +27,7 @@
         .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
         .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
 
-        /* 🚨 右上情報 */
+        /* 🚨 右上情報（地震速報・システム状態に特化） */
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
@@ -102,7 +102,7 @@
     </div>
 
     <div class="info-box">
-        <h3>🚨 前兆監視モニター</h3>
+        <h3>🚨 地震速報・システム状況</h3>
         <div id="update-time" class="update-time">取得中...</div>
         <div id="earthquake-data">読込中...</div>
         <div class="wave-alert" id="jshis-status">📡 J-SHIS/GEONET: 接続正常</div>
@@ -124,7 +124,6 @@
         var isMobile = window.innerWidth < 768;
         var initialZoom = isMobile ? 4 : 5;
         
-        // マップ初期化（スクロールホイールの感度を緩やかに調整：wheelPxPerZoomLevelを大きく設定）
         var map = L.map('map', {
             scrollWheelZoom: true,
             wheelPxPerZoomLevel: 160
@@ -134,7 +133,6 @@
             attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
         }).addTo(map);
 
-        // 断層ライン
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
             { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
@@ -146,7 +144,6 @@
              .addTo(map).bindPopup(`<b style="font-size:12px;">${l.name}</b> (タップで詳細)`);
         });
 
-        // 動的連動するリスクエリアデータ
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, baseRadius: 120000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', strain: 'GEONET水平変位: 3.2cm/年', source: '防災科研 J-SHIS / 国土地理院', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.1 },
             { lat: 35.68, lon: 139.69, baseRadius: 55000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '電離圏TEC・地下水圧', strain: 'TEC電子数異常: 動的検知中', source: 'GEONET / 電離圏前兆モニタ', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', guideClass: 'tap-guide-badge', intensityFactor: 1.25 },
@@ -192,7 +189,6 @@
             }).addTo(map);
         });
 
-        // GEONET変位ベクトル（模擬矢印マーカー）
         var vectorMarkers = [
             { lat: 34.0, lon: 135.0, text: '➔ 3.2cm/y' },
             { lat: 35.5, lon: 138.5, text: '↗ 1.5cm/y' },
@@ -209,7 +205,6 @@
             }).addTo(map);
         });
 
-        // 気象庁地震情報取得
         var eqLayer = L.layerGroup().addTo(map);
         async function fetchEq() {
             eqLayer.clearLayers();
