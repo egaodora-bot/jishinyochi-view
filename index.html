@@ -15,11 +15,11 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
         
-        /* 📋 左上表（スマホではコンパクト化） */
+        /* 📋 左上表 */
         .risk-table-box {
             position: absolute; top: 60px; left: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 8px 10px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 280px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 310px;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 4px; border-bottom: 2px solid #ddd; padding-bottom: 3px; font-size: 12px; color: #333; }
         .risk-table { width: 100%; border-collapse: collapse; }
@@ -43,14 +43,14 @@
         .legend {
             position: absolute; bottom: 20px; right: 10px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 8px 10px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 210px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 220px;
         }
         .legend-title { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 12px; }
         .legend-item { display: flex; align-items: center; margin-bottom: 3px; }
         .color-box { width: 12px; height: 12px; margin-right: 6px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 15px; height: 3px; margin-right: 6px; flex-shrink: 0; }
 
-        /* 🏷️ PC/タブレット用バッジ */
+        /* 🏷️ PC/タブレット用バッジ（変動量テキスト付き） */
         .risk-badge {
             background: rgba(255, 255, 255, 0.95); border: 2px solid #b52b27; padding: 3px 6px;
             font-size: 11px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27;
@@ -62,16 +62,11 @@
             white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: inline-block;
         }
         .fault-subtext { font-size: 9px; color: #555; font-weight: normal; display: block; }
+        .strain-value { font-size: 9px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 3px; border-radius: 2px; margin-top: 1px; }
 
-        /* 📱 スマホ（7型等）専用の小さな丸ドットスタイル */
-        .risk-dot-red {
-            width: 14px; height: 14px; background: #ff4d4d; border: 2px solid #ffffff;
-            border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: inline-block;
-        }
-        .risk-dot-purple {
-            width: 14px; height: 14px; background: #800080; border: 2px solid #ffffff;
-            border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: inline-block;
-        }
+        /* 📱 スマホ用ドット */
+        .risk-dot-red { width: 14px; height: 14px; background: #ff4d4d; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: inline-block; }
+        .risk-dot-purple { width: 14px; height: 14px; background: #800080; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: inline-block; }
 
         /* 📊 ポップアップ内グラフ */
         .risk-bar-container { margin-top: 6px; font-size: 12px; width: 190px; }
@@ -90,24 +85,24 @@
 </head>
 <body>
 
-    <!-- 📋 左上表 -->
+    <!-- 📋 左上表（地殻変動の変位量を追加） -->
     <div class="risk-table-box">
-        <div class="risk-table-title">📊 30年確率 ＆ 前兆</div>
+        <div class="risk-table-title">📊 30年確率 ＆ 変動異常値</div>
         <table class="risk-table">
-            <tr><th>エリア</th><th>30年確率</th><th>電波・地殻</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>監視中</td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td><span style="color:#800080; font-weight:bold;">電離圏変動</span></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>監視中</td></tr>
-            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td><span style="color:#800080; font-weight:bold;">歪み集中</span></td></tr>
+            <tr><th>エリア</th><th>確率</th><th>平行・垂直 変動値</th></tr>
+            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>沈降/水平: <b>約2〜5cm/年</b></td></tr>
+            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上下変動: <span style="color:#800080; font-weight:bold;">±1.5cm/年異常</span></td></tr>
+            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート収束: <b>約8cm/年</b></td></tr>
+            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ集中: <span style="color:#800080; font-weight:bold;">0.1スラント超</span></td></tr>
         </table>
     </div>
 
     <!-- 🚨 右上情報 -->
     <div class="info-box">
-        <h3>🚨 地震 ＆ 電波モニター</h3>
+        <h3>🚨 地震 ＆ 前兆モニター</h3>
         <div id="update-time" class="update-time">取得中...</div>
         <div id="earthquake-data">読込中...</div>
-        <div class="wave-alert">📡 電波観測(VLF/TEC): 首都圏上空に一部ゆらぎ検知</div>
+        <div class="wave-alert">📡 変動監視: 垂直・水平ベクトルに一部特異な歪みを検知</div>
     </div>
 
     <!-- 🗺️ 右下凡例 -->
@@ -115,7 +110,7 @@
         <div class="legend-title">🗺️ 凡例</div>
         <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主要断層・海溝</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>高リスク</b> (30年)</div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動・電波</b></div></div>
+        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動異常 (平行/垂直)</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#00ffff; border:1px solid #0055ff;"></span><div><b>発生震源</b> (点滅)</div></div>
     </div>
 
@@ -143,12 +138,12 @@
              .addTo(map).bindPopup(`<b style="font-size:13px;">${l.name}</b>`);
         });
 
-        // リスクエリア ＆ 電波・地殻変動エリア
+        // リスクエリア ＆ 地殻変動データ（変位量テキストを追加）
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', wave: 'VLF電波: 通常安定', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
-            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', wave: '電離圏GPS-TEC: 微小な電子数擾乱あり', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
-            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', wave: 'VLF電波: 異常なし', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
-            { lat: 36.0, lon: 137.8, radius: 75000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', wave: '地中電磁波パルス: 観測継続中', color: '#800080', anim: 'animated-purple', badgeClass: 'risk-badge-purple', dotClass: 'risk-dot-purple' }
+            { lat: 33.5, lon: 134.5, radius: 130000, name: '南海トラフ', fault: '南海トラフ巨大地震モデル', prob: '70〜80%', rate: 80, ground: '沿岸沈降・水圧上昇', strain: '水平/垂直変位: 2〜5cm/年', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
+            { lat: 35.68, lon: 139.69, radius: 60000, name: '首都直下', fault: '立川断層帯 / 首都圏直下', prob: '約70%', rate: 70, ground: '液状化・地下水圧', strain: '上下変動異常: ±1.5cm/年', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
+            { lat: 41.5, lon: 143.5, radius: 110000, name: '千島海溝', fault: '千島海溝プレート境界', prob: '80%以上', rate: 85, ground: '沿岸隆起・変動', strain: 'プレート収束: 約8cm/年', color: '#ff4d4d', anim: 'animated-red', badgeClass: 'risk-badge', dotClass: 'risk-dot-red' },
+            { lat: 36.0, lon: 137.8, radius: 75000, name: '中部変動帯', fault: '糸静線・ひずみ集中帯', prob: '変動活発', rate: 60, ground: '山岳隆起・地殻変動', strain: '地殻ひずみ: 異常値検知中', color: '#800080', anim: 'animated-purple', badgeClass: 'risk-badge-purple', dotClass: 'risk-dot-purple' }
         ];
 
         futureRiskAreas.forEach(function(a) {
@@ -161,20 +156,20 @@
                 📍 断層: ${a.fault}<br>
                 ⏳ 30年確率: <b>${a.prob}</b><br>
                 🌊 地盤特性: ${a.ground}<br>
-                📡 電波・前兆: <span style="color:#800080; font-weight:bold;">${a.wave}</span>
+                📐 地殻変動(平行/垂直): <span style="color:#800080; font-weight:bold;">${a.strain}</span>
                 <div class="risk-bar-container">
-                    <div class="risk-bar-label"><span>リスク・前兆指数</span><span>${a.prob}</span></div>
+                    <div class="risk-bar-label"><span>リスク・変動指数</span><span>${a.prob}</span></div>
                     <div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${a.rate}%; background:${a.color};"></div></div>
                 </div>
             `);
 
-            // スマホ画面幅なら「小さな丸ドット」、PC/タブレットなら「名前入りバッジ」に自動切替
+            // スマホならドット、PCならバッジに変動量（strain）を表示
             var iconHtml = isMobile 
                 ? `<div class="${a.dotClass}"></div>` 
-                : `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">${a.fault}</span></div>`;
+                : `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">${a.fault}</span><span class="strain-value">📐 ${a.strain}</span></div>`;
             
-            var iconSize = isMobile ? [18, 18] : [110, 36];
-            var iconAnchor = isMobile ? [9, 9] : [55, 18];
+            var iconSize = isMobile ? [18, 18] : [120, 48];
+            var iconAnchor = isMobile ? [9, 9] : [60, 24];
 
             L.marker([a.lat, a.lon], {
                 icon: L.divIcon({ 
