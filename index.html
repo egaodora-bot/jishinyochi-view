@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク＆地殻変動・電離圏前兆監視マップ (重複整理版)</title>
+    <title>地震リスク＆地殻変動・電離圏前兆監視マップ (LINE通知連動版)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -205,6 +205,24 @@
             }).addTo(map);
         });
 
+        // 📱 LINEへ自動通知を送る関数
+        function sendLineNotification(eqText, mag) {
+            var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec"; 
+            
+            var alertMessage = `🚨【地震速報・前兆監視】\n新しい地震を検知しました。\n\n${eqText} (M${mag})\n\nマップを確認してください。`;
+            
+            fetch(gasUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: alertMessage })
+            }).then(() => {
+                console.log("LINE通知送信リクエスト完了");
+            }).catch(err => {
+                console.error("LINE通知エラー:", err);
+            });
+        }
+
         var eqLayer = L.layerGroup().addTo(map);
         async function fetchEq() {
             eqLayer.clearLayers();
@@ -212,10 +230,16 @@
                 let res = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json');
                 let data = await res.json();
                 let html = "";
+                
                 for(let i=0; i<Math.min(2, data.length); i++) {
                     let eq = data[i];
                     html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${eq.text || "震源情報"} (M${eq.mag || "不明"})</span></div>`;
                     
+                    // 💡 最新の地震情報（i === 0）を検知した時にLINEへ自動通知を送る
+                    if (i === 0 && eq.mag) {
+                        sendLineNotification(eq.text, eq.mag);
+                    }
+
                     var lat = 35.68, lon = 139.69;
                     if(i===1) { lat = 38.2, lon = 140.8; }
 
