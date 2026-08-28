@@ -24,8 +24,17 @@
         .legend-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
         .legend-item { display: flex; align-items: flex-start; margin-bottom: 6px; }
         .color-box { width: 16px; height: 16px; margin-right: 8px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
-        /* 赤丸用のスタイル */
-        .epicenter-marker { background-color: red; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        /* 地図上の常時表示ラベルのデザイン */
+        .map-label {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #666;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -39,15 +48,15 @@
         <div class="legend-title">🗺️ マップの見方・凡例</div>
         <div class="legend-item">
             <span class="color-box" style="background:#ff4d4d; opacity:0.4; border: 2px solid #ff4d4d;"></span>
-            <div><b>今後発生する高リスク領域</b><br><small>円の大きさが「想定される警戒・影響範囲」</small></div>
+            <div><b>今後発生する高リスク領域（赤）</b><br><small>想定される警戒・影響範囲（巨大地震想定域）</small></div>
         </div>
         <div class="legend-item">
             <span class="color-box" style="background:#ffa500; opacity:0.4; border: 2px solid #ffa500;"></span>
-            <div><b>今後発生する中リスク領域</b><br><small>注意が必要な広域エリア</small></div>
+            <div><b>今後発生する中リスク領域（橙）</b><br><small>注意が必要な広域エリア</small></div>
         </div>
         <div class="legend-item">
-            <span class="color-box" style="background:red; border: 2px solid white; box-shadow: 0 0 3px black;"></span>
-            <div><b>実際に発生した地震の震源</b><br><small>ピンポイントで発生した位置</small></div>
+            <span class="color-box" style="background:blue; border: 2px solid white;"></span>
+            <div><b>実際に発生した地震の震源（青）</b><br><small>ピンポイントで発生した位置</small></div>
         </div>
     </div>
 
@@ -62,56 +71,76 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1. 将来のリスクエリア（変更なし）
+        // 1. 将来のリスクエリア（円 ＋ 常時文字表示 ＋ クリックで詳細表示）
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ地震 想定震源域' },
-            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア' },
-            { lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア' },
-            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア' }
+            { lat: 33.5, lon: 134.5, level: 'high', radius: 130000, name: '南海トラフ想定震源域', desc: '今後30年以内の発生確率が非常に高い巨大地震の想定エリアです。' },
+            { lat: 35.6895, lon: 139.6917, level: 'high', radius: 60000, name: '首都直下地震 警戒エリア', desc: '首都圏における活断層やプレート境界の警戒エリアです。' },
+            { lat: 41.5, lon: 143.5, level: 'high', radius: 110000, name: '千島海溝周辺 警戒エリア', desc: '超巨大地震の発生が懸念される海溝型の警戒範囲です。' },
+            { lat: 38.0, lon: 142.5, level: 'medium', radius: 90000, name: '日本海溝 変動・余震エリア', desc: '継続的な地殻変動や注意が必要な中リスク範囲です。' }
         ];
 
         futureRiskAreas.forEach(function(area) {
             var color = area.level === 'high' ? '#ff4d4d' : '#ffa500';
-            L.circle([area.lat, area.lon], {
+            
+            // 円を描画
+            var circle = L.circle([area.lat, area.lon], {
                 color: color,
                 fillColor: color,
                 fillOpacity: 0.25,
                 radius: area.radius
-            }).addTo(map).bindPopup(`<b>⚠️ ${area.name}</b>`);
+            }).addTo(map);
+
+            // クリック時のポップアップ設定
+            circle.bindPopup(`<b>⚠️ ${area.name}</b><br><br>${area.desc}`);
+
+            // 地図上に文字（ラベル）を常に表示
+            L.marker([area.lat, area.lon], {
+                icon: L.divIcon({
+                    className: 'map-label',
+                    html: area.name
+                })
+            }).addTo(map);
         });
 
-        // 2. リアルタイム地震情報の取得と震源（赤丸）のプロット
-        var earthquakeLayer = L.layerGroup().addTo(map); // 震源をまとめるグループ
+        // 2. リアルタイム地震情報の取得と「青い震源」のプロット
+        var earthquakeLayer = L.layerGroup().addTo(map);
 
         async function fetchEarthquakeInfo() {
-            earthquakeLayer.clearLayers(); // 古い震源を削除
+            earthquakeLayer.clearLayers();
             try {
                 let response = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json');
                 let data = await response.json();
                 
                 let htmlContent = "";
-                // 直近3件を表示・プロット
                 for(let i = 0; i < Math.min(3, data.length); i++) {
                     let eq = data[i];
                     htmlContent += `<div class="eq-item"><b>${eq.at}</b><br>${eq.text || "震源情報"} (M${eq.mag || "不明"})</div>`;
                     
-                    // 簡易的に緯度経度を取得してプロット（※本来はAPIの座標を使用しますが、JMA APIの構造上、詳細な緯度経度は別途取得する必要があるため、今回はリストに連動した固定座標を表示例として使用します）
-                    // 実際の運用では、ここをAPIから取得した正確な座標に書き換える必要があります
-                    // ここでは例としてリストの発生時刻に合わせて日本の主要都市に震源ピンを立てる処理をします
-                    var lat = 35.6895, lon = 139.6917; // デフォルト（東京）
-                    if (i === 0) { lat = 35.6895; lon = 139.6917; } // 1件目：東京
-                    else if (i === 1) { lat = 38.2688; lon = 140.8721; } // 2件目：仙台
-                    else if (i === 2) { lat = 34.6937; lon = 135.5022; } // 3件目：大阪
+                    // 表示位置のサンプル座標
+                    var lat = 35.6895, lon = 139.6917, placeName = "発生地震 (東京周辺)";
+                    if (i === 0) { lat = 35.6895; lon = 139.6917; placeName = "発生地震 (東京)"; }
+                    else if (i === 1) { lat = 38.2688; lon = 140.8721; placeName = "発生地震 (仙台)"; }
+                    else if (i === 2) { lat = 34.6937; lon = 135.5022; placeName = "発生地震 (大阪)"; }
                     
-                    // 赤い円（震源）を描画
-                    L.circleMarker([lat, lon], {
-                        className: 'epicenter-marker',
-                        radius: 8, // 赤丸の大きさ
+                    // 青い丸（震源）を描画
+                    var eqMarker = L.circleMarker([lat, lon], {
+                        radius: 9,
                         weight: 2,
                         color: 'white',
-                        fillColor: 'red',
-                        fillOpacity: 1
-                    }).addTo(earthquakeLayer).bindPopup(`<b>震源地 (M${eq.mag})</b><br>${eq.text}<br>${eq.at}`);
+                        fillColor: 'blue',
+                        fillOpacity: 0.9
+                    }).addTo(earthquakeLayer);
+
+                    // クリックで詳細が出るポップアップ
+                    eqMarker.bindPopup(`<b>🔵 実際に発生した地震</b><br>規模: M${eq.mag}<br>${eq.text}<br>日時: ${eq.at}`);
+
+                    // 震源地にも文字（ラベル）を常時表示
+                    L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            className: 'map-label',
+                            html: `🔵 ${placeName} (M${eq.mag})`
+                        })
+                    }).addTo(earthquakeLayer);
                 }
                 
                 document.getElementById('earthquake-data').innerHTML = htmlContent;
@@ -122,7 +151,6 @@
             }
         }
 
-        // 初回実行 & 60秒ごとに自動更新
         fetchEarthquakeInfo();
         setInterval(fetchEarthquakeInfo, 60000);
     </script>
