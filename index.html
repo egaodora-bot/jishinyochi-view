@@ -2,35 +2,48 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地震リスク＆リアルタイム監視マップ</title>
+    
+    <!-- スマホのホーム画面に追加したときのアプリ設定（PWA） -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ff4d4d">
+    
     <!-- Leaflet.js の CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
+        
+        /* スマホで見やすいコンパクトな情報ボックス */
         .info-box {
             position: absolute; top: 10px; right: 10px; z-index: 1000;
-            background: white; padding: 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 320px; font-size: 13px;
+            background: rgba(255, 255, 255, 0.95); padding: 10px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 280px; font-size: 12px;
         }
-        .info-box h3 { margin-top: 0; font-size: 15px; color: #333; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 6px 0; }
+        .info-box h3 { margin-top: 0; font-size: 14px; color: #333; margin-bottom: 6px; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 4px 0; }
+        .eq-item:last-child { border-bottom: none; }
+
+        /* スマホ画面で邪魔にならない折りたたみ可能な凡例 */
         .legend {
             position: absolute; bottom: 20px; right: 10px; z-index: 1000;
-            background: white; padding: 12px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 12px; max-width: 310px;
+            background: rgba(255, 255, 255, 0.95); padding: 10px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 11px; max-width: 270px;
+            max-height: 40vh; overflow-y: auto;
         }
-        .legend-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; font-size: 13px; }
-        .legend-item { display: flex; align-items: flex-start; margin-bottom: 8px; }
-        .color-box { width: 16px; height: 16px; margin-right: 8px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
+        .legend-title { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 12px; }
+        .legend-item { display: flex; align-items: flex-start; margin-bottom: 6px; }
+        .color-box { width: 14px; height: 14px; margin-right: 6px; margin-top: 2px; flex-shrink: 0; border-radius: 50%; }
+        
         .risk-label {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #444;
-            padding: 2px 6px;
-            font-size: 11px;
+            padding: 1px 4px;
+            font-size: 10px;
             font-weight: bold;
-            border-radius: 4px;
+            border-radius: 3px;
             white-space: nowrap;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
@@ -49,21 +62,21 @@
             <span class="color-box" style="background:#ff4d4d; opacity:0.4; border: 2px solid #ff4d4d;"></span>
             <div>
                 <b>🔴 高リスク領域（赤）</b><br>
-                <small>・<b>色</b>：発生確率が極めて高い警戒エリア<br>・<b>大きさ</b>：半径60km〜130kmの広大な想定震源域や巨大地震の警戒範囲を示しています。</small>
+                <small>・<b>色</b>：発生確率が極めて高い警戒エリア<br>・<b>大きさ</b>：半径60〜130kmの広大な想定震源域</small>
             </div>
         </div>
         <div class="legend-item">
             <span class="color-box" style="background:#ffa500; opacity:0.4; border: 2px solid #ffa500;"></span>
             <div>
                 <b>🟠 中リスク領域（橙）</b><br>
-                <small>・<b>色</b>：余震や地殻変動への注意が必要なエリア<br>・<b>大きさ</b>：半径約90kmの広域的な影響範囲を示しています。</small>
+                <small>・<b>色</b>：余震・地殻変動への注意が必要なエリア<br>・<b>大きさ</b>：半径約90kmの影響範囲</small>
             </div>
         </div>
         <div class="legend-item">
             <span class="color-box" style="background:blue; border: 2px solid white;"></span>
             <div>
                 <b>🔵 実際に発生した震源（青丸）</b><br>
-                <small>・<b>色</b>：リアルタイムの発生実績（識別しやすい青）<br>・<b>操作</b>：クリックすると詳細（Mや日時）を表示</small>
+                <small>・<b>色</b>：リアルタイムの発生実績<br>・<b>操作</b>：タップで詳細（Mや日時）を表示</small>
             </div>
         </div>
     </div>
@@ -73,7 +86,9 @@
     <!-- Leaflet.js の JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([37.5, 138.0], 5);
+        // スマホの画面幅に合わせて初期の拡大率（ズーム）を自動調整
+        var initialZoom = window.innerWidth < 768 ? 4 : 5;
+        var map = L.map('map').setView([37.5, 138.0], initialZoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
