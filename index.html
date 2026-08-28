@@ -21,7 +21,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 280px; font-size: 12px;
         }
         .info-box h3 { margin-top: 0; font-size: 14px; color: #333; margin-bottom: 4px; }
-        /* 更新日時のスタイル */
         .update-time { font-size: 10px; color: #666; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
         .eq-item { border-bottom: 1px solid #eee; padding: 4px 0; }
         .eq-item:last-child { border-bottom: none; }
@@ -46,13 +45,32 @@
             white-space: nowrap;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
+
+        /* 🔴 リスクエリア・青丸の点滅アニメーション効果 */
+        @keyframes pulse-red {
+            0% { fill-opacity: 0.15; stroke-opacity: 0.4; }
+            50% { fill-opacity: 0.35; stroke-opacity: 0.9; }
+            100% { fill-opacity: 0.15; stroke-opacity: 0.4; }
+        }
+        @keyframes pulse-orange {
+            0% { fill-opacity: 0.15; stroke-opacity: 0.4; }
+            50% { fill-opacity: 0.35; stroke-opacity: 0.9; }
+            100% { fill-opacity: 0.15; stroke-opacity: 0.4; }
+        }
+        @keyframes blink-blue {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.6); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+        .animated-red { animation: pulse-red 3s infinite; }
+        .animated-orange { animation: pulse-orange 3s infinite; }
+        .animated-blue-ping { animation: blink-blue 1.5s infinite; }
     </style>
 </head>
 <body>
 
     <div class="info-box">
         <h3>🚨 最近発生した地震（気象庁）</h3>
-        <!-- 更新日時を表示する場所 -->
         <div id="update-time" class="update-time">最終更新: 取得中...</div>
         <div id="earthquake-data">最新情報を取得中...</div>
     </div>
@@ -60,24 +78,24 @@
     <div class="legend">
         <div class="legend-title">🗺️ マップの見方・詳細解説</div>
         <div class="legend-item">
-            <span class="color-box" style="background:#ff4d4d; opacity:0.4; border: 2px solid #ff4d4d;"></span>
+            <span class="color-box" style="background:#ff4d4d; opacity:0.5; border: 2px solid #ff4d4d;"></span>
             <div>
-                <b>🔴 高リスク領域（赤）</b><br>
-                <small>・<b>色</b>：発生確率が極めて高い警戒エリア<br>・<b>大きさ</b>：半径60〜130kmの広大な想定震源域</small>
+                <b>🔴 高リスク領域（赤・大 / 赤・中）</b><br>
+                <small>・発生確率が極めて高い警戒エリア（光ってアピール）<br>・大：半径約110〜130km<br>・中：半径約60km</small>
             </div>
         </div>
         <div class="legend-item">
-            <span class="color-box" style="background:#ffa500; opacity:0.4; border: 2px solid #ffa500;"></span>
+            <span class="color-box" style="background:#ffa500; opacity:0.5; border: 2px solid #ffa500;"></span>
             <div>
-                <b>🟠 中リスク領域（橙）</b><br>
-                <small>・<b>色</b>：余震・地殻変動への注意が必要なエリア<br>・<b>大きさ</b>：半径約90kmの影響範囲</small>
+                <b>🟠 中リスク領域（橙・中）</b><br>
+                <small>・余震・地殻変動への注意が必要なエリア<br>・中：半径約90km</small>
             </div>
         </div>
         <div class="legend-item">
-            <span class="color-box" style="background:blue; border: 2px solid white;"></span>
+            <span class="color-box" style="background:#00ffff; border: 2px solid #0055ff;"></span>
             <div>
-                <b>🔵 実際に発生した震源（青丸）</b><br>
-                <small>・<b>色</b>：リアルタイムの発生実績<br>・<b>操作</b>：タップで詳細（Mや日時）を表示</small>
+                <b>🔵 発生した震源（明るい青・点滅）</b><br>
+                <small>・リアルタイムの発生実績を点滅でお知らせ<br>・タップで詳細を表示</small>
             </div>
         </div>
     </div>
@@ -108,8 +126,9 @@
             var circle = L.circle([area.lat, area.lon], {
                 color: color,
                 fillColor: color,
-                fillOpacity: 0.2,
-                radius: area.radius
+                fillOpacity: 0.25,
+                radius: area.radius,
+                className: area.level === 'high' ? 'animated-red' : 'animated-orange'
             }).addTo(map);
 
             circle.bindPopup(`<b>⚠️ ${area.name}</b><br><br>${area.desc}`);
@@ -141,20 +160,30 @@
                     else if (i === 1) { lat = 38.2688; lon = 140.8721; }
                     else if (i === 2) { lat = 34.6937; lon = 135.5022; }
                     
-                    var eqMarker = L.circleMarker([lat, lon], {
-                        radius: 8,
-                        weight: 2,
-                        color: 'white',
-                        fillColor: 'blue',
-                        fillOpacity: 0.9
+                    // 外側の点滅用リング（波紋のように広がるエフェクト）
+                    var pingMarker = L.circleMarker([lat, lon], {
+                        radius: 16,
+                        weight: 1,
+                        color: '#00ffff',
+                        fillColor: '#00ffff',
+                        fillOpacity: 0.4,
+                        className: 'animated-blue-ping'
                     }).addTo(earthquakeLayer);
 
-                    eqMarker.bindPopup(`<b>🔵 実際に発生した地震</b><br>規模: M${eq.mag}<br>${eq.text}<br>日時: ${eq.at}`);
+                    // 中心の実体マーカー（明るいシアン色）
+                    var eqMarker = L.circleMarker([lat, lon], {
+                        radius: 7,
+                        weight: 2,
+                        color: '#ffffff',
+                        fillColor: '#00ffff',
+                        fillOpacity: 1.0
+                    }).addTo(earthquakeLayer);
+
+                    eqMarker.bindPopup(`<b>🔵 実際に発生した地震（新着）</b><br>規模: M${eq.mag}<br>${eq.text}<br>日時: ${eq.at}`);
                 }
                 
                 document.getElementById('earthquake-data').innerHTML = htmlContent;
 
-                // 現在の時刻を取得して「最終更新日時」として表示
                 let now = new Date();
                 let timeString = now.getFullYear() + '/' + 
                                  (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
