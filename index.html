@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -65,13 +65,14 @@
 </head>
 <body>
 
-    <!-- 📋 左上：リアルタイム変動データ表 -->
+    <!-- 📋 左上：リアルタイム変動データ表（東北歪を含む完全版） -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 リアルタイム変動・前兆監視</div>
         <table class="risk-table">
             <tr><th>エリア</th><th>確率(J-SHIS)</th><th>GEONET/電離圏異常</th></tr>
             <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>水平変位: <b>3.2cm/年</b></td></tr>
             <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>TEC異常: <span style="color:#800080; font-weight:bold;">動的検知中</span></td></tr>
+            <tr><td>東北歪</td><td><b style="color:#d9534f;">余効変動中</b></td><td>東方水平変位: <b>5.4cm/年</b></td></tr>
             <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート圧力: <b>8.1cm/年</b></td></tr>
             <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ集中: <span style="color:#800080; font-weight:bold;">0.15過剰</span></td></tr>
         </table>
@@ -91,7 +92,7 @@
         <div class="legend-title">🗺️ 凡例</div>
         <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主要断層・海溝</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>高リスクエリア(動的)</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動・中部ひずみ</b></div></div>
+        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動・東北/中部ひずみ</b></div></div>
         <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>P波 波面 (約6km/s)</b></div></div>
         <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>S波 波面 (約3.5km/s)</b></div></div>
     </div>
@@ -106,7 +107,6 @@
             attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
         }).addTo(map);
 
-        // 主要断層ライン
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
             { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
@@ -117,11 +117,11 @@
             L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray }).addTo(map);
         });
 
-        // 4大リスクエリア
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '水平変位: 3.2cm/年', color: '#ff4d4d', badgeClass: 'risk-badge' },
             { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: 'TEC異常検知中', color: '#ff4d4d', badgeClass: 'risk-badge' },
-            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%以上', strain: 'プレート圧力: 8.1cm/年', color: '#ff4d4d', badgeClass: 'risk-badge' },
+            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪', prob: '余効変動中', strain: '東方水平変位: 5.4cm/年', color: '#800080', badgeClass: 'risk-badge-purple' },
+            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: 'プレート圧力: 8.1cm/年', color: '#ff4d4d', badgeClass: 'risk-badge' },
             { lat: 36.0, lon: 137.8, radius: 70000, name: '中部変動帯', prob: '変動活発', strain: 'GEONETひずみ: 0.15過剰', color: '#800080', badgeClass: 'risk-badge-purple' }
         ];
 
@@ -159,14 +159,12 @@
             }
         }
 
-        // 🛡️ 厳格な重複防止（ブラウザストレージによる永続ブロック ＆ クールタイム30分 ＆ M4.0未満カット）
         function checkAndSendLineNotification(eqId, eqText, mag) {
             var lastNotifiedId = localStorage.getItem('persistent_last_eq_id') || "";
             var lastNotifiedTime = parseInt(localStorage.getItem('persistent_last_eq_time') || "0", 10);
             var now = Date.now();
-            var COOLDOWN_TIME = 30 * 60 * 1000; // 30分
+            var COOLDOWN_TIME = 30 * 60 * 1000; 
 
-            // 条件に一致する場合は絶対に通知を送らない
             if (eqId === lastNotifiedId || (now - lastNotifiedTime < COOLDOWN_TIME) || (mag && parseFloat(mag) < 4.0)) {
                 return;
             }
