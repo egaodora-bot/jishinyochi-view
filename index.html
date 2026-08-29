@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（完全版・スマホ対応）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（わかりやすい表現版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -52,14 +52,12 @@
         .color-box { width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 12px; height: 3px; margin-right: 5px; flex-shrink: 0; }
 
-        /* 🏷️ バッジスタイル（スマホタップ最適化） */
+        /* 🏷️ バッジスタイル */
         .risk-badge { background: rgba(255,255,255,0.95); border: 2px solid #b52b27; padding: 4px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; }
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 2px solid #6b21a8; padding: 4px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; }
         .fault-subtext { font-size: 8px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 8px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 2px; border-radius: 2px; margin-top: 1px; }
 
-        @keyframes pulse-red { 0% { fill-opacity: 0.2; } 50% { fill-opacity: 0.45; } 100% { fill-opacity: 0.2; } }
-        @keyframes pulse-purple { 0% { fill-opacity: 0.2; } 50% { fill-opacity: 0.5; } 100% { fill-opacity: 0.2; } }
         @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
         .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
     </style>
@@ -68,43 +66,41 @@
 
     <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
-        <div class="risk-table-title">📊 リアルタイム変動・前兆監視</div>
+        <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
-            <tr><th>エリア</th><th>確率(J-SHIS)</th><th>GEONET/電離圏異常</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>水平変位: <b>3.2cm/年</b></td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>TEC異常: <span style="color:#800080; font-weight:bold;">動的検知中</span></td></tr>
-            <tr><td>東北歪</td><td><b style="color:#d9534f;">余効変動中</b></td><td>東方水平変位: <b>5.4cm/年</b></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート圧力: <b>8.1cm/年</b></td></tr>
-            <tr><td>中部変動帯</td><td><b style="color:#800080;">変動活発</b></td><td>ひずみ集中: <span style="color:#800080; font-weight:bold;">0.15過剰</span></td></tr>
+            <tr><th>エリア</th><th>発生確率</th><th>地表・上空の異変</th></tr>
+            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>地面のずれ: <b>年3.2cm</b></td></tr>
+            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空の異変: <span style="color:#800080; font-weight:bold;">現在発生中</span></td></tr>
+            <tr><td>東北地方（余効）</td><td><b style="color:#d9534f;">揺れ残り継続中</b></td><td>東向きのずれ: <b>年5.4cm</b></td></tr>
+            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート圧力: <b>年8.1cm</b></td></tr>
+            <tr><td>中部地方（内陸）</td><td><b style="color:#800080;">動き活発</b></td><td>地面のゆがみ: <span style="color:#800080; font-weight:bold;">基準超え</span></td></tr>
         </table>
     </div>
 
     <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
-        <h3>🚨 地震速報・波面監視 (W設定)</h3>
+        <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
         <div id="earthquake-data">読込中...</div>
-        <div class="wave-alert" id="wave-status">🌊 P波/S波波面計算: 待機中</div>
-        <div class="noise-filter-status" id="noise-status">🛡️ W設定（二重ノイズ制御）: 有効</div>
+        <div class="wave-alert" id="wave-status">🌊 揺れの波（P/S波）計算: 待機中</div>
+        <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
     <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
-        <div class="legend-title">🗺️ 凡例</div>
-        <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主要断層・海溝</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>高リスクエリア(動的)</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>地殻変動・東北/中部ひずみ</b></div></div>
-        <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>P波 波面 (約6km/s)</b></div></div>
-        <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>S波 波面 (約3.5km/s)</b></div></div>
+        <div class="legend-title">🗺️ 画面の見方</div>
+        <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主な断層・海溝</b></div></div>
+        <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>警戒エリア</b></div></div>
+        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>ひずみ・余効変動エリア</b></div></div>
+        <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>初期微動（P波）の波面</b></div></div>
+        <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>主要動（S波）の波面</b></div></div>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map', {
-            tapToleranc: 15
-        }).setView([37.5, 138.0], 5);
+        var map = L.map('map').setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
@@ -120,17 +116,16 @@
             L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray }).addTo(map);
         });
 
-        // リスクエリア（スマホ・PC両対応のポップアップ設定）
+        // リスクエリア（わかりやすい詳細文言に変更）
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '水平変位: 3.2cm/年', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '南海トラフ巨大地震想定震源域<br>確率: 70〜80%<br>GEONET水平変位: 3.2cm/年' },
-            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: 'TEC異常検知中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '首都直下地震リスクエリア<br>確率: 約70%<br>電離圏TEC異常: 動的検知中' },
-            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪', prob: '余効変動中', strain: '東方水平変位: 5.4cm/年', color: '#800080', badgeClass: 'risk-badge-purple', detail: '東北日本ひずみ集中帯・余効変動エリア<br>状態: 余効変動継続中<br>東方水平変位: 5.4cm/年' },
-            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: 'プレート圧力: 8.1cm/年', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '千島海溝周辺モデル<br>確率: 80%超<br>プレート圧力: 8.1cm/年' },
-            { lat: 36.0, lon: 137.8, radius: 70000, name: '中部変動帯', prob: '変動活発', strain: 'GEONETひずみ: 0.15過剰', color: '#800080', badgeClass: 'risk-badge-purple', detail: '中部地方ひずみ集中帯<br>状態: 変動活発<br>ひずみ過剰度: 0.15' }
+            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '地面のずれ: 年3.2cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ巨大地震の想定震源域】<br>・発生確率: 70〜80%<br>・GPS観測による地面のずれ: 年3.2cm' },
+            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空の異変: 発生中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
+            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪（余効）', prob: '揺れ残り継続中', strain: '東向きのずれ: 年5.4cm', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方の余効変動エリア】<br>・東日本大震災の余波（揺れの残り）が継続中<br>・東向きの地殻変動: 年5.4cm' },
+            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: 'プレート圧力: 年8.1cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【千島海溝周辺の警戒エリア】<br>・発生確率: 80%超<br>・プレートが押す圧力: 年8.1cm' },
+            { lat: 36.0, lon: 137.8, radius: 70000, name: '中部変動帯', prob: '動き活発', strain: '地面のゆがみ: 基準超え', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部地方のひずみ集中帯】<br>・内陸部の地殻の動きが活発なエリア<br>・地面のゆがみ具合: 基準値を超えて進行中' }
         ];
 
         futureRiskAreas.forEach(function(a) {
-            // 円のクリック・タップ設定
             var circle = L.circle([a.lat, a.lon], { 
                 color: a.color, 
                 fillColor: a.color, 
@@ -139,21 +134,19 @@
                 bubblingMouseEvents: false 
             }).addTo(map);
             
-            circle.bindPopup(`<b>🔴 ${a.name} 詳細情報</b><br>${a.detail}`);
+            circle.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
 
-            // バッジ（文字）のクリック・タップ設定
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">リスク: ${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
+                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率: ${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
                     iconSize: [120, 50], iconAnchor: [60, 25]
                 }),
                 bubblingMouseEvents: false
             }).addTo(map);
 
-            marker.bindPopup(`<b>🔴 ${a.name} 詳細情報</b><br>${a.detail}`);
+            marker.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
 
-            // スマホでのタッチ抜けを防ぐため明示的にリスナー追加
             marker.on('click touchend', function(e) {
                 L.DomEvent.stopPropagation(e);
                 marker.openPopup();
@@ -177,9 +170,9 @@
                 L.circle([lat, lon], { color: '#00bfff', weight: 1.5, dashArray: '4, 4', fill: false, radius: radiusP }).addTo(waveLayer);
                 L.circle([lat, lon], { color: '#ff0055', weight: 2.5, fill: true, fillColor: '#ff0055', fillOpacity: 0.08, radius: radiusS }).addTo(waveLayer);
 
-                document.getElementById('wave-status').innerHTML = `⚡ <b>波面追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>P波: ${(radiusP/1000).toFixed(1)}km | S波: ${(radiusS/1000).toFixed(1)}km`;
+                document.getElementById('wave-status').innerHTML = `⚡ <b>波の到達を追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>初期微動(P波): ${(radiusP/1000).toFixed(1)}km | 主要動(S波): ${(radiusS/1000).toFixed(1)}km`;
             } else {
-                document.getElementById('wave-status').innerHTML = `📡 過去の波動影響領域（収束済）`;
+                document.getElementById('wave-status').innerHTML = `📡 直近の揺れの波（収束済）`;
             }
         }
 
@@ -197,7 +190,7 @@
             fetch(gasUrl, {
                 method: "POST", mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: `🚨【地震・波面検知】\n${eqText} (M${mag})\nP波・S波伝播モデル計算開始` })
+                body: JSON.stringify({ message: `🚨【地震・揺れ到達予想】\n${eqText} (M${mag})\n波の伝播シミュレーションを開始しました` })
             }).then(() => {
                 localStorage.setItem('persistent_last_eq_id', eqId);
                 localStorage.setItem('persistent_last_eq_time', now);
