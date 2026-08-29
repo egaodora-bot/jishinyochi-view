@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播リアルタイム監視マップ</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -23,7 +23,7 @@
         .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
         .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
 
-        /* 🚨 右上：地震速報＆システム状況 */
+        /* 🚨 右上：地震速報・システム状況 */
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
@@ -136,35 +136,22 @@
             }).addTo(map);
         });
 
-        // 🌊 物理モデル定数（P波・S波平均伝播速度 km/s）
-        var VELOCITY_P = 6.0; // P波 (初期微動) 6.0 km/s
-        var VELOCITY_S = 3.5; // S波 (主要動) 3.5 km/s
+        var VELOCITY_P = 6.0; 
+        var VELOCITY_S = 3.5; 
         var waveLayer = L.layerGroup().addTo(map);
 
-        // 🛡️ W設定 (ダブル検証フィルタ)
-        // 1. マグニチュードM3.5以上の有効地震のみを抽出
-        // 2. 発生からの時間（秒）に基づくP波・S波同心円アニメーション生成
         function updateWaveFronts(lat, lon, eqTimeStr, mag) {
             waveLayer.clearLayers();
-            
             var now = new Date();
             var eqTime = new Date(eqTimeStr);
             var elapsedSeconds = (now - eqTime) / 1000;
 
-            // 時間経過が300秒（5分）以内のフレッシュな地震波のみリアルタイム追跡
             if (elapsedSeconds > 0 && elapsedSeconds < 300) {
-                var radiusP = elapsedSeconds * VELOCITY_P * 1000; // メートル換算
+                var radiusP = elapsedSeconds * VELOCITY_P * 1000; 
                 var radiusS = elapsedSeconds * VELOCITY_S * 1000;
 
-                // ① P波同心円 (青色破線)
-                L.circle([lat, lon], {
-                    color: '#00bfff', weight: 1.5, dashArray: '4, 4', fill: false, radius: radiusP
-                }).addTo(waveLayer);
-
-                // ② S波同心円 (赤色実線)
-                L.circle([lat, lon], {
-                    color: '#ff0055', weight: 2.5, fill: true, fillColor: '#ff0055', fillOpacity: 0.08, radius: radiusS
-                }).addTo(waveLayer);
+                L.circle([lat, lon], { color: '#00bfff', weight: 1.5, dashArray: '4, 4', fill: false, radius: radiusP }).addTo(waveLayer);
+                L.circle([lat, lon], { color: '#ff0055', weight: 2.5, fill: true, fillColor: '#ff0055', fillOpacity: 0.08, radius: radiusS }).addTo(waveLayer);
 
                 document.getElementById('wave-status').innerHTML = `⚡ <b>波面追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>P波: ${(radiusP/1000).toFixed(1)}km | S波: ${(radiusS/1000).toFixed(1)}km`;
             } else {
@@ -172,14 +159,17 @@
             }
         }
 
-        // 🛡️ LINE通知重複防止＆ダブルフィルタ
-        var lastNotifiedId = localStorage.getItem('lastNotifiedEqId') || "";
-        var lastNotifiedTime = parseInt(localStorage.getItem('lastNotifiedTime') || "0", 10);
-        var COOLDOWN_TIME = 30 * 60 * 1000;
-
-        function sendLineNotification(eqId, eqText, mag) {
+        // 🛡️ 厳格な重複防止（ブラウザストレージによる永続ブロック ＆ クールタイム30分 ＆ M4.0未満カット）
+        function checkAndSendLineNotification(eqId, eqText, mag) {
+            var lastNotifiedId = localStorage.getItem('persistent_last_eq_id') || "";
+            var lastNotifiedTime = parseInt(localStorage.getItem('persistent_last_eq_time') || "0", 10);
             var now = Date.now();
-            if (eqId === lastNotifiedId || (now - lastNotifiedTime < COOLDOWN_TIME) || (mag && parseFloat(mag) < 4.0)) return;
+            var COOLDOWN_TIME = 30 * 60 * 1000; // 30分
+
+            // 条件に一致する場合は絶対に通知を送らない
+            if (eqId === lastNotifiedId || (now - lastNotifiedTime < COOLDOWN_TIME) || (mag && parseFloat(mag) < 4.0)) {
+                return;
+            }
 
             var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec"; 
             fetch(gasUrl, {
@@ -187,8 +177,8 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: `🚨【地震・波面検知】\n${eqText} (M${mag})\nP波・S波伝播モデル計算開始` })
             }).then(() => {
-                localStorage.setItem('lastNotifiedEqId', eqId);
-                localStorage.setItem('lastNotifiedTime', now);
+                localStorage.setItem('persistent_last_eq_id', eqId);
+                localStorage.setItem('persistent_last_eq_time', now);
             }).catch(err => console.error(err));
         }
 
@@ -209,18 +199,16 @@
                     html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
                     
                     if (i === 0) {
-                        sendLineNotification(eqId, displayName, mag);
+                        checkAndSendLineNotification(eqId, displayName, mag);
                     }
 
                     var lat = (i === 0) ? 35.68 : 38.2;
                     var lon = (i === 0) ? 139.69 : 140.8;
 
-                    // 震源点滅マーカー
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
                      .bindPopup(`<b>🔵 震源地</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
 
-                    // 最新地震（i===0）に対してP波・S波同心円の計算を実施
                     if (i === 0) {
                         updateWaveFronts(lat, lon, eq.at, mag);
                     }
@@ -233,7 +221,7 @@
             }
         }
         fetchEq();
-        setInterval(fetchEq, 10000); // 波面追跡のため10秒毎に更新
+        setInterval(fetchEq, 15000); 
     </script>
 </body>
 </html>
