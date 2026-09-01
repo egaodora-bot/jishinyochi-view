@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（完全拡張版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（規模連動・完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -86,6 +86,7 @@
 </head>
 <body>
 
+    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -98,14 +99,15 @@
         </table>
     </div>
 
+    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
         
+        <!-- ⚙️ フィルター開閉ボタンとパネル -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
         <div class="filter-panel" id="filterPanel">
             <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
-            <label><input type="checkbox" id="chkOnlyRecent" onchange="fetchEq()"> 本日・直近の地震を優先</label>
         </div>
 
         <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
@@ -113,6 +115,7 @@
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
+    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
         <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート境界</b></div></div>
@@ -246,7 +249,6 @@
                     return true;
                 });
 
-                // 🔄 約20件（最大20件）を表示
                 let displayCount = Math.min(20, filteredData.length);
                 let html = "";
                 
@@ -258,7 +260,7 @@
                     let eq = filteredData[i];
                     let displayName = eq.anm || eq.text || "震源情報";
                     let eqId = eq.code || (eq.at + "_" + displayName);
-                    let mag = eq.mag || "0";
+                    let mag = parseFloat(eq.mag || "0");
 
                     html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
                     
@@ -278,8 +280,18 @@
                         lat = 26.21; lon = 127.68; 
                     }
 
-                    L.circleMarker([lat, lon], { radius: i === 0 ? 10 : 6, color: i === 0 ? '#00ffff' : '#ff9900', fillColor: i === 0 ? '#00ffff' : '#ffcc00', fillOpacity: 0.6, className: i === 0 ? 'animated-blue-blink' : '' }).addTo(eqLayer);
-                    L.circleMarker([lat, lon], { radius: 4, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer)
+                    // 📈 マグニチュードの大きさに応じて円の半径を変化させる (Mが大きいほど大きく・太く)
+                    var radiusSize = Math.max(6, mag * 3.5); 
+
+                    L.circleMarker([lat, lon], { 
+                        radius: radiusSize, 
+                        color: i === 0 ? '#00ffff' : '#ff4d4d', 
+                        fillColor: i === 0 ? '#00ffff' : '#ff9900', 
+                        fillOpacity: 0.6, 
+                        className: i === 0 ? 'animated-blue-blink' : '' 
+                    }).addTo(eqLayer);
+
+                    L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer)
                      .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
 
                     if (i === 0) {
