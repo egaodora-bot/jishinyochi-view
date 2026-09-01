@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（座標完全修正版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（地震速報複数表示版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -28,16 +28,23 @@
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); max-width: 250px; font-size: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 260px; font-size: 10px;
             pointer-events: auto;
         }
         .info-box h3 { margin: 0 0 2px 0; font-size: 11px; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 2px 0; }
+        
+        /* 地震リスト部分：件数が増えても崩れないよう、最大高さを設定してスクロール可能に */
+        #earthquake-data {
+            max-height: 130px;
+            overflow-y: auto;
+        }
+        .eq-item { border-bottom: 1px solid #eee; padding: 3px 0; }
         .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #d9534f; font-size: 10px; }
+        .eq-time { font-weight: bold; color: #d9534f; font-size: 9px; }
         .eq-desc { font-size: 9px; }
-        .wave-alert { margin-top: 3px; background: #fff3cd; padding: 3px 5px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 8px; border-left: 3px solid #ffc107; }
+        
+        .wave-alert { margin-top: 4px; background: #fff3cd; padding: 3px 5px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 8px; border-left: 3px solid #ffc107; }
         .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 8px; font-weight: bold; }
 
         /* 🗺️ 右下：凡例 */
@@ -81,6 +88,7 @@
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
+        <!-- 複数表示用（スクロール対応） -->
         <div id="earthquake-data">読込中...</div>
         <div class="wave-alert" id="wave-status">🌊 揺れの波（P/S波）計算: 待機中</div>
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
@@ -204,7 +212,10 @@
                 let data = await res.json();
                 let html = "";
                 
-                for(let i=0; i<Math.min(2, data.length); i++) {
+                // 🔄 表示件数を2件から「5件」に変更しました（必要に応じて数字を変更できます）
+                let displayCount = Math.min(5, data.length);
+
+                for(let i=0; i<displayCount; i++) {
                     let eq = data[i];
                     let displayName = eq.anm || eq.text || "震源情報";
                     let eqId = eq.code || (eq.at + "_" + displayName);
@@ -216,7 +227,7 @@
                         checkAndSendLineNotification(eqId, displayName, mag);
                     }
 
-                    // 🛠️ 地域名（displayName）に合致する正確な緯度・経度を決定
+                    // 地域名に応じた正確な緯度・経度を決定
                     let lat = 35.68, lon = 139.69; // デフォルト（東京）
                     
                     if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
@@ -229,13 +240,13 @@
                         lat = 26.21; lon = 127.68; // 沖縄
                     }
 
+                    // 1番目（最新）の地震のみ、波面の計算とマップの自動フォーカスを行う
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 震源地</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
+                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '直近'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
 
                     if (i === 0) {
                         updateWaveFronts(lat, lon, eq.at, mag);
-                        // マップの中心も最新の震源地に移動するように変更
                         map.setView([lat, lon], 7);
                     }
                 }
