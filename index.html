@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（表示崩れ修正版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（完全拡張版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -28,15 +28,15 @@
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 260px; font-size: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 270px; font-size: 10px;
             pointer-events: auto;
         }
-        .info-box h3 { margin: 0 0 2px 0; font-size: 11px; }
+        .info-box h3 { margin: 0 0 2px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        /* 📜 スクロール調整 */
+        /* 📜 地震リスト（約20件表示・スムーズスクロール） */
         #earthquake-data {
-            max-height: 120px;
+            max-height: 160px;
             overflow-y: auto;
             scroll-behavior: smooth;
             padding-right: 2px;
@@ -48,6 +48,16 @@
         .eq-item:last-child { border-bottom: none; }
         .eq-time { font-weight: bold; color: #d9534f; font-size: 9px; }
         .eq-desc { font-size: 9px; }
+
+        /* 🎛️ フィルター開閉エリア */
+        .filter-toggle-btn {
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 6px; border-radius: 4px;
+            font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 4px; display: inline-block; width: 100%; text-align: center;
+        }
+        .filter-panel {
+            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px; border-radius: 4px; margin-top: 3px; font-size: 9px;
+        }
+        .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
         .wave-alert { margin-top: 4px; background: #fff3cd; padding: 3px 5px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 8px; border-left: 3px solid #ffc107; }
         .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 8px; font-weight: bold; }
@@ -56,7 +66,7 @@
         .legend {
             position: absolute; bottom: 20px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; max-width: 210px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; max-width: 220px;
             pointer-events: auto;
         }
         .legend-title { font-weight: bold; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 11px; }
@@ -76,7 +86,6 @@
 </head>
 <body>
 
-    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -85,23 +94,29 @@
             <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空の異変: <span style="color:#800080; font-weight:bold;">現在発生中</span></td></tr>
             <tr><td>東北地方（余効）</td><td><b style="color:#d9534f;">揺れ残り継続中</b></td><td>東向きのずれ: <b>年5.4cm</b></td></tr>
             <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート圧力: <b>年8.1cm</b></td></tr>
-            <tr><td>中部地方（内陸）</td><td><b style="color:#800080;">動き活発</b></td><td>地面のゆがみ: <span style="color:#800080; font-weight:bold;">基準超え</span></td></tr>
+            <tr><td>熊本・九州内陸</td><td><b style="color:#800080;">活動継続中</b></td><td>活断層ひずみ: <span style="color:#800080; font-weight:bold;">要警戒</span></td></tr>
         </table>
     </div>
 
-    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
-        <div id="earthquake-data">読込中...</div>
+        
+        <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
+        <div class="filter-panel" id="filterPanel">
+            <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
+            <label><input type="checkbox" id="chkOnlyRecent" onchange="fetchEq()"> 本日・直近の地震を優先</label>
+        </div>
+
+        <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
         <div class="wave-alert" id="wave-status">🌊 揺れの波（P/S波）計算: 待機中</div>
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
-    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
-        <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主な断層・海溝</b></div></div>
+        <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート境界</b></div></div>
+        <div class="legend-item"><span class="line-box" style="background:#d97706;"></span><div><b>主要活断層（中央構造線等）</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>警戒エリア</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>ひずみ・余効変動エリア</b></div></div>
         <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>初期微動（P波）の波面</b></div></div>
@@ -121,21 +136,28 @@
             attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
         }).addTo(map);
 
-        // 🗺️ 画面サイズが完全に確定したあとに一度再計算させる
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                map.invalidateSize();
-            }, 100);
+            setTimeout(function() { map.invalidateSize(); }, 100);
         });
 
+        function toggleFilterPanel() {
+            var panel = document.getElementById('filterPanel');
+            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // 🌐 プレート境界および主要活断層ラインデータ
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
             { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
-            { name: '糸魚川静岡構造線', color: '#003366', weight: 3, dashArray: null, latlngs: [[37.1, 137.9], [36.0, 138.1], [35.1, 138.4]] }
+            { name: '中央構造線（活断層帯）', color: '#d97706', weight: 2.5, dashArray: null, latlngs: [[35.1, 138.4], [34.4, 136.5], [34.0, 135.0], [33.8, 133.0], [33.2, 131.8]] },
+            { name: '糸魚川静岡構造線', color: '#d97706', weight: 2.5, dashArray: null, latlngs: [[37.1, 137.9], [36.0, 138.1], [35.1, 138.4]] },
+            { name: '布田川・日奈久断層帯（熊本）', color: '#d97706', weight: 3, dashArray: null, latlngs: [[33.1, 131.2], [32.8, 130.8], [32.4, 130.5]] }
         ];
 
         tectonicLines.forEach(function(l) {
-            L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray }).addTo(map);
+            L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray })
+             .addTo(map)
+             .bindPopup(`<b>📍 構造線・活断層: ${l.name}</b>`);
         });
 
         var futureRiskAreas = [
@@ -143,16 +165,12 @@
             { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空の異変: 発生中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
             { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪（余効）', prob: '揺れ残り継続中', strain: '東向きのずれ: 年5.4cm', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方の余効変動エリア】<br>・東日本大震災の余波（揺れの残り）が継続中<br>・東向きの地殻変動: 年5.4cm' },
             { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: 'プレート圧力: 年8.1cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【千島海溝周辺の警戒エリア】<br>・発生確率: 80%超<br>・プレートが押す圧力: 年8.1cm' },
-            { lat: 36.0, lon: 137.8, radius: 70000, name: '中部変動帯', prob: '動き活発', strain: '地面のゆがみ: 基準超え', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部地方のひずみ集中帯】<br>・内陸部の地殻の動きが活発なエリア<br>・地面のゆがみ具合: 基準値を超えて進行中' }
+            { lat: 32.79, lon: 130.74, radius: 60000, name: '熊本・九州内陸', prob: '活動継続中', strain: '活断層ひずみ: 要警戒', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【熊本・日奈久断層帯周辺】<br>・2016年前震・本震以降も断層周辺の微小地震が継続。<br>・地殻内部のひずみが徐々に再蓄積しているため警戒が必要。' }
         ];
 
         futureRiskAreas.forEach(function(a) {
             var circle = L.circle([a.lat, a.lon], { 
-                color: a.color, 
-                fillColor: a.color, 
-                fillOpacity: 0.2, 
-                radius: a.radius,
-                bubblingMouseEvents: false 
+                color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.2, radius: a.radius, bubblingMouseEvents: false 
             }).addTo(map);
             
             circle.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
@@ -167,11 +185,7 @@
             }).addTo(map);
 
             marker.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
-
-            marker.on('click touchend', function(e) {
-                L.DomEvent.stopPropagation(e);
-                marker.openPopup();
-            });
+            marker.on('click touchend', function(e) { L.DomEvent.stopPropagation(e); marker.openPopup(); });
         });
 
         var VELOCITY_P = 6.0; 
@@ -224,12 +238,24 @@
             try {
                 let res = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json');
                 let data = await res.json();
+                
+                let filterM4 = document.getElementById('chkM4').checked;
+                let filteredData = data.filter(eq => {
+                    let mag = parseFloat(eq.mag || "0");
+                    if (filterM4 && mag < 4.0) return false;
+                    return true;
+                });
+
+                // 🔄 約20件（最大20件）を表示
+                let displayCount = Math.min(20, filteredData.length);
                 let html = "";
                 
-                let displayCount = Math.min(5, data.length);
+                if (displayCount === 0) {
+                    html = `<div class="eq-item" style="text-align:center; color:#666;">条件に合致する地震はありません</div>`;
+                }
 
                 for(let i=0; i<displayCount; i++) {
-                    let eq = data[i];
+                    let eq = filteredData[i];
                     let displayName = eq.anm || eq.text || "震源情報";
                     let eqId = eq.code || (eq.at + "_" + displayName);
                     let mag = eq.mag || "0";
@@ -252,13 +278,12 @@
                         lat = 26.21; lon = 127.68; 
                     }
 
-                    L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
-                    L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '直近'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
+                    L.circleMarker([lat, lon], { radius: i === 0 ? 10 : 6, color: i === 0 ? '#00ffff' : '#ff9900', fillColor: i === 0 ? '#00ffff' : '#ffcc00', fillOpacity: 0.6, className: i === 0 ? 'animated-blue-blink' : '' }).addTo(eqLayer);
+                    L.circleMarker([lat, lon], { radius: 4, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer)
+                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
 
                     if (i === 0) {
                         updateWaveFronts(lat, lon, eq.at, mag);
-                        map.setView([lat, lon], 7);
                     }
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
