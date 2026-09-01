@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（震源地修正版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（座標完全修正版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -64,6 +64,7 @@
 </head>
 <body>
 
+    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -76,6 +77,7 @@
         </table>
     </div>
 
+    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
@@ -84,6 +86,7 @@
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
+    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
         <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主な断層・海溝</b></div></div>
@@ -213,14 +216,17 @@
                         checkAndSendLineNotification(eqId, displayName, mag);
                     }
 
-                    // 地域名（displayName）に応じて正しい緯度・経度を割り振るマッピング
-                    let lat = 35.68, lon = 139.69; // デフォルト（東京付近）
-                    if (displayName.includes('熊本') || displayName.includes('阿蘇') || displayName.includes('天草')) {
-                        lat = 32.8; lon = 130.7; // 熊本地方
-                    } else if (displayName.includes('青森') || displayName.includes('岩手') || displayName.includes('宮城') || displayName.includes('福島') || displayName.includes('三陸') || displayName.includes('北海道')) {
-                        lat = 38.5; lon = 141.0; // 東北・北海道周辺
-                    } else if (displayName.includes('千葉') || displayName.includes('茨城') || displayName.includes('東京') || displayName.includes('神奈川')) {
-                        lat = 35.68; lon = 140.0; // 首都圏
+                    // 🛠️ 地域名（displayName）に合致する正確な緯度・経度を決定
+                    let lat = 35.68, lon = 139.69; // デフォルト（東京）
+                    
+                    if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
+                        lat = 32.79; lon = 130.74; // 熊本市周辺
+                    } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1 || displayName.indexOf('青森') !== -1 || displayName.indexOf('三陸') !== -1) {
+                        lat = 38.26; lon = 140.87; // 東北地方
+                    } else if (displayName.indexOf('千葉') !== -1 || displayName.indexOf('茨城') !== -1 || displayName.indexOf('東京') !== -1 || displayName.indexOf('神奈川') !== -1 || displayName.indexOf('埼玉県') !== -1) {
+                        lat = 35.68; lon = 140.10; // 首都圏
+                    } else if (displayName.indexOf('沖縄') !== -1 || displayName.indexOf('石垣') !== -1) {
+                        lat = 26.21; lon = 127.68; // 沖縄
                     }
 
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
@@ -229,6 +235,8 @@
 
                     if (i === 0) {
                         updateWaveFronts(lat, lon, eq.at, mag);
+                        // マップの中心も最新の震源地に移動するように変更
+                        map.setView([lat, lon], 7);
                     }
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
