@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（API安定化・完全版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（ハイライト・完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -34,7 +34,7 @@
         .info-box h3 { margin: 0 0 2px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        /* 📜 地震リスト（約20件表示・スムーズスクロール） */
+        /* 📜 地震リスト（約20件表示・ハイライト対応） */
         #earthquake-data {
             max-height: 160px;
             overflow-y: auto;
@@ -44,7 +44,9 @@
         #earthquake-data::-webkit-scrollbar { width: 5px; }
         #earthquake-data::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-        .eq-item { border-bottom: 1px solid #eee; padding: 3px 0; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 4px 2px; cursor: pointer; transition: background 0.2s; }
+        .eq-item:hover { background: #f1f5f9; }
+        .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
         .eq-item:last-child { border-bottom: none; }
         .eq-time { font-weight: bold; color: #d9534f; font-size: 9px; }
         .eq-desc { font-size: 9px; }
@@ -148,7 +150,6 @@
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
 
-        // 🌐 プレート境界および主要活断層ラインデータ
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
             { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
@@ -210,21 +211,22 @@
 
                 document.getElementById('wave-status').innerHTML = `⚡ <b>波の到達を追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>初期微動(P波): ${(radiusP/1000).toFixed(1)}km | 主要動(S波): ${(radiusS/1000).toFixed(1)}km`;
             } else {
-                document.getElementById('wave-status').innerHTML = `📡 直近の揺れの波（収束済）`;
+                document.getElementById('wave-status'].innerHTML = `📡 直近の揺れの波（収束済）`;
             }
         }
 
         var eqLayer = L.layerGroup().addTo(map);
+        var markerMap = {}; // リストとマップを紐付けるための辞書
+
         async function fetchEq() {
             eqLayer.clearLayers();
+            markerMap = {};
             try {
-                // 🔄 安定性の高いP2P地震情報API（気象庁配信データベース）に変更
                 let res = await fetch('https://api.p2pquake.net/v2/history?limit=30');
                 let data = await res.json();
                 
                 let filterM4 = document.getElementById('chkM4').checked;
                 let filteredData = data.filter(item => {
-                    // P2P地震情報のデータ構造に対応 (地震情報は earthquake プロパティを持つ)
                     if (!item.earthquake) return false;
                     let mag = parseFloat(item.earthquake.magnitude || "0");
                     if (filterM4 && mag < 4.0) return false;
@@ -245,26 +247,31 @@
                     let displayName = hypocenter.name || "震源情報";
                     let mag = parseFloat(hypocenter.magnitude || "0");
                     let eqTime = item.time || "";
+                    let uniqueId = "eq_" + i;
 
-                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eqTime.replace('T', ' ').substring(0, 16)}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
+                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
+                                <span class="eq-time">🕒 ${eqTime.replace('T', ' ').substring(0, 16)}</span><br>
+                                <span class="eq-desc">${displayName} (M${mag})</span>
+                             </div>`;
                     
-                    // 緯度経度の取得（P2Pデータに座標がない場合のフォールバック付き）
                     let lat = hypocenter.latitude;
                     let lon = hypocenter.longitude;
                     
                     if (!lat || lat === -200 || !lon || lon === -200) {
                         lat = 35.68; lon = 139.69;
-                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
+                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1) {
                             lat = 32.79; lon = 130.74; 
+                        } else if (displayName.indexOf('日向灘') !== -1 || displayName.indexOf('宮崎') !== -1) {
+                            lat = 31.90; lon = 131.68;
                         } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1) {
                             lat = 38.26; lon = 140.87; 
                         }
                     }
 
-                    // 📈 マグニチュードの大きさに応じて円の半径を変化させる
                     var radiusSize = Math.max(6, mag * 3.5); 
 
-                    L.circleMarker([lat, lon], { 
+                    // 🔵 メインの円（青点滅または赤色）に直接ポップアップをバインド
+                    var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
                         color: i === 0 ? '#00ffff' : '#ff4d4d', 
                         fillColor: i === 0 ? '#00ffff' : '#ff9900', 
@@ -272,8 +279,15 @@
                         className: i === 0 ? 'animated-blue-blink' : '' 
                     }).addTo(eqLayer);
 
-                    L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime}`);
+                    var popupContent = `<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
+                    mainMarker.bindPopup(popupContent);
+
+                    // 中心部のドットにも同じポップアップ
+                    var innerMarker = L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
+                    innerMarker.bindPopup(popupContent);
+
+                    // リストとマーカーを関連付け
+                    markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
 
                     if (i === 0) {
                         updateWaveFronts(lat, lon, eqTime, mag);
@@ -287,6 +301,23 @@
                 document.getElementById('earthquake-data').innerHTML = "取得エラー（接続確認中）";
             }
         }
+
+        // リストをクリックした時に対応するマップの円をハイライトしてポップアップを開く関数
+        function highlightAndOpenPopup(id) {
+            // すべてのリスト項目のハイライトを解除
+            document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
+            // 選択された項目をハイライト
+            let item = document.getElementById(id);
+            if (item) item.classList.add('highlighted');
+
+            // 対応するマーカーへ移動・ポップアップ展開
+            if (markerMap[id]) {
+                let mData = markerMap[id];
+                map.setView([mData.lat, mData.lon], 8);
+                mData.marker.openPopup();
+            }
+        }
+
         fetchEq();
         setInterval(fetchEq, 15000); 
     </script>
