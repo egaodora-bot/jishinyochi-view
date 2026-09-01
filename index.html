@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（わかりやすい表現版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（震源地修正版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -64,7 +64,6 @@
 </head>
 <body>
 
-    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -77,7 +76,6 @@
         </table>
     </div>
 
-    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
@@ -86,7 +84,6 @@
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
-    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
         <div class="legend-item"><span class="line-box" style="background:#003366;"></span><div><b>主な断層・海溝</b></div></div>
@@ -116,7 +113,6 @@
             L.polyline(l.latlngs, { color: l.color, weight: l.weight, dashArray: l.dashArray }).addTo(map);
         });
 
-        // リスクエリア（わかりやすい詳細文言に変更）
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '地面のずれ: 年3.2cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ巨大地震の想定震源域】<br>・発生確率: 70〜80%<br>・GPS観測による地面のずれ: 年3.2cm' },
             { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空の異変: 発生中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
@@ -217,8 +213,15 @@
                         checkAndSendLineNotification(eqId, displayName, mag);
                     }
 
-                    var lat = (i === 0) ? 35.68 : 38.2;
-                    var lon = (i === 0) ? 139.69 : 140.8;
+                    // 地域名（displayName）に応じて正しい緯度・経度を割り振るマッピング
+                    let lat = 35.68, lon = 139.69; // デフォルト（東京付近）
+                    if (displayName.includes('熊本') || displayName.includes('阿蘇') || displayName.includes('天草')) {
+                        lat = 32.8; lon = 130.7; // 熊本地方
+                    } else if (displayName.includes('青森') || displayName.includes('岩手') || displayName.includes('宮城') || displayName.includes('福島') || displayName.includes('三陸') || displayName.includes('北海道')) {
+                        lat = 38.5; lon = 141.0; // 東北・北海道周辺
+                    } else if (displayName.includes('千葉') || displayName.includes('茨城') || displayName.includes('東京') || displayName.includes('神奈川')) {
+                        lat = 35.68; lon = 140.0; // 首都圏
+                    }
 
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
