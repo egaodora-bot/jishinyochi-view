@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（地震速報複数表示版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（表示崩れ修正版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; touch-action: manipulation; }
-        #map { width: 100vw; height: 100vh; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; touch-action: manipulation; width: 100vw; height: 100vh; }
+        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
         /* 📋 左上：リアルタイム変動データ表 */
         .risk-table-box {
@@ -34,11 +34,16 @@
         .info-box h3 { margin: 0 0 2px 0; font-size: 11px; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        /* 地震リスト部分：件数が増えても崩れないよう、最大高さを設定してスクロール可能に */
+        /* 📜 スクロール調整 */
         #earthquake-data {
-            max-height: 130px;
+            max-height: 120px;
             overflow-y: auto;
+            scroll-behavior: smooth;
+            padding-right: 2px;
         }
+        #earthquake-data::-webkit-scrollbar { width: 5px; }
+        #earthquake-data::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
         .eq-item { border-bottom: 1px solid #eee; padding: 3px 0; }
         .eq-item:last-child { border-bottom: none; }
         .eq-time { font-weight: bold; color: #d9534f; font-size: 9px; }
@@ -60,10 +65,10 @@
         .line-box { width: 12px; height: 3px; margin-right: 5px; flex-shrink: 0; }
 
         /* 🏷️ バッジスタイル */
-        .risk-badge { background: rgba(255,255,255,0.95); border: 2px solid #b52b27; padding: 4px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; }
-        .risk-badge-purple { background: rgba(255,255,255,0.95); border: 2px solid #6b21a8; padding: 4px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; }
-        .fault-subtext { font-size: 8px; color: #555; font-weight: normal; display: block; }
-        .strain-value { font-size: 8px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 2px; border-radius: 2px; margin-top: 1px; }
+        .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 3px 5px; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
+        .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 3px 5px; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
+        .fault-subtext { font-size: 7.5px; color: #555; font-weight: normal; display: block; }
+        .strain-value { font-size: 7.5px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 2px; border-radius: 2px; margin-top: 1px; }
 
         @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
         .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
@@ -88,7 +93,6 @@
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
-        <!-- 複数表示用（スクロール対応） -->
         <div id="earthquake-data">読込中...</div>
         <div class="wave-alert" id="wave-status">🌊 揺れの波（P/S波）計算: 待機中</div>
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
@@ -108,11 +112,21 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([37.5, 138.0], 5);
+        var map = L.map('map', {
+            zoomControl: true,
+            fadeAnimation: true
+        }).setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
         }).addTo(map);
+
+        // 🗺️ 画面サイズが完全に確定したあとに一度再計算させる
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
+        });
 
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
@@ -147,7 +161,7 @@
                 icon: L.divIcon({
                     className: '',
                     html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率: ${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
-                    iconSize: [120, 50], iconAnchor: [60, 25]
+                    iconSize: [105, 42], iconAnchor: [52, 21]
                 }),
                 bubblingMouseEvents: false
             }).addTo(map);
@@ -212,7 +226,6 @@
                 let data = await res.json();
                 let html = "";
                 
-                // 🔄 表示件数を2件から「5件」に変更しました（必要に応じて数字を変更できます）
                 let displayCount = Math.min(5, data.length);
 
                 for(let i=0; i<displayCount; i++) {
@@ -227,20 +240,18 @@
                         checkAndSendLineNotification(eqId, displayName, mag);
                     }
 
-                    // 地域名に応じた正確な緯度・経度を決定
-                    let lat = 35.68, lon = 139.69; // デフォルト（東京）
+                    let lat = 35.68, lon = 139.69; 
                     
                     if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
-                        lat = 32.79; lon = 130.74; // 熊本市周辺
+                        lat = 32.79; lon = 130.74; 
                     } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1 || displayName.indexOf('青森') !== -1 || displayName.indexOf('三陸') !== -1) {
-                        lat = 38.26; lon = 140.87; // 東北地方
+                        lat = 38.26; lon = 140.87; 
                     } else if (displayName.indexOf('千葉') !== -1 || displayName.indexOf('茨城') !== -1 || displayName.indexOf('東京') !== -1 || displayName.indexOf('神奈川') !== -1 || displayName.indexOf('埼玉県') !== -1) {
-                        lat = 35.68; lon = 140.10; // 首都圏
+                        lat = 35.68; lon = 140.10; 
                     } else if (displayName.indexOf('沖縄') !== -1 || displayName.indexOf('石垣') !== -1) {
-                        lat = 26.21; lon = 127.68; // 沖縄
+                        lat = 26.21; lon = 127.68; 
                     }
 
-                    // 1番目（最新）の地震のみ、波面の計算とマップの自動フォーカスを行う
                     L.circleMarker([lat, lon], { radius: 10, color: '#00ffff', fillColor: '#00ffff', fillOpacity: 0.5, className: 'animated-blue-blink' }).addTo(eqLayer);
                     L.circleMarker([lat, lon], { radius: 5, color: '#fff', fillColor: '#00ffff', fillOpacity: 1 }).addTo(eqLayer)
                      .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '直近'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
