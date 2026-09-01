@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（規模連動・完全版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（API安定化・完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -214,37 +214,19 @@
             }
         }
 
-        function checkAndSendLineNotification(eqId, eqText, mag) {
-            var lastNotifiedId = localStorage.getItem('persistent_last_eq_id') || "";
-            var lastNotifiedTime = parseInt(localStorage.getItem('persistent_last_eq_time') || "0", 10);
-            var now = Date.now();
-            var COOLDOWN_TIME = 30 * 60 * 1000; 
-
-            if (eqId === lastNotifiedId || (now - lastNotifiedTime < COOLDOWN_TIME) || (mag && parseFloat(mag) < 4.0)) {
-                return;
-            }
-
-            var gasUrl = "https://script.google.com/macros/s/AKfycbztLM_LX4qZWjk3eivQplZVj6GTSw2ogTzQ6j0GtjyMsq9uiBZh4FIf6YKFKr8MUGfDmQ/exec"; 
-            fetch(gasUrl, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: `🚨【地震・揺れ到達予想】\n${eqText} (M${mag})\n波の伝播シミュレーションを開始しました` })
-            }).then(() => {
-                localStorage.setItem('persistent_last_eq_id', eqId);
-                localStorage.setItem('persistent_last_eq_time', now);
-            }).catch(err => console.error(err));
-        }
-
         var eqLayer = L.layerGroup().addTo(map);
         async function fetchEq() {
             eqLayer.clearLayers();
             try {
-                let res = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json');
+                // 🔄 安定性の高いP2P地震情報API（気象庁配信データベース）に変更
+                let res = await fetch('https://api.p2pquake.net/v2/history?limit=30');
                 let data = await res.json();
                 
                 let filterM4 = document.getElementById('chkM4').checked;
-                let filteredData = data.filter(eq => {
-                    let mag = parseFloat(eq.mag || "0");
+                let filteredData = data.filter(item => {
+                    // P2P地震情報のデータ構造に対応 (地震情報は earthquake プロパティを持つ)
+                    if (!item.earthquake) return false;
+                    let mag = parseFloat(item.earthquake.magnitude || "0");
                     if (filterM4 && mag < 4.0) return false;
                     return true;
                 });
@@ -257,30 +239,29 @@
                 }
 
                 for(let i=0; i<displayCount; i++) {
-                    let eq = filteredData[i];
-                    let displayName = eq.anm || eq.text || "震源情報";
-                    let eqId = eq.code || (eq.at + "_" + displayName);
-                    let mag = parseFloat(eq.mag || "0");
+                    let item = filteredData[i];
+                    let eq = item.earthquake;
+                    let hypocenter = eq.hypocenter || {};
+                    let displayName = hypocenter.name || "震源情報";
+                    let mag = parseFloat(hypocenter.magnitude || "0");
+                    let eqTime = item.time || "";
 
-                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eq.at}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
+                    html += `<div class="eq-item"><span class="eq-time">🕒 ${eqTime.replace('T', ' ').substring(0, 16)}</span><br><span class="eq-desc">${displayName} (M${mag})</span></div>`;
                     
-                    if (i === 0) {
-                        checkAndSendLineNotification(eqId, displayName, mag);
+                    // 緯度経度の取得（P2Pデータに座標がない場合のフォールバック付き）
+                    let lat = hypocenter.latitude;
+                    let lon = hypocenter.longitude;
+                    
+                    if (!lat || lat === -200 || !lon || lon === -200) {
+                        lat = 35.68; lon = 139.69;
+                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
+                            lat = 32.79; lon = 130.74; 
+                        } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1) {
+                            lat = 38.26; lon = 140.87; 
+                        }
                     }
 
-                    let lat = 35.68, lon = 139.69; 
-                    
-                    if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1 || displayName.indexOf('九州') !== -1) {
-                        lat = 32.79; lon = 130.74; 
-                    } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1 || displayName.indexOf('青森') !== -1 || displayName.indexOf('三陸') !== -1) {
-                        lat = 38.26; lon = 140.87; 
-                    } else if (displayName.indexOf('千葉') !== -1 || displayName.indexOf('茨城') !== -1 || displayName.indexOf('東京') !== -1 || displayName.indexOf('神奈川') !== -1 || displayName.indexOf('埼玉県') !== -1) {
-                        lat = 35.68; lon = 140.10; 
-                    } else if (displayName.indexOf('沖縄') !== -1 || displayName.indexOf('石垣') !== -1) {
-                        lat = 26.21; lon = 127.68; 
-                    }
-
-                    // 📈 マグニチュードの大きさに応じて円の半径を変化させる (Mが大きいほど大きく・太く)
+                    // 📈 マグニチュードの大きさに応じて円の半径を変化させる
                     var radiusSize = Math.max(6, mag * 3.5); 
 
                     L.circleMarker([lat, lon], { 
@@ -292,17 +273,18 @@
                     }).addTo(eqLayer);
 
                     L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer)
-                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eq.at}`);
+                     .bindPopup(`<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime}`);
 
                     if (i === 0) {
-                        updateWaveFronts(lat, lon, eq.at, mag);
+                        updateWaveFronts(lat, lon, eqTime, mag);
                     }
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 let d = new Date();
                 document.getElementById('update-time').innerText = "最終更新: " + d.getHours() + ":" + String(d.getMinutes()).padStart(2,'0');
             } catch(e) {
-                document.getElementById('earthquake-data').innerHTML = "取得失敗";
+                console.error(e);
+                document.getElementById('earthquake-data').innerHTML = "取得エラー（接続確認中）";
             }
         }
         fetchEq();
