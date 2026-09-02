@@ -17,12 +17,12 @@
         .risk-table-box {
             position: absolute; top: 8px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 270px;
-            pointer-events: auto; max-height: 38vh; overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 280px;
+            pointer-events: auto; max-height: 40vh; overflow-y: auto;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8.5px; overflow: hidden; text-overflow: ellipsis; }
+        .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8px; overflow: hidden; text-overflow: ellipsis; }
 
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
@@ -65,7 +65,6 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        /* 先端に大きく目立つ変位量・移動表示ラベル（年間速度であることを明記） */
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.95);
             border: 1.5px solid #ffffff;
@@ -98,14 +97,15 @@
 <body>
 
     <div class="risk-table-box">
-        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・急激な歪み (年間変化)</span><span>▼</span></div>
+        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・歪み (年間変化)</span><span>▼</span></div>
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 2px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
-                <tr><td>東北沖</td><td><b style="color:#d9534f;">東へ45cm/年</b></td><td>沈降→反発性</td></tr>
+                <tr><td>東北沖</td><td><b style="color:#d9534f;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#d9534f;">南東15cm/年</b></td><td>微小沈降</td></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">北西25cm/年</b></td><td>沈降傾向継続</td></tr>
-                <tr><td>新潟・北陸帯</td><td><b style="color:#6b21a8;">急激な歪み(年間)</b></td><td>隆起・横ずれ</td></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">北西25cm/年</b></td><td>沈降傾向</td></tr>
+                <tr><td>新潟・北陸</td><td><b style="color:#6b21a8;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
+                <tr><td>福井・若狭</td><td><b style="color:#6b21a8;">活断層・歪み</b></td><td>微小隆起</td></tr>
             </table>
         </div>
     </div>
@@ -143,6 +143,10 @@
             <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
                 <span style="color:#800080; font-weight:bold;">■ 新潟・北陸 歪み集中帯</span>
                 <span>急激な歪み・年間変動 隆起横ずれ</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(35.8, 136.0, 8, '福井・若狭 活断層・歪み帯', '若狭湾周辺から福井県内にかけての活断層群と地殻変動の集中エリアです。')">
+                <span style="color:#800080; font-weight:bold;">■ 福井・若狭 歪み帯</span>
+                <span>活断層・微小隆起 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '2011年震災後からの継続的な余効変動（直近1年間の年間変化速度）です。')">
                 <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
@@ -183,13 +187,12 @@
         var plateLayersGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
-        // リアルな地殻変動ベクトル（直近1年間の年間変化量ベース）
         var crustalVectors = [
             { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm/年', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの引き延ばし（直近1年間）' },
             { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.03, dLon: 0.2, value: '南東へ 約15cm/年', vertical: '垂直: 微小沈降', desc: 'プレート沈み込みに伴うひずみ蓄積と圧縮（直近1年間）' },
             { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.1, dLon: 0.15, value: '北西へ 約25cm/年', vertical: '垂直: 沈降進行中', desc: 'フィリピン海プレート押し込みによる陸側の引きずり（直近1年間）' },
             { name: '新潟・北陸観測点 (歪み帯)', lat: 37.2, lon: 138.8, dLat: 0.02, dLon: -0.2, value: '西へ 約12cm/年(圧縮)', vertical: '垂直: 隆起傾向', desc: '日本海側の圧縮ひずみと活断層帯の変動（直近1年間）' },
-            { name: '北海道東部観測点', lat: 43.0, lon: 144.8, dLat: 0.08, dLon: 0.3, value: '西〜北西へ 約20cm/年', vertical: '垂直: 微小変動', desc: '千島海溝沿いのプレート収束による移動（直近1年間）' }
+            { name: '福井・若狭観測点', lat: 35.8, lon: 136.0, dLat: -0.02, dLon: -0.15, value: '西へ 約8cm/年', vertical: '垂直: 微小隆起', desc: '若狭湾周辺の活断層群と地殻変動の集中エリア（直近1年間）' }
         ];
 
         function renderLayers() {
@@ -211,7 +214,7 @@
             if (showStrain) {
                 let strainZones = [
                     { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯' },
-                    { center: [35.5, 135.8], radius: 65000, name: '近畿・中国東部 歪み集中帯' }
+                    { center: [35.8, 136.0], radius: 65000, name: '福井・若狭 歪み集中帯' }
                 ];
                 strainZones.forEach(sz => {
                     let zoneCircle = L.circle(sz.center, {
@@ -262,7 +265,7 @@
 
         renderLayers();
 
-        // 5つのリスクエリア（北陸新潟のタイトル抜けを完全解消し、右下リストと完全対応）
+        // リスクエリア一覧（福井・若狭エリアのバッジを追加してリストと完全一致）
         var persistentRiskAreas = [
             { 
                 lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', 
@@ -275,6 +278,10 @@
             { 
                 lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', 
                 title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed'
+            },
+            { 
+                lat: 35.8, lon: 136.0, name: '福井・若狭歪み帯', prob: '活断層帯', strain: '微小隆起・歪み', badgeClass: 'risk-badge-purple', 
+                title: '福井・若狭 活断層・歪み帯', desc: '若狭湾から福井県内にかけての活断層集中エリア。地殻変動と微小隆起が観測されています。', radius: 65000, color: '#7c3aed'
             },
             { 
                 lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', 
@@ -324,7 +331,7 @@
             } catch(e) {
                 console.warn("外部API取得失敗。オフライン/デモデータを使用します。", e);
                 filteredData = [
-                    { earthquake: { hypocenter: { name: "茨城県南部", magnitude: "4.5", latitude: 36.1, longitude: 140.1 }, time: "2026-06-03T12:00:00" } },
+                    { earthquake: { hypocenter: { name: "福井県嶺北", magnitude: "4.2", latitude: 36.0, longitude: 136.2 }, time: "2026-06-03T12:00:00" } },
                     { earthquake: { hypocenter: { name: "福島県沖", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: "2026-06-03T10:00:00" } },
                     { earthquake: { hypocenter: { name: "千葉県東方沖", magnitude: "4.8", latitude: 35.5, longitude: 140.5 }, time: "2026-06-03T08:00:00" } }
                 ];
