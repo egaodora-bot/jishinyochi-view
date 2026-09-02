@@ -63,11 +63,6 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        .plate-name-label {
-            background: rgba(255, 255, 255, 0.75); border: 1px solid #666; padding: 1px 4px;
-            font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
-            white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
-        }
         .volcano-belt-label {
             background: rgba(254, 226, 226, 0.75); border: 1px solid #dc2626; color: #b91c1c; padding: 1px 4px;
             font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
@@ -111,10 +106,6 @@
             <div id="update-time" class="update-time">取得中...</div>
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
-                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderLayers()"> ユーラシアP</label>
-                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderLayers()"> 北アメリカP</label>
-                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderLayers()"> 太平洋P</label>
-                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderLayers()"> フィリピン海P</label>
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVolcanoes" checked onchange="renderLayers()"> 🌋 火山帯表示</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
@@ -184,49 +175,6 @@
         var persistentRiskGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
-        var plateData = [
-            {
-                id: 'eurasia',
-                name: 'ユーラシアプレート',
-                color: '#d97706',
-                latlngs: [
-                    [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
-                    [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [31.0, 130.0], 
-                    [30.0, 128.0], [43.0, 130.0], [46.0, 138.0]
-                ],
-                center: [35.0, 133.5],
-                detail: '【ユーラシアプレート】<br>中部・西日本をカバーする陸のプレート。'
-            },
-            {
-                id: 'north',
-                name: '北アメリカプレート',
-                color: '#db2777',
-                latlngs: [
-                    [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
-                    [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [35.0, 140.5], 
-                    [38.0, 144.0], [46.0, 146.0], [46.0, 138.0]
-                ],
-                center: [41.0, 141.5],
-                detail: '【北アメリカプレート】<br>東日本をカバーする陸のプレート。'
-            },
-            {
-                id: 'pacific',
-                name: '太平洋プレート',
-                color: '#0284c7',
-                latlngs: [[46.0, 144.0], [46.0, 152.0], [35.0, 150.0], [35.0, 142.0], [40.0, 144.0]],
-                center: [41.0, 147.5],
-                detail: '【太平洋プレート】<br>東日本の地下へ沈み込む海のプレート。'
-            },
-            {
-                id: 'philippine',
-                name: 'フィリピン海プレート',
-                color: '#059669',
-                latlngs: [[35.0, 138.0], [34.0, 141.0], [28.0, 138.0], [30.0, 130.0], [33.0, 134.0]],
-                center: [32.0, 135.5],
-                detail: '【フィリピン海プレート】<br>関東や東海・九州の地下へ沈み込む海のプレート。'
-            }
-        ];
-
         var volcanoData = {
             belts: [
                 {
@@ -260,42 +208,8 @@
         function renderLayers() {
             plateLayersGroup.clearLayers();
 
-            let showPac = document.getElementById('chkPlPacific').checked;
-            let showPhi = document.getElementById('chkPlPilippine').checked;
-            let showEur = document.getElementById('chkPlEurasia').checked;
-            let showNor = document.getElementById('chkPlNorth').checked;
             let showZones = document.getElementById('chkPlZones').checked;
             let showVol = document.getElementById('chkVolcanoes').checked;
-
-            let activeMap = {
-                'pacific': showPac,
-                'philippine': showPhi,
-                'eurasia': showEur,
-                'north': showNor
-            };
-
-            plateData.forEach(p => {
-                if (activeMap[p.id]) {
-                    let polygon = L.polygon(p.latlngs, {
-                        color: p.color,
-                        weight: 2,
-                        fillColor: p.color,
-                        fillOpacity: 0.06,
-                        dashArray: '3, 3'
-                    }).addTo(plateLayersGroup);
-
-                    polygon.bindPopup(`<b>🗺️ ${p.name}</b><br><br>${p.detail}`);
-
-                    L.marker(p.center, {
-                        icon: L.divIcon({
-                            className: '',
-                            html: `<div class="plate-name-label" style="color: ${p.color}; border-color: ${p.color};">${p.name}</div>`,
-                            iconSize: [110, 18], iconAnchor: [55, 9]
-                        }),
-                        interactive: false
-                    }).addTo(plateLayersGroup);
-                }
-            });
 
             if (showZones) {
                 let itoShizuLine = L.polyline([
@@ -426,20 +340,19 @@
                     
                     if (!lat || lat === -200 || lat === 0) continue;
 
-                    // 発生順にゆっくり順次点灯（250ms間隔に調整）、過去の地震は鮮やかなシアン・青系に変更
                     (function(index, l, lo, m, name, time) {
                         setTimeout(function() {
                             var mainMarker = L.circleMarker([l, lo], { 
                                 radius: Math.max(4, m * 1.8), 
-                                color: index === 0 ? '#ff0000' : '#0026ff',       // 一番新しい地震は赤、過去はより目立つ鮮やかな青
-                                fillColor: index === 0 ? '#ff4d4d' : '#00ccff',   // 過去の地震の内部は目立つシアン（明るい青）
+                                color: index === 0 ? '#ff0000' : '#0026ff',
+                                fillColor: index === 0 ? '#ff4d4d' : '#00ccff',
                                 fillOpacity: 0.85 
                             }).addTo(eqLayer);
 
                             let popupContent = `<b>🔵 震源地</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
                             mainMarker.bindPopup(popupContent);
                             markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                        }, index * 250); // 1つにつき250ミリ秒遅延させてじっくり点灯
+                        }, index * 250);
                     })(i, lat, lon, mag, displayName, eqTime);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
