@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート＆火山帯構造マップ（高コントラスト版）</title>
+    <title>地震リスク・プレート＆火山帯構造マップ（完全版・北海道対応）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -157,7 +157,6 @@
         var persistentRiskGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
-        // 高コントラストなカラーに変更（ユーラシア：オレンジ系、北アメリカ：マゼンタ系、太平洋：シアン系、フィリピン海：エメラルド緑系）
         var plateData = [
             {
                 id: 'eurasia',
@@ -318,11 +317,13 @@
 
         renderLayers();
 
+        // 【完全常時表示】東北・北海道を含む全国の主要リスク・余効変動エリア
         var persistentRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】巨大地震想定エリア。' },
             { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】複数プレートが重なる交差点。' },
             { lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部山岳】東西の陸プレートが接する帯域。' },
-            { lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【東北沖・北海道東部】東日本大震災の余効変動およびプレート沈み込みによる揺れ残りと応力集中エリア。' }
+            { lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【東北太平洋側】東日本大震災の余効変動およびプレート沈み込みによる応力集中エリア。' },
+            { lat: 42.8, lon: 144.3, radius: 120000, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【北海道東部・十勝沖〜根室沖】千島海溝沿いの超巨大地震および地殻変動・歪み集中エリア。' }
         ];
 
         persistentRiskAreas.forEach(function(a) {
@@ -331,7 +332,7 @@
                 icon: L.divIcon({
                     className: '',
                     html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
-                    iconSize: [115, 38], iconAnchor: [57, 19]
+                    iconSize: [120, 38], iconAnchor: [60, 19]
                 })
             }).addTo(persistentRiskGroup);
             marker.bindPopup(`<b>📍 ${a.name}</b><br><br>${a.detail}`);
