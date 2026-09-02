@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・完全隙間なしプレート構造マップ</title>
+    <title>地震リスク・完全隙間解消プレート構造マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -72,9 +72,6 @@
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
-
-        @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
-        .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
     </style>
 </head>
 <body>
@@ -102,7 +99,7 @@
                 <label><input type="checkbox" id="chkPlNorth" checked onchange="renderPlateLayers()"> 北アメリカプレート(東日本)</label>
                 <label><input type="checkbox" id="chkPlPacific" checked onchange="renderPlateLayers()"> 太平洋プレート(海)</label>
                 <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderPlateLayers()"> フィリピン海プレート(海)</label>
-                <label><input type="checkbox" id="chkPlZones" checked onchange="renderPlateLayers()"> ⚠️ 糸静線・重なり帯ライン</label>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="renderPlateLayers()"> ⚠️ 境界・構造線ライン</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ</label>
             </div>
@@ -115,8 +112,8 @@
     <div class="legend">
         <div class="legend-title" onclick="toggleLegend()"><span>🗺️ 画面の見方</span><span>▼</span></div>
         <div class="legend-content" id="legendContent" style="margin-top: 3px;">
-            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (西日本全域)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (東日本全域)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (西日本)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (東日本)</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋プレート</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海プレート</b></div></div>
             <div class="legend-item"><span class="line-box" style="background:#ff4500;"></span><div><b>糸魚川静岡構造線</b></div></div>
@@ -149,25 +146,33 @@
 
         var plateLayersGroup = L.layerGroup().addTo(map);
 
-        // 日本列島の陸地全体を完全に隙間なく分割カバーする「ユーラシアP」と「北アメリカP」の隣接座標
+        // 日本列島全体を隙間なく完全にピッタリ隣接させて覆う陸プレートの座標データ（富士・駿河湾の空白を完全に解消）
         var plateData = [
             {
                 id: 'eurasia',
-                name: 'ユーラシアプレート（西日本・中部西側）',
+                name: 'ユーラシアプレート（西日本・中部）',
                 color: '#ca8a04',
-                // 糸静線（経度約138度）を境界として西側全体を完全に覆う
-                latlngs: [[46.0, 138.0], [35.36, 138.73], [35.0, 138.0], [31.0, 130.0], [30.0, 128.0], [43.0, 130.0], [46.0, 138.0]],
+                // 糸静線〜富士山・駿河湾西側を通る正確な境界線に沿って完全に密着させる座標
+                latlngs: [
+                    [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
+                    [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [31.0, 130.0], 
+                    [30.0, 128.0], [43.0, 130.0], [46.0, 138.0]
+                ],
                 center: [35.0, 133.5],
-                detail: '【ユーラシアプレート（アムールプレート）】<br>中部地方（糸静線）より西側の日本列島全域を隙間なくカバーする陸のプレート。'
+                detail: '【ユーラシアプレート】<br>中部・西日本を完全にカバーする陸のプレート。'
             },
             {
                 id: 'north',
                 name: '北アメリカプレート（東日本・中部東側）',
                 color: '#9333ea',
-                // 糸静線（経度約138度）を境界として東側全体を完全に覆う
-                latlngs: [[46.0, 138.0], [46.0, 146.0], [35.0, 140.0], [35.36, 138.73], [46.0, 138.0]],
+                // ユーラシアの境界線と完全に同じ経緯度の共有点を持つことで隙間をゼロにする
+                latlngs: [
+                    [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
+                    [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [35.0, 140.5], 
+                    [38.0, 144.0], [46.0, 146.0], [46.0, 138.0]
+                ],
                 center: [41.0, 141.5],
-                detail: '【北アメリカプレート（オホーツクプレート）】<br>中部地方（糸静線）より東側の日本列島全域を隙間なくカバーする陸のプレート。'
+                detail: '【北アメリカプレート】<br>東日本を完全にカバーする陸のプレート。'
             },
             {
                 id: 'pacific',
@@ -175,7 +180,7 @@
                 color: '#2563eb',
                 latlngs: [[46.0, 144.0], [46.0, 152.0], [35.0, 150.0], [35.0, 142.0], [40.0, 144.0]],
                 center: [41.0, 147.5],
-                detail: '【太平洋プレート】<br>東日本の地下へ向かって沈み込む海のプレート。'
+                detail: '【太平洋プレート】<br>東日本の地下へ沈み込む海のプレート。'
             },
             {
                 id: 'philippine',
@@ -203,14 +208,13 @@
                 'north': showNor
             };
 
-            // 1. 各プレートを描画
             plateData.forEach(p => {
                 if (activeMap[p.id]) {
                     let polygon = L.polygon(p.latlngs, {
                         color: p.color,
                         weight: 1.5,
                         fillColor: p.color,
-                        fillOpacity: 0.1,
+                        fillOpacity: 0.12,
                         dashArray: '3, 3'
                     }).addTo(plateLayersGroup);
 
@@ -227,23 +231,17 @@
                 }
             });
 
-            // 2. 境界線（糸静線）のハイライト
             if (showZones) {
-                let itoShizuLine = L.polyline([[37.0, 138.0], [36.0, 138.0], [35.36, 138.73], [35.1, 138.6]], {
+                // 糸魚川静岡構造線〜富士川下流・駿河湾に至る正確な境界ライン
+                let itoShizuLine = L.polyline([
+                    [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
+                    [35.15, 138.65], [35.1, 138.5]
+                ], {
                     color: '#ff4500',
                     weight: 4,
-                    opacity: 0.8
+                    opacity: 0.9
                 }).addTo(plateLayersGroup);
-                itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸魚川静岡構造線）</b><br>ユーラシアプレートと北アメリカプレートが接する境界線です。');
-
-                let kantoSandwich = L.polygon([[36.5, 139.0], [36.2, 140.8], [35.0, 140.5], [34.8, 138.8]], {
-                    color: '#8a2be2',
-                    weight: 2,
-                    dashArray: '5, 5',
-                    fillColor: '#8a2be2',
-                    fillOpacity: 0.2
-                }).addTo(plateLayersGroup);
-                kantoSandwich.bindPopup('<b>🥪 関東「3層サンドイッチ重なり帯」</b><br>陸Pの地下に海のプレートが重なり合うエリア。');
+                itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>ユーラシアプレートと北アメリカプレートが完全に密着して押し合いをしている境界線です。隙間はありません。');
             }
         }
 
