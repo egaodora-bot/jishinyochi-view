@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動ベクトル・リアルタイムマップ</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -17,8 +17,8 @@
         .risk-table-box {
             position: absolute; top: 8px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 260px;
-            pointer-events: auto; max-height: 35vh; overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 270px;
+            pointer-events: auto; max-height: 38vh; overflow-y: auto;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -46,7 +46,7 @@
         }
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; margin-top: 2px; font-size: 8.5px;
-            max-height: 130px; overflow-y: auto;
+            max-height: 140px; overflow-y: auto;
         }
         .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
@@ -56,7 +56,7 @@
         .risk-explain-box {
             position: absolute; bottom: 15px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; width: 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; width: 210px;
             pointer-events: auto; max-height: 35vh; overflow-y: auto;
         }
         .risk-explain-title { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -65,17 +65,21 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        /* 地図上の変位量ラベル（リアル情報） */
-        .vector-label {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #2563eb;
-            color: #1e3a8a;
-            font-size: 9px;
+        /* 先端に大きく目立つ変位量・移動表示ラベル */
+        .vector-tip-label {
+            background: rgba(220, 38, 38, 0.95);
+            border: 1.5px solid #ffffff;
+            color: #ffffff;
+            font-size: 10px;
             font-weight: bold;
-            padding: 1px 4px;
-            border-radius: 3px;
+            padding: 3px 6px;
+            border-radius: 4px;
             white-space: nowrap;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        .vector-tip-label.blue {
+            background: rgba(37, 99, 235, 0.95);
         }
 
         .risk-badge { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
@@ -97,14 +101,14 @@
 <body>
 
     <div class="risk-table-box">
-        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・リスク</span><span>▼</span></div>
+        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・急激な歪み</span><span>▼</span></div>
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 2px;">
-                <tr><th>エリア</th><th>確率</th><th>原因</th></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>海P×陸P</td></tr>
-                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>電磁波・3層</td></tr>
-                <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層</b></td><td>東西圧縮</td></tr>
-                <tr><td>東北・北海道</td><td><b style="color:#1d4ed8;">余効変動</b></td><td>P沈み込み</td></tr>
+                <tr><th>エリア</th><th>変動・歪み</th><th>垂直移動</th></tr>
+                <tr><td>東北沖</td><td><b style="color:#d9534f;">東へ45cm(余効)</b></td><td>沈降→反発性</td></tr>
+                <tr><td>首都直下</td><td><b style="color:#d9534f;">南東15cm(圧縮)</b></td><td>微小沈降</td></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">北西25cm(引きずり)</b></td><td>沈降傾向継続</td></tr>
+                <tr><td>新潟-神戸帯</td><td><b style="color:#6b21a8;">急激な歪み集中</b></td><td>隆起・横ずれ</td></tr>
             </table>
         </div>
     </div>
@@ -116,7 +120,8 @@
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 地殻変動ベクトル（変位量表示）</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 変位量・ベクトル矢印</label>
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="renderLayers()"> ⚡ 急激な歪み集中帯（赤網掛け）</label>
                 <label><input type="checkbox" id="chkEqChain" onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
@@ -128,27 +133,23 @@
     </div>
 
     <div class="risk-explain-box">
-        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説</span><span>▼</span></div>
+        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説・垂直移動</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレートが陸の下へ沈み込み、歪みが蓄積しています。（30年以内 70〜80%）')">
-                <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (70〜80%)</span>
-                <span>フィリピン海P × ユーラシアP</span>
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが極限に達しています。（確率70〜80%）')">
+                <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (沈降・歪み)</span>
+                <span>水平変位:北西25cm / 垂直:沈降傾向</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '3層構造。上空電磁波異常や地殻変動シグナルが観測されています。（30年以内 約70%）')">
-                <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (約70%)</span>
-                <span>上空電磁波異常・3層構造</span>
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。')">
+                <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (圧縮・沈降)</span>
+                <span>水平変位:南東15cm / 垂直:微小沈降</span>
             </div>
-            <div class="explain-item" onclick="focusArea(36.2, 138.0, 8, '中部山岳・糸静線活断層帯', '東日本と西日本の陸プレートが押し合っています。主要活断層帯')">
-                <span style="color:#800080; font-weight:bold;">■ 中部・糸静線帯</span>
-                <span>東西陸P境界・圧縮帯</span>
+            <div class="explain-item" onclick="focusArea(37.5, 138.5, 7, '新潟-神戸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
+                <span style="color:#800080; font-weight:bold;">■ 新潟-神戸 歪み集中帯</span>
+                <span>急激な歪み・隆起横ずれ変動</span>
             </div>
-            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北地方太平洋沖（余効変動）', '2011年震災後も地殻の余効変動が継続しています。')">
-                <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効変動)</span>
-                <span>太平洋P沈み込み継続</span>
-            </div>
-            <div class="explain-item" onclick="focusArea(42.8, 144.3, 7, '千島海溝沿い M9クラス超巨大地震想定', '30年以内の発生確率 最大40%。超巨大地震と巨大津波の切迫性が指摘されています。')">
-                <span style="color:#2563eb; font-weight:bold;">■ 千島海溝沿い (M9超巨大)</span>
-                <span>太平洋P × 北米P（最大40%）</span>
+            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '震災後も東向きに最大45cm/年の余効変動（引っ張り・隆起調整）が続いています。')">
+                <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
+                <span>水平変位:東45cm / 垂直:変動継続</span>
             </div>
         </div>
     </div>
@@ -185,19 +186,20 @@
         var plateLayersGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
-        // 各観測点のリアルな変動量データ（国土地理院GEONET参考値）
+        // リアルな地殻変動ベクトル（水平＋垂直移動情報）
         var crustalVectors = [
-            { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm /年', desc: '東日本大震災後の余効変動による東向きの大きな引き延ばしが継続中' },
-            { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.03, dLon: 0.2, value: '南東へ 約15cm', desc: 'プレート沈み込みに伴うひずみ蓄積と地殻の圧縮傾向' },
-            { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.1, dLon: 0.15, value: '北西へ 約25cm', desc: 'フィリピン海プレートの押し込みによる陸側の引きずり変位' },
-            { name: '中部山岳・糸静線観測点', lat: 36.2, lon: 137.8, dLat: 0.0, dLon: -0.2, value: '西へ 圧縮 約10cm', desc: '東日本と西日本の衝突による東西方向の強い圧縮ひずみ' },
-            { name: '北海道東部観測点', lat: 43.0, lon: 144.8, dLat: 0.08, dLon: 0.3, value: '西〜北西へ 約20cm', desc: '千島海溝沿いのプレート収束による移動ベクトル' }
+            { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm/年 (余効)', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの大きな引き延ばし' },
+            { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.03, dLon: 0.2, value: '南東へ 約15cm (圧縮)', vertical: '垂直: 微小沈降', desc: 'プレート沈み込みに伴うひずみ蓄積と地殻の圧縮・沈降傾向' },
+            { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.1, dLon: 0.15, value: '北西へ 約25cm (引込)', vertical: '垂直: 沈降進行中', desc: 'フィリピン海プレートの押し込みによる陸側の引きずり変位' },
+            { name: '中部山岳・糸静線観測点', lat: 36.2, lon: 137.8, dLat: 0.0, dLon: -0.2, value: '西へ 圧縮 約10cm', vertical: '垂直: 隆起傾向', desc: '東西陸プレートの衝突による強い圧縮と山岳隆起' },
+            { name: '北海道東部観測点', lat: 43.0, lon: 144.8, dLat: 0.08, dLon: 0.3, value: '西〜北西へ 約20cm', vertical: '垂直: 微小変動', desc: '千島海溝沿いのプレート収束による移動ベクトル' }
         ];
 
         function renderLayers() {
             plateLayersGroup.clearLayers();
             let showZones = document.getElementById('chkPlZones').checked;
             let showVectors = document.getElementById('chkVectors').checked;
+            let showStrain = document.getElementById('chkStrainZone').checked;
 
             if (showZones) {
                 let itoShizuLine = L.polyline([
@@ -209,41 +211,58 @@
                 itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
             }
 
+            // 急激な歪み集中帯（新潟〜神戸などのエリアを赤/紫の網掛けで表現）
+            if (showStrain) {
+                let strainZones = [
+                    { center: [37.2, 138.8], radius: 70000, name: '新潟周辺 歪み集中帯' },
+                    { center: [35.5, 135.8], radius: 65000, name: '近畿・中国東部 歪み集中帯' }
+                ];
+                strainZones.forEach(sz => {
+                    let zoneCircle = L.circle(sz.center, {
+                        radius: sz.radius,
+                        color: '#dc2626',
+                        weight: 2,
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.2,
+                        dashArray: '3, 3'
+                    }).addTo(plateLayersGroup);
+                    zoneCircle.bindPopup(`<b>⚡ 急激な歪み集中エリア (${sz.name})</b><br>地殻の変動速度が周囲より速く、ひずみが急激に蓄積している警戒ゾーンです。`);
+                });
+            }
+
             if (showVectors) {
                 crustalVectors.forEach(v => {
                     let startPoint = [v.lat, v.lon];
                     let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                    // すっきりしたスマートな矢印（Polylineにarrowhead風の構成）
+                    // ベクトル線
                     let vectorLine = L.polyline([startPoint, endPoint], {
-                        color: '#2563eb', weight: 4, opacity: 0.95
+                        color: '#2563eb', weight: 4, opacity: 0.9
                     }).addTo(plateLayersGroup);
 
-                    // 線の先端に小さな矢印を構成する簡易ライン
+                    // 線の先端に配置する矢印ヘッド
                     let dx = v.dLon;
                     let dy = v.dLat;
                     let angle = Math.atan2(dy, dx);
-                    let h1 = [endPoint[0] - 0.04 * Math.sin(angle - 0.5), endPoint[1] - 0.04 * Math.cos(angle - 0.5)];
-                    let h2 = [endPoint[0] - 0.04 * Math.sin(angle + 0.5), endPoint[1] - 0.04 * Math.cos(angle + 0.5)];
+                    let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
+                    let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
 
                     L.polyline([h1, endPoint, h2], {
-                        color: '#dc2626', weight: 3, opacity: 0.95
+                        color: '#dc2626', weight: 4, opacity: 0.95
                     }).addTo(plateLayersGroup);
 
-                    // 観測点の中央付近に「どれくらい動いたか」のリアル数値を常時表示
-                    let midLat = v.lat + v.dLat / 2;
-                    let midLon = v.lon + v.dLon / 2;
-
-                    let labelMarker = L.marker([midLat, midLon], {
+                    // ★先端に「変動量・垂直移動情報」を大きく表示して一目でわかるようにする
+                    let tipLabel = L.marker(endPoint, {
                         icon: L.divIcon({
                             className: '',
-                            html: `<div class="vector-label">↗ ${v.value}</div>`,
-                            iconSize: [90, 20], iconAnchor: [45, 10]
+                            html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:8px; font-weight:normal;">${v.vertical}</span></div>`,
+                            iconSize: [130, 32], iconAnchor: [-5, 16]
                         })
                     }).addTo(plateLayersGroup);
 
-                    vectorLine.bindPopup(`<b>↗️ 地殻変動ベクトル (国土地理院GEONET参考)</b><br><b>${v.name}</b><br>変位量: <b>${v.value}</b><br>${v.desc}`);
-                    labelMarker.bindPopup(`<b>↗️ 地殻変動ベクトル</b><br><b>${v.name}</b><br>変位量: <b>${v.value}</b><br>${v.desc}`);
+                    let popupHtml = `<b>↗️ 地殻変動ベクトル & 垂直移動</b><br><b>${v.name}</b><br>水平変位: <b>${v.value}</b><br><b>${v.vertical}</b><br>${v.desc}`;
+                    vectorLine.bindPopup(popupHtml);
+                    tipLabel.bindPopup(popupHtml);
                 });
             }
         }
@@ -252,20 +271,20 @@
 
         var persistentRiskAreas = [
             { 
-                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: 'ひずみ集中', badgeClass: 'risk-badge', 
-                title: '南海トラフ巨大地震想定', desc: '海のプレートが陸の下へ沈み込み、歪みが蓄積している領域。（30年以内 70〜80%）', radius: 120000, color: '#ef4444'
+                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', 
+                title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。（30年以内 70〜80%）', radius: 120000, color: '#ef4444'
             },
             { 
-                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '上空電磁波異常', badgeClass: 'risk-badge', 
-                title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や地殻変動シグナルが観測されています。（30年以内 約70%）', radius: 90000, color: '#dc2626'
+                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', 
+                title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。（30年以内 約70%）', radius: 90000, color: '#dc2626'
             },
             { 
-                lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', badgeClass: 'risk-badge-purple', 
-                title: '中部山岳・糸静線活断層帯', desc: '東日本と西日本の陸プレートが真正面からぶつかり合っています。', radius: 80000, color: '#7c3aed'
+                lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮・隆起', badgeClass: 'risk-badge-purple', 
+                title: '中部山岳・糸静線活断層帯', desc: '東日本と西日本の陸プレートが真正面からぶつかり、隆起と圧縮が進行中。', radius: 80000, color: '#7c3aed'
             },
             { 
-                lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動', badgeClass: 'risk-badge-blue', 
-                title: '東北地方太平洋沖（余効変動）', desc: '震災後も地殻の余効変動が継続しています。', radius: 130000, color: '#2563eb'
+                lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', 
+                title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#2563eb'
             },
             { 
                 lat: 42.8, lon: 144.3, name: '北海道東部', prob: '最大40%', strain: '千島海溝M9', badgeClass: 'risk-badge-blue', 
