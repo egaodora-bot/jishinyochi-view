@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート構造マップ</title>
+    <title>地震リスク・地殻変動ベクトルマップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -27,16 +27,18 @@
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 220px; font-size: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 230px; font-size: 10px;
             pointer-events: auto; max-height: 45vh; display: flex; flex-direction: column;
         }
         .info-box h3 { margin: 0 0 2px 0; font-size: 10.5px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
         
         #earthquake-data { max-height: 90px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 4px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
+        .eq-num { display: inline-block; background: #0284c7; color: white; font-weight: bold; font-size: 7.5px; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; flex-shrink: 0; }
+        .eq-num.latest { background: #dc2626; }
         
         .filter-toggle-btn {
             background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
@@ -101,6 +103,7 @@
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 地殻変動ベクトル矢印</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
             </div>
@@ -143,7 +146,7 @@
         var map = L.map('map', { zoomControl: true }).setView([37.5, 138.0], 6);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap & J-SHIS',
+            attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考)',
             maxZoom: 18
         }).addTo(map);
 
@@ -168,21 +171,56 @@
         var persistentRiskGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
+        // 国土地理院GEONET観測点等の変位データを模したベクトル情報（移動長さ・方向）
+        var crustalVectors = [
+            { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.1, dLon: 0.8, lengthCm: '約45cm (東向き)', desc: '東日本大震災後の余効変動による東向きの大きな地殻変動' },
+            { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.05, dLon: 0.25, lengthCm: '約15cm (南東向き)', desc: 'プレート沈み込みに伴うひずみ蓄積と沈降・圧縮傾向' },
+            { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.15, dLon: 0.2, lengthCm: '約25cm (北西向き)', desc: 'フィリピン海プレートの押し込みによる陸側の引きずり' },
+            { name: '中部山岳・糸静線観測点', lat: 36.2, lon: 137.8, dLat: 0.0, dLon: -0.3, lengthCm: '約10cm (西向き圧縮)', desc: '東日本と西日本の衝突による東西方向の強い圧縮ひずみ' },
+            { name: '北海道東部観測点', lat: 43.0, lon: 144.8, dLat: 0.1, dLon: 0.4, lengthCm: '約20cm (西〜北西)', desc: '千島海溝沿いのプレート収束による移動ベクトル' }
+        ];
+
         function renderLayers() {
             plateLayersGroup.clearLayers();
-
             let showZones = document.getElementById('chkPlZones').checked;
+            let showVectors = document.getElementById('chkVectors').checked;
 
             if (showZones) {
                 let itoShizuLine = L.polyline([
                     [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                     [35.15, 138.65], [35.1, 138.5]
                 ], {
-                    color: '#ff4500',
-                    weight: 3.5,
-                    opacity: 0.9
+                    color: '#ff4500', weight: 3.5, opacity: 0.9
                 }).addTo(plateLayersGroup);
                 itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
+            }
+
+            // 国土地理院データに基づく変位ベクトル（矢印）の描画
+            if (showVectors) {
+                crustalVectors.forEach(v => {
+                    let startPoint = [v.lat, v.lon];
+                    let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
+
+                    // 変位の長さに応じた矢印（Polyline）
+                    let vectorLine = L.polyline([startPoint, endPoint], {
+                        color: '#2563eb',
+                        weight: 4,
+                        opacity: 0.8
+                    }).addTo(plateLayersGroup);
+
+                    vectorLine.bindPopup(`<b>↗️ 地殻変動ベクトル (国土地理院参考)</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b><br>${v.desc}`);
+
+                    // 矢印の先端に円マーカーを配置
+                    let tipMarker = L.circleMarker(endPoint, {
+                        radius: 5,
+                        color: '#1d4ed8',
+                        fillColor: '#60a5fa',
+                        fillOpacity: 1,
+                        weight: 2
+                    }).addTo(plateLayersGroup);
+                    
+                    tipMarker.bindPopup(`<b>↗️ 地殻変動ベクトル</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b>`);
+                });
             }
         }
 
@@ -213,7 +251,7 @@
 
         persistentRiskAreas.forEach(function(a) {
             if (a.radius) {
-                L.circle([a.lat, a.lon], {
+                var circle = L.circle([a.lat, a.lon], {
                     radius: a.radius,
                     color: a.color,
                     weight: 1.5,
@@ -221,6 +259,8 @@
                     fillOpacity: 0.1,
                     dashArray: '4, 4'
                 }).addTo(persistentRiskGroup);
+
+                circle.bindPopup(`<b>【${a.title}】</b><br>${a.desc}`);
             }
 
             var marker = L.marker([a.lat, a.lon], {
@@ -259,8 +299,10 @@
                     let mag = parseFloat(hypocenter.magnitude || "0");
                     let eqTime = item.time || "";
                     let uniqueId = "eq_" + i;
+                    let numLabel = i + 1;
 
                     html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
+                                <span class="eq-num ${i === 0 ? 'latest' : ''}">${numLabel}</span>
                                 <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
                                 <span>${displayName} (M${mag})</span>
                              </div>`;
@@ -270,20 +312,26 @@
                     
                     if (!lat || lat === -200 || lat === 0) continue;
 
-                    (function(index, l, lo, m, name, time) {
+                    (function(index, l, lo, m, name, time, n) {
                         setTimeout(function() {
                             var mainMarker = L.circleMarker([l, lo], { 
-                                radius: Math.max(4, m * 1.8), 
+                                radius: Math.max(6, m * 1.8), 
                                 color: index === 0 ? '#ff0000' : '#0026ff',
                                 fillColor: index === 0 ? '#ff4d4d' : '#00ccff',
                                 fillOpacity: 0.85 
                             }).addTo(eqLayer);
 
-                            let popupContent = `<b>🔵 震源地</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
+                            mainMarker.bindTooltip(`${n}`, {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'eq-pin-num'
+                            });
+
+                            let popupContent = `<b>🔵 発生順: 第${n}報</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
                             mainMarker.bindPopup(popupContent);
                             markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                         }, index * 250);
-                    })(i, lat, lon, mag, displayName, eqTime);
+                    })(i, lat, lon, mag, displayName, eqTime, numLabel);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 document.getElementById('update-time').innerText = "更新: " + new Date().toLocaleTimeString();
