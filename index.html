@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（高安定版）</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（北海道追加・高安定版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -17,8 +17,8 @@
         .risk-table-box {
             position: absolute; top: 8px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 280px;
-            pointer-events: auto; max-height: 40vh; overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 290px;
+            pointer-events: auto; max-height: 45vh; overflow-y: auto;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -28,7 +28,7 @@
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 230px; font-size: 10px;
-            pointer-events: auto; max-height: 45vh; display: flex; flex-direction: column;
+,            pointer-events: auto; max-height: 45vh; display: flex; flex-direction: column;
         }
         .info-box h3 { margin: 0 0 2px 0; font-size: 10.5px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
@@ -94,11 +94,11 @@
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 2px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
+                <tr><td>北海道東部</td><td><b style="color:#d9534f;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
                 <tr><td>東北沖</td><td><b style="color:#d9534f;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#d9534f;">南東15cm/年</b></td><td>微小沈降</td></tr>
                 <tr><td>南海トラフ</td><td><b style="color:#d9534f;">北西25cm/年</b></td><td>沈降傾向</td></tr>
                 <tr><td>新潟・北陸</td><td><b style="color:#6b21a8;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
-                <tr><td>福井・若狭</td><td><b style="color:#6b21a8;">活断層・歪み</b></td><td>微小隆起</td></tr>
             </table>
         </div>
     </div>
@@ -125,21 +125,21 @@
     <div class="risk-explain-box">
         <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (期間・基準)</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。（※数値は直近1年間の年間変化量ベース）')">
+            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性とひずみ蓄積が指摘されています。')">
+                <span style="color:#ff4d4d; font-weight:bold;">■ 北海道東部 (千島海溝)</span>
+                <span>水平:西〜北西8cm/年 / 垂直:沈降 (直近1年)</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (沈降・歪み)</span>
                 <span>水平:北西25cm/年 / 垂直:沈降 (直近1年)</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。（直近1年間の変化）')">
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (圧縮・沈降)</span>
                 <span>水平:南東15cm/年 / 垂直:微小沈降 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
                 <span style="color:#800080; font-weight:bold;">■ 新潟・北陸 歪み集中帯</span>
                 <span>急激な歪み・年間変動 隆起横ずれ</span>
-            </div>
-            <div class="explain-item" onclick="focusArea(35.8, 136.0, 8, '福井・若狭 活断層・歪み帯', '若狭湾周辺から福井県内にかけての活断層群と地殻変動の集中エリアです。')">
-                <span style="color:#800080; font-weight:bold;">■ 福井・若狭 歪み帯</span>
-                <span>活断層・微小隆起 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '2011年震災後からの継続的な余効変動（直近1年間の年間変化速度）です。')">
                 <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
@@ -152,12 +152,11 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 地図初期化
         var map;
         try {
-            map = L.map('map', { zoomControl: true }).setView([37.5, 138.0], 6);
+            map = L.map('map', { zoomControl: true }).setView([41.0, 141.0], 5);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考:直近1年)',
+                attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考)',
                 maxZoom: 18,
                 errorTileUrl: ''
             }).addTo(map);
@@ -193,11 +192,11 @@
         var eqLayer = map ? L.layerGroup().addTo(map) : null;
 
         var crustalVectors = [
+            { name: '北海道東部観点 (千島海溝)', lat: 42.8, lon: 144.0, dLat: 0.04, dLon: -0.4, value: '西〜北西 約8cm/年', vertical: '垂直: 沈降・歪み蓄積', desc: '太平洋プレートの沈み込みによる十勝・根室沖のひずみ蓄積（直近1年間）' },
             { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm/年', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの引き延ばし（直近1年間）' },
             { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.03, dLon: 0.2, value: '南東へ 約15cm/年', vertical: '垂直: 微小沈降', desc: 'プレート沈み込みに伴うひずみ蓄積と圧縮（直近1年間）' },
             { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.1, dLon: 0.15, value: '北西へ 約25cm/年', vertical: '垂直: 沈降進行中', desc: 'フィリピン海プレート押し込みによる陸側の引きずり（直近1年間）' },
-            { name: '新潟・北陸観測点 (歪み帯)', lat: 37.2, lon: 138.8, dLat: 0.02, dLon: -0.2, value: '西へ 約12cm/年(圧縮)', vertical: '垂直: 隆起傾向', desc: '日本海側の圧縮ひずみと活断層帯の変動（直近1年間）' },
-            { name: '福井・若狭観測点', lat: 35.8, lon: 136.0, dLat: -0.02, dLon: -0.15, value: '西へ 約8cm/年', vertical: '垂直: 微小隆起', desc: '若狭湾周辺の活断層群と地殻変動の集中エリア（直近1年間）' }
+            { name: '新潟・北陸観測点 (歪み帯)', lat: 37.2, lon: 138.8, dLat: 0.02, dLon: -0.2, value: '西へ 約12cm/年(圧縮)', vertical: '垂直: 隆起傾向', desc: '日本海側の圧縮ひずみと活断層帯の変動（直近1年間）' }
         ];
 
         function safeRenderLayers() {
@@ -218,6 +217,7 @@
 
                 if (showStrain) {
                     let strainZones = [
+                        { center: [42.8, 144.0], radius: 90000, name: '千島海溝・北海道東部' },
                         { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯' },
                         { center: [35.8, 136.0], radius: 65000, name: '福井・若狭 歪み集中帯' }
                     ];
@@ -265,10 +265,10 @@
         safeRenderLayers();
 
         var persistentRiskAreas = [
-            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。（30年以内 70〜80%）', radius: 120000, color: '#ef4444' },
-            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。（30年以内 約70%）', radius: 90000, color: '#dc2626' },
+            { lat: 42.8, lon: 144.5, name: '北海道東部(千島海溝)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等で切迫性が指摘されている巨大地震の想定震源域です。', radius: 130000, color: '#ef4444' },
+            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, color: '#ef4444' },
+            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, color: '#dc2626' },
             { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed' },
-            { lat: 35.8, lon: 136.0, name: '福井・若狭歪み帯', prob: '活断層帯', strain: '微小隆起・歪み', badgeClass: 'risk-badge-purple', title: '福井・若狭 活断層・歪み帯', desc: '若狭湾から福井県内にかけての活断層集中エリア。地殻変動と微小隆起が観測されています。', radius: 65000, color: '#7c3aed' },
             { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#2563eb' }
         ];
 
@@ -285,7 +285,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">${a.strain}</span></div>`,
-                            iconSize: [115, 34], iconAnchor: [57, 17]
+                            iconSize: [130, 34], iconAnchor: [65, 17]
                         })
                     });
                     marker.addTo(persistentRiskGroup);
@@ -297,7 +297,6 @@
 
         var markerMap = {};
 
-        // 堅牢な地震データ取得関数（タイムアウト・フォールバック完備）
         async function safeFetchEq() {
             if(!eqLayer) return;
             eqLayer.clearLayers();
@@ -305,7 +304,6 @@
             let filteredData = [];
 
             try {
-                // 5秒のタイムアウト付きフェッチ
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -323,9 +321,9 @@
                     return true;
                 });
             } catch(e) {
-                console.warn("外部API取得失敗またはタイムアウト。安全なオフライン/デモデータに切り替えます。", e);
+                console.warn("外部API取得失敗。安全なデモデータに切り替えます。", e);
                 filteredData = [
-                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "4.2", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
                     { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } },
                     { earthquake: { hypocenter: { name: "千葉県東方沖 (デモ)", magnitude: "4.8", latitude: 35.5, longitude: 140.5 }, time: new Date().toISOString() } }
                 ];
@@ -414,7 +412,6 @@
             }
         }
 
-        // 初回実行と自動更新（エラーで停止しないよう setInterval 内もラップ）
         safeFetchEq();
         setInterval(() => {
             try {
