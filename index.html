@@ -91,7 +91,7 @@
             <table class="risk-table" style="margin-top: 3px;">
                 <tr><th>エリア</th><th>発生確率</th><th>原因・状態</th></tr>
                 <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>海P×ユーラシア</td></tr>
-                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>3層サンドイッチ</td></tr>
+                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空電磁波異常・3層</td></tr>
                 <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層帯</b></td><td>東西陸P境界</td></tr>
                 <tr><td>東北・北海道</td><td><b style="color:#1d4ed8;">余効・揺残</b></td><td>太平洋P沈み込み</td></tr>
             </table>
@@ -122,23 +122,23 @@
     <div class="risk-explain-box">
         <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ 歪・沈み込みエリア解説</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 3px;">
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。')">
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレートが陸のプレートの下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (確率:70〜80%)</span>
                 <span>フィリピン海P × ユーラシアP</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」です。')">
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '陸のプレートの地下に2枚の海のプレートが重なり合う3層構造。上空電磁波異常シグナルや地殻のひずみが観測されています。')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (確率:約70%)</span>
-                <span>3層サンドイッチ構造</span>
+                <span>上空電磁波異常・3層構造</span>
             </div>
-            <div class="explain-item" onclick="focusArea(36.2, 138.0, 8, '中部山岳・糸静線活断層帯', '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。')">
+            <div class="explain-item" onclick="focusArea(36.2, 138.0, 8, '中部山岳・糸静線活断層帯', '東日本と西日本の陸プレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。')">
                 <span style="color:#800080; font-weight:bold;">■ 中部・糸静線帯 (活断層帯)</span>
                 <span>東西陸P境界・圧縮帯</span>
             </div>
-            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北地方太平洋沖（余効変動）', '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が継続しています。')">
+            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北地方太平洋沖（余効変動）', '東日本大震災の発生以降も、太平洋プレートの沈み込みに伴う地殻の余効変動が継続しています。')">
                 <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効・揺残)</span>
                 <span>太平洋P沈み込み継続</span>
             </div>
-            <div class="explain-item" onclick="focusArea(42.8, 144.3, 7, '北海道東部（千島海溝沿い）', '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されています。')">
+            <div class="explain-item" onclick="focusArea(42.8, 144.3, 7, '北海道東部（千島海溝沿い）', '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震リスクが指摘されています。')">
                 <span style="color:#2563eb; font-weight:bold;">■ 北海道東部 (超巨大想定)</span>
                 <span>千島海溝・太平洋P×北米P</span>
             </div>
@@ -334,30 +334,44 @@
 
         renderLayers();
 
+        // 警戒エリア（円形範囲 ＋ マージンバッジ）
         var persistentRiskAreas = [
             { 
-                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', badgeClass: 'risk-badge', 
-                title: '南海トラフ巨大地震想定', desc: '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
+                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70〜80%', strain: 'ひずみ集中帯', badgeClass: 'risk-badge', 
+                title: '南海トラフ巨大地震想定', desc: '海のプレートが陸の下へ沈み込み、極限まで歪みが蓄積している領域です。', radius: 120000, color: '#ef4444'
             },
             { 
-                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', badgeClass: 'risk-badge', 
-                title: '首都直下地震想定', desc: '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」です。' 
+                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '上空電磁波異常・歪', badgeClass: 'risk-badge', 
+                title: '首都直下地震想定', desc: '陸のプレートの地下に2枚の海のプレートが入り込む3層構造。上空電磁波異常や地殻変動シグナルが観測されています。', radius: 90000, color: '#dc2626'
             },
             { 
                 lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', badgeClass: 'risk-badge-purple', 
-                title: '中部山岳・糸静線活断層帯', desc: '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。' 
+                title: '中部山岳・糸静線活断層帯', desc: '東日本と西日本の陸プレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。', radius: 80000, color: '#7c3aed'
             },
             { 
                 lat: 39.5, lon: 143.0, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', badgeClass: 'risk-badge-blue', 
-                title: '東北地方太平洋沖（余効変動）', desc: '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が継続しています。' 
+                title: '東北地方太平洋沖（余効変動）', desc: '東日本大震災の発生以降も、太平洋プレートの沈み込みに伴う地殻の余効変動が継続しています。', radius: 130000, color: '#2563eb'
             },
             { 
                 lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', badgeClass: 'risk-badge-blue', 
-                title: '北海道東部（千島海溝沿い）', desc: '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されています。' 
+                title: '北海道東部（千島海溝沿い）', desc: '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震リスクが指摘されています。', radius: 110000, color: '#2563eb'
             }
         ];
 
         persistentRiskAreas.forEach(function(a) {
+            // エリア範囲を示す円形ポリゴンを追加
+            if (a.radius) {
+                L.circle([a.lat, a.lon], {
+                    radius: a.radius,
+                    color: a.color,
+                    weight: 1.5,
+                    fillColor: a.color,
+                    fillOpacity: 0.12,
+                    dashArray: '5, 5'
+                }).addTo(persistentRiskGroup);
+            }
+
+            // マーカーバッジを追加
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
