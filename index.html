@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート＆火山帯構造マップ（安定・リスク正確性優先版）</title>
+    <title>地震リスク・プレート構造マップ（完全安定・詳細ポップアップ優先版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -14,7 +14,6 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* 統計・リスク監視テーブルボックス */
         .risk-table-box {
             position: absolute; top: 50px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
@@ -25,7 +24,6 @@
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8.5px; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 地震速報・レイヤー切替ボックス */
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
@@ -53,7 +51,6 @@
         .wave-alert { margin-top: 3px; background: #fff3cd; padding: 2px 4px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 7.5px; border-left: 3px solid #ffc107; }
         .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 7.5px; font-weight: bold; }
 
-        /* リスクエリア解説ボックス（常時安定表示） */
         .risk-explain-box {
             position: absolute; bottom: 15px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
@@ -64,7 +61,6 @@
         .legend-item { display: flex; align-items: center; margin-bottom: 1.5px; }
         .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
 
-        /* マップ上ラベル・バッジ */
         .plate-name-label {
             background: rgba(255, 255, 255, 0.9); border: 1px solid #666; padding: 1px 4px;
             font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
@@ -313,25 +309,45 @@
 
         renderLayers();
 
-        // 常に歪み・リスクエリアを完全固定表示
+        // 【最優先固定】クリックポップアップ付きリスク・歪エリア
         var persistentRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】巨大地震想定エリア。' },
-            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】複数プレートが重なる交差点。' },
-            { lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部山岳】東西の陸プレートが接する帯域。' },
-            { lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【東北太平洋側】東日本大震災の余効変動およびプレート沈み込みによる応力集中エリア。' },
-            { lat: 42.8, lon: 144.3, radius: 120000, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【北海道東部・十勝沖〜根室沖】千島海溝沿いの超巨大地震および地殻変動・歪み集中エリア。' }
+            { 
+                lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', 
+                detail: '<b>🌊 南海トラフ巨大地震想定エリア</b><br>海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
+            },
+            { 
+                lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', 
+                detail: '<b>🏙️ 首都直下地震想定エリア</b><br>陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」となっており、複雑な歪みが発生しています。' 
+            },
+            { 
+                lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', 
+                detail: '<b>⛰️ 中部山岳・糸魚川静岡構造線活断層帯</b><br>東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっている大地殻変動帯です。' 
+            },
+            { 
+                lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', 
+                detail: '<b>🌊 東北地方太平洋沖（余効変動エリア）</b><br>東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が長期間継続している領域です。' 
+            },
+            { 
+                lat: 42.8, lon: 144.3, radius: 120000, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', color: '#2563eb', badgeClass: 'risk-badge-blue', 
+                detail: '<b>❄️ 北海道東部（千島海溝沿い・十勝沖〜根室沖）</b><br>太平洋プレートが北アメリカプレート（オホーツクプレート）の下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されている歪み集中エリアです。' 
+            }
         ];
 
         persistentRiskAreas.forEach(function(a) {
-            L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.12, radius: a.radius }).addTo(persistentRiskGroup);
+            // 円とバッジを同じレイヤーグループに独立して登録し、クリックを確実に有効化
+            var circle = L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.12, radius: a.radius });
+            circle.bindPopup(a.detail);
+            circle.addTo(persistentRiskGroup);
+
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
                     html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
                     iconSize: [120, 38], iconAnchor: [60, 19]
                 })
-            }).addTo(persistentRiskGroup);
-            marker.bindPopup(`<b>📍 ${a.name}</b><br><br>${a.detail}`);
+            });
+            marker.bindPopup(a.detail);
+            marker.addTo(persistentRiskGroup);
         });
 
         var markerMap = {};
