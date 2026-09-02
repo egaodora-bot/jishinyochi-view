@@ -180,29 +180,40 @@
             { name: '北海道東部観測点', lat: 43.0, lon: 144.8, dLat: 0.1, dLon: 0.4, lengthCm: '約20cm (西〜北西)', desc: '千島海溝沿いのプレート収束による移動ベクトル' }
         ];
 
-        // 矢印（→）の先端を作るための補助関数
-        function createArrowHead(start, end, color) {
+        // 確実に視認できる三角形の矢印ヘッドを描画する関数
+        function createArrowHeadPolygon(start, end) {
             let p1 = L.latLng(start);
             let p2 = L.latLng(end);
-            let angle = Math.atan2(p2.lat - p1.lat, p2.lng - p1.lng);
             
-            // 矢印の羽の広がり角度と長さ
-            let arrowLength = 0.15; 
-            let arrowAngle = Math.PI / 6; 
+            // 進行方向の角度を算出
+            let dx = p2.lng - p1.lng;
+            let dy = p2.lat - p1.lat;
+            let angle = Math.atan2(dy, dx);
 
-            let angle1 = angle + Math.PI - arrowAngle;
-            let angle2 = angle + Math.PI + arrowAngle;
+            // 矢印の羽の大きさ（緯度・経度ベースのオフセット）
+            let headLength = 0.35; 
+            let headWidth = 0.18;
 
-            let h1Lat = p2.lat + arrowLength * Math.sin(angle1); // 簡易計算用
-            // 緯度・経度の比率を考慮した正確な矢印の形をポリラインで構成
-            let latFactor = 0.8; // 簡易補正
-            let headP1 = [p2.lat + 0.12 * Math.sin(angle + Math.PI * 0.75), p2.lng + 0.12 * Math.cos(angle + Math.PI * 0.75) * latFactor];
-            let headP2 = [p2.lat + 0.12 * Math.sin(angle - Math.PI * 0.75), p2.lng + 0.12 * Math.cos(angle - Math.PI * 0.75) * latFactor];
+            // 終点から逆向きに矢印の根元を計算
+            let backLat = p2.lat - headLength * Math.sin(angle + Math.PI/2); // 厳密には方向余弦
+            // 簡便かつ確実に描画するため、三角形の3点を計算
+            let tip = [p2.lat, p2.lng];
+            
+            // 左右の羽の座標
+            let leftWing = [
+                p2.lat - headLength * Math.sin(angle - 0.35),
+                p2.lng - headLength * Math.cos(angle - 0.35)
+            ];
+            let rightWing = [
+                p2.lat - headLength * Math.sin(angle + 0.35),
+                p2.lng - headLength * Math.cos(angle + 0.35)
+            ];
 
-            return L.polyline([headP1, p2, headP2], {
-                color: '#dc2626', // 矢印の先端を鮮やかな赤色に変更して目立たせる
-                weight: 4,
-                opacity: 0.95
+            return L.polygon([tip, leftWing, rightWing], {
+                color: '#b91c1c',       // 枠線（濃い赤）
+                fillColor: '#ef4444',   // 塗りつぶし（明るい赤）
+                fillOpacity: 1.0,
+                weight: 2
             });
         }
 
@@ -226,17 +237,17 @@
                     let startPoint = [v.lat, v.lon];
                     let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                    // ベクトルのメインの線（青色）
+                    // ベクトルのメインの線（青色・太め）
                     let vectorLine = L.polyline([startPoint, endPoint], {
-                        color: '#2563eb', weight: 5, opacity: 0.9
+                        color: '#1d4ed8', weight: 6, opacity: 0.95
                     }).addTo(plateLayersGroup);
 
                     vectorLine.bindPopup(`<b>↗️ 地殻変動ベクトル (国土地理院参考)</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b><br>${v.desc}`);
 
-                    // 従来の丸の代わりに、向きが分かりやすい「赤い矢印の頭（→）」を先端に追加
-                    let arrowHead = createArrowHead(startPoint, endPoint);
+                    // 先端に赤い矢印（三角形）を配置
+                    let arrowHead = createArrowHeadPolygon(startPoint, endPoint);
                     arrowHead.addTo(plateLayersGroup);
-                    arrowHead.bindPopup(`<b>↗️ 地殻変動ベクトル</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b>`);
+                    arrowHead.bindPopup(`<b>↗️ 地殻変動ベクトル（先端方向）</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b>`);
                 });
             }
         }
