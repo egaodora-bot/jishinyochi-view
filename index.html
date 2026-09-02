@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート構造マップ（完全安定・詳細ポップアップ優先版）</title>
+    <title>地震リスク・プレート構造マップ（安定・確実なポップアップ版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -72,9 +72,9 @@
             white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
         }
 
-        .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; z-index: 1000; }
-        .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; z-index: 1000; }
-        .risk-badge-blue { background: rgba(255,255,255,0.95); border: 1.5px solid #1d4ed8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; z-index: 1000; }
+        .risk-badge { background: rgba(255,255,255,0.98); border: 1.5px solid #b52b27; padding: 3px 6px; font-size: 8.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; z-index: 2000; }
+        .risk-badge-purple { background: rgba(255,255,255,0.98); border: 1.5px solid #6b21a8; padding: 3px 6px; font-size: 8.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; z-index: 2000; }
+        .risk-badge-blue { background: rgba(255,255,255,0.98); border: 1.5px solid #1d4ed8; padding: 3px 6px; font-size: 8.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer; pointer-events: auto; z-index: 2000; }
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
         .strain-value-blue { font-size: 7px; color: #1d4ed8; font-weight: bold; display: block; background: #dbeafe; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
@@ -309,36 +309,31 @@
 
         renderLayers();
 
-        // 【最優先固定】クリックポップアップ付きリスク・歪エリア
+        // 【バッジ専用の安定版】クリックだけで確実に詳細解説がポップアップする設計
         var persistentRiskAreas = [
             { 
-                lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', 
+                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', badgeClass: 'risk-badge', 
                 detail: '<b>🌊 南海トラフ巨大地震想定エリア</b><br>海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
             },
             { 
-                lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', 
+                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', badgeClass: 'risk-badge', 
                 detail: '<b>🏙️ 首都直下地震想定エリア</b><br>陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」となっており、複雑な歪みが発生しています。' 
             },
             { 
-                lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', 
+                lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', badgeClass: 'risk-badge-purple', 
                 detail: '<b>⛰️ 中部山岳・糸魚川静岡構造線活断層帯</b><br>東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっている大地殻変動帯です。' 
             },
             { 
-                lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', 
+                lat: 39.5, lon: 143.0, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', badgeClass: 'risk-badge-blue', 
                 detail: '<b>🌊 東北地方太平洋沖（余効変動エリア）</b><br>東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が長期間継続している領域です。' 
             },
             { 
-                lat: 42.8, lon: 144.3, radius: 120000, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', color: '#2563eb', badgeClass: 'risk-badge-blue', 
+                lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', badgeClass: 'risk-badge-blue', 
                 detail: '<b>❄️ 北海道東部（千島海溝沿い・十勝沖〜根室沖）</b><br>太平洋プレートが北アメリカプレート（オホーツクプレート）の下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されている歪み集中エリアです。' 
             }
         ];
 
         persistentRiskAreas.forEach(function(a) {
-            // 円とバッジを同じレイヤーグループに独立して登録し、クリックを確実に有効化
-            var circle = L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.12, radius: a.radius });
-            circle.bindPopup(a.detail);
-            circle.addTo(persistentRiskGroup);
-
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
