@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・完全隙間解消プレート構造マップ</title>
+    <title>地震リスク・プレート＆火山帯構造マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -44,7 +44,7 @@
         }
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; margin-top: 2px; font-size: 8.5px;
-            max-height: 150px; overflow-y: auto;
+            max-height: 160px; overflow-y: auto;
         }
         .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
@@ -67,6 +67,11 @@
             font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
             white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
         }
+        .volcano-belt-label {
+            background: rgba(254, 226, 226, 0.9); border: 1px solid #dc2626; color: #b91c1c; padding: 1px 4px;
+            font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
+            white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
+        }
 
         .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
@@ -77,14 +82,14 @@
 <body>
 
     <div class="risk-table-box">
-        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動監視</span><span>▼</span></div>
+        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・火山監視</span><span>▼</span></div>
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 3px;">
                 <tr><th>エリア</th><th>発生確率</th><th>重なり・原因</th></tr>
                 <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>P海P×ユーラシア</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>3層サンドイッチ</td></tr>
                 <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層帯</b></td><td>東西陸Pの境界</td></tr>
-                <tr><td>東北(余効)</td><td><b style="color:#d9534f;">揺れ残り</b></td><td>太平洋P沈み込み</td></tr>
+                <tr><td>火山帯連峰</td><td><b style="color:#dc2626;">活発</b></td><td>沈み込み帯マグマ</td></tr>
             </table>
         </div>
     </div>
@@ -93,13 +98,14 @@
         <h3><span>🚨 地震速報・予想</span><span style="font-size:9px; cursor:pointer;" onclick="toggleBox('infoBoxContent')">▼</span></h3>
         <div id="infoBoxContent">
             <div id="update-time" class="update-time">取得中...</div>
-            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示・プレート切替</div>
+            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示・レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
-                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderPlateLayers()"> ユーラシアプレート(西日本)</label>
-                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderPlateLayers()"> 北アメリカプレート(東日本)</label>
-                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderPlateLayers()"> 太平洋プレート(海)</label>
-                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderPlateLayers()"> フィリピン海プレート(海)</label>
-                <label><input type="checkbox" id="chkPlZones" checked onchange="renderPlateLayers()"> ⚠️ 境界・構造線ライン</label>
+                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderLayers()"> ユーラシアプレート</label>
+                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderLayers()"> 北アメリカプレート</label>
+                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderLayers()"> 太平洋プレート</label>
+                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderLayers()"> フィリピン海プレート</label>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線ライン</label>
+                <label><input type="checkbox" id="chkVolcanoes" checked onchange="renderLayers()"> 🌋 火山帯・主要火山表示</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ</label>
             </div>
@@ -112,11 +118,12 @@
     <div class="legend">
         <div class="legend-title" onclick="toggleLegend()"><span>🗺️ 画面の見方</span><span>▼</span></div>
         <div class="legend-content" id="legendContent" style="margin-top: 3px;">
-            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (西日本)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (東日本)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋プレート</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海プレート</b></div></div>
             <div class="legend-item"><span class="line-box" style="background:#ff4500;"></span><div><b>糸魚川静岡構造線</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#dc2626;"></span><div><b>火山帯・活火山</b></div></div>
         </div>
     </div>
 
@@ -144,15 +151,13 @@
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
         }
 
-        var plateLayersGroup = L.layerGroup().addTo(map);
+        var mainLayersGroup = L.layerGroup().addTo(map);
 
-        // 日本列島全体を隙間なく完全にピッタリ隣接させて覆う陸プレートの座標データ（富士・駿河湾の空白を完全に解消）
         var plateData = [
             {
                 id: 'eurasia',
-                name: 'ユーラシアプレート（西日本・中部）',
+                name: 'ユーラシアプレート',
                 color: '#ca8a04',
-                // 糸静線〜富士山・駿河湾西側を通る正確な境界線に沿って完全に密着させる座標
                 latlngs: [
                     [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                     [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [31.0, 130.0], 
@@ -163,9 +168,8 @@
             },
             {
                 id: 'north',
-                name: '北アメリカプレート（東日本・中部東側）',
+                name: '北アメリカプレート',
                 color: '#9333ea',
-                // ユーラシアの境界線と完全に同じ経緯度の共有点を持つことで隙間をゼロにする
                 latlngs: [
                     [46.0, 138.0], [38.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                     [35.15, 138.65], [35.1, 138.5], [34.7, 138.3], [35.0, 140.5], 
@@ -192,14 +196,46 @@
             }
         ];
 
-        function renderPlateLayers() {
-            plateLayersGroup.clearLayers();
+        // 火山帯および主要火山の定義
+        var volcanoData = {
+            belts: [
+                {
+                    name: '🌋 富士火山帯（伊豆・小笠原弧）',
+                    latlngs: [[35.36, 138.73], [35.1, 138.9], [34.8, 139.1], [34.1, 139.4], [33.1, 139.8]],
+                    center: [34.6, 139.2],
+                    detail: '【富士火山帯】<br>伊豆半島から富士山、箱根を経て伊豆諸島へ連なる火山帯。フィリピン海プレートの沈み込みに伴い形成されました。'
+                },
+                {
+                    name: '🌋 那須火山帯（東北日本弧）',
+                    latlngs: [[41.5, 140.8], [39.7, 141.1], [38.2, 140.5], [37.3, 140.0], [36.5, 139.5]],
+                    center: [38.5, 140.5],
+                    detail: '【那須火山帯】<br>東北地方の背骨に沿って南北に走る火山帯。太平洋プレートの沈み込み帯のマグマ活動によるものです。'
+                },
+                {
+                    name: '🌋 白山・乗鞍火山帯（中部山岳）',
+                    latlngs: [[37.0, 136.8], [36.3, 137.6], [35.9, 137.6], [35.2, 137.0]],
+                    center: [36.1, 137.3],
+                    detail: '【中部山岳火山帯（白山・乗鞍・御嶽など）】<br>中部地方の険しい山岳地帯に位置する火山群。'
+                }
+            ],
+            volcanoes: [
+                { name: '富士山', lat: 35.3606, lon: 138.7274, desc: '標高3,776m。日本最高峰の活火山（富士火山帯）。' },
+                { name: '浅間山', lat: 36.4042, lon: 138.5258, desc: '群馬・長野県境にある活発な活火山。' },
+                { name: '御嶽山', lat: 35.8922, lon: 137.4844, desc: '長野・岐阜県境に位置する成層火山。' },
+                { name: '箱根山', lat: 35.2325, lon: 139.0233, desc: 'カルデラ地形を持つ著名な火山。' },
+                { name: '阿蘇山', lat: 32.8842, lon: 131.1039, desc: '世界最大級のカルデラを持つ九州の活火山。' }
+            ]
+        };
+
+        function renderLayers() {
+            mainLayersGroup.clearLayers();
 
             let showPac = document.getElementById('chkPlPacific').checked;
             let showPhi = document.getElementById('chkPlPilippine').checked;
             let showEur = document.getElementById('chkPlEurasia').checked;
             let showNor = document.getElementById('chkPlNorth').checked;
             let showZones = document.getElementById('chkPlZones').checked;
+            let showVol = document.getElementById('chkVolcanoes').checked;
 
             let activeMap = {
                 'pacific': showPac,
@@ -208,31 +244,32 @@
                 'north': showNor
             };
 
+            // 1. プレート描画
             plateData.forEach(p => {
                 if (activeMap[p.id]) {
                     let polygon = L.polygon(p.latlngs, {
                         color: p.color,
                         weight: 1.5,
                         fillColor: p.color,
-                        fillOpacity: 0.12,
+                        fillOpacity: 0.1,
                         dashArray: '3, 3'
-                    }).addTo(plateLayersGroup);
+                    }).addTo(mainLayersGroup);
 
                     polygon.bindPopup(`<b>🗺️ ${p.name}</b><br><br>${p.detail}`);
 
                     L.marker(p.center, {
                         icon: L.divIcon({
                             className: '',
-                            html: `<div class="plate-name-label" style="color: ${p.color}; border-color: ${p.color};">${p.name.split('（')[0]}</div>`,
+                            html: `<div class="plate-name-label" style="color: ${p.color}; border-color: ${p.color};">${p.name}</div>`,
                             iconSize: [120, 20], iconAnchor: [60, 10]
                         }),
                         interactive: false
-                    }).addTo(plateLayersGroup);
+                    }).addTo(mainLayersGroup);
                 }
             });
 
+            // 2. 境界線
             if (showZones) {
-                // 糸魚川静岡構造線〜富士川下流・駿河湾に至る正確な境界ライン
                 let itoShizuLine = L.polyline([
                     [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                     [35.15, 138.65], [35.1, 138.5]
@@ -240,12 +277,45 @@
                     color: '#ff4500',
                     weight: 4,
                     opacity: 0.9
-                }).addTo(plateLayersGroup);
-                itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>ユーラシアプレートと北アメリカプレートが完全に密着して押し合いをしている境界線です。隙間はありません。');
+                }).addTo(mainLayersGroup);
+                itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
+            }
+
+            // 3. 火山帯・主要火山表示
+            if (showVol) {
+                volcanoData.belts.forEach(vb => {
+                    let beltLine = L.polyline(vb.latlngs, {
+                        color: '#dc2626',
+                        weight: 4,
+                        opacity: 0.7,
+                        dashArray: '4, 4'
+                    }).addTo(mainLayersGroup);
+                    beltLine.bindPopup(`<b>${vb.name}</b><br><br>${vb.detail}`);
+
+                    L.marker(vb.center, {
+                        icon: L.divIcon({
+                            className: '',
+                            html: `<div class="volcano-belt-label">${vb.name}</div>`,
+                            iconSize: [140, 20], iconAnchor: [70, 10]
+                        }),
+                        interactive: false
+                    }).addTo(mainLayersGroup);
+                });
+
+                volcanoData.volcanoes.forEach(v => {
+                    let vMarker = L.circleMarker([v.lat, v.lon], {
+                        radius: 6,
+                        color: '#b91c1c',
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.9,
+                        weight: 1.5
+                    }).addTo(mainLayersGroup);
+                    vMarker.bindPopup(`<b>🌋 ${v.name}</b><br><br>${v.desc}`);
+                });
             }
         }
 
-        renderPlateLayers();
+        renderLayers();
 
         var futureRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】巨大地震想定エリア。' },
