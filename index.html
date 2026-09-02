@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（高安定版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -66,16 +66,9 @@
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
         .vector-tip-label {
-            background: rgba(220, 38, 38, 0.95);
-            border: 1.5px solid #ffffff;
-            color: #ffffff;
-            font-size: 9.5px;
-            font-weight: bold;
-            padding: 3px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            text-align: center;
+            background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
+            font-size: 9.5px; font-weight: bold; padding: 3px 6px; border-radius: 4px;
+            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); text-align: center;
         }
 
         .risk-badge { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
@@ -116,12 +109,12 @@
             <div id="update-time" class="update-time">取得中...</div>
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
-                <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 年間変位量・ベクトル矢印</label>
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="renderLayers()"> ⚡ 急激な歪み集中帯（赤網掛け）</label>
-                <label><input type="checkbox" id="chkEqChain" onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量・ベクトル矢印</label>
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 急激な歪み集中帯（赤網掛け）</label>
+                <label><input type="checkbox" id="chkEqChain" onchange="safeFetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
-                <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
+                <label><input type="checkbox" id="chkM4" onchange="safeFetchEq()"> M4.0以上のみ</label>
             </div>
             <div id="earthquake-data" style="margin-top: 2px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波: 待機中</div>
@@ -159,33 +152,45 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map', { zoomControl: true }).setView([37.5, 138.0], 6);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考:直近1年)',
-            maxZoom: 18
-        }).addTo(map);
+        // 地図初期化
+        var map;
+        try {
+            map = L.map('map', { zoomControl: true }).setView([37.5, 138.0], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考:直近1年)',
+                maxZoom: 18,
+                errorTileUrl: ''
+            }).addTo(map);
+        } catch (e) {
+            console.error("マップ初期化エラー:", e);
+        }
 
         function toggleFilterPanel() {
             var panel = document.getElementById('filterPanel');
-            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+            if(panel) panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
         function toggleBox(id) {
             var el = document.getElementById(id);
-            el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+            if(el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
         }
 
         function focusArea(lat, lon, zoom, title, desc) {
-            map.setView([lat, lon], zoom);
-            L.popup()
-                .setLatLng([lat, lon])
-                .setContent(`<b>【${title}】</b><br>${desc}<br><span style="font-size:11px; color:#555;">(※表示の移動距離は直近1年間の年間変化速度です)</span>`)
-                .openOn(map);
+            try {
+                if(map) {
+                    map.setView([lat, lon], zoom);
+                    L.popup()
+                        .setLatLng([lat, lon])
+                        .setContent(`<b>【${title}】</b><br>${desc}<br><span style="font-size:11px; color:#555;">(※表示の移動距離は直近1年間の年間変化速度です)</span>`)
+                        .openOn(map);
+                }
+            } catch(e) {
+                console.warn("フォーカス処理エラー:", e);
+            }
         }
 
-        var persistentRiskGroup = L.layerGroup().addTo(map);
-        var plateLayersGroup = L.layerGroup().addTo(map);
-        var eqLayer = L.layerGroup().addTo(map);
+        var persistentRiskGroup = map ? L.layerGroup().addTo(map) : null;
+        var plateLayersGroup = map ? L.layerGroup().addTo(map) : null;
+        var eqLayer = map ? L.layerGroup().addTo(map) : null;
 
         var crustalVectors = [
             { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm/年', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの引き延ばし（直近1年間）' },
@@ -195,133 +200,122 @@
             { name: '福井・若狭観測点', lat: 35.8, lon: 136.0, dLat: -0.02, dLon: -0.15, value: '西へ 約8cm/年', vertical: '垂直: 微小隆起', desc: '若狭湾周辺の活断層群と地殻変動の集中エリア（直近1年間）' }
         ];
 
-        function renderLayers() {
-            plateLayersGroup.clearLayers();
-            let showZones = document.getElementById('chkPlZones').checked;
-            let showVectors = document.getElementById('chkVectors').checked;
-            let showStrain = document.getElementById('chkStrainZone').checked;
+        function safeRenderLayers() {
+            try {
+                if(!plateLayersGroup) return;
+                plateLayersGroup.clearLayers();
+                let showZones = document.getElementById('chkPlZones')?.checked ?? true;
+                let showVectors = document.getElementById('chkVectors')?.checked ?? true;
+                let showStrain = document.getElementById('chkStrainZone')?.checked ?? true;
 
-            if (showZones) {
-                let itoShizuLine = L.polyline([
-                    [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
-                    [35.15, 138.65], [35.1, 138.5]
-                ], {
-                    color: '#ff4500', weight: 4, opacity: 0.95
-                }).addTo(plateLayersGroup);
-                itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
-            }
+                if (showZones) {
+                    let itoShizuLine = L.polyline([
+                        [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
+                        [35.15, 138.65], [35.1, 138.5]
+                    ], { color: '#ff4500', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                    itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
+                }
 
-            if (showStrain) {
-                let strainZones = [
-                    { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯' },
-                    { center: [35.8, 136.0], radius: 65000, name: '福井・若狭 歪み集中帯' }
-                ];
-                strainZones.forEach(sz => {
-                    let zoneCircle = L.circle(sz.center, {
-                        radius: sz.radius,
-                        color: '#dc2626',
-                        weight: 2,
-                        fillColor: '#ef4444',
-                        fillOpacity: 0.2,
-                        dashArray: '3, 3'
-                    }).addTo(plateLayersGroup);
-                    zoneCircle.bindPopup(`<b>⚡ 急激な歪み集中エリア (${sz.name})</b><br>地殻の変動速度が周囲より速く、ひずみが急激に蓄積している警戒ゾーンです。`);
-                });
-            }
+                if (showStrain) {
+                    let strainZones = [
+                        { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯' },
+                        { center: [35.8, 136.0], radius: 65000, name: '福井・若狭 歪み集中帯' }
+                    ];
+                    strainZones.forEach(sz => {
+                        let zoneCircle = L.circle(sz.center, {
+                            radius: sz.radius, color: '#dc2626', weight: 2, fillColor: '#ef4444', fillOpacity: 0.2, dashArray: '3, 3'
+                        }).addTo(plateLayersGroup);
+                        zoneCircle.bindPopup(`<b>⚡ 急激な歪み集中エリア (${sz.name})</b><br>地殻の変動速度が周囲より速く、ひずみが急激に蓄積している警戒ゾーンです。`);
+                    });
+                }
 
-            if (showVectors) {
-                crustalVectors.forEach(v => {
-                    let startPoint = [v.lat, v.lon];
-                    let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
+                if (showVectors) {
+                    crustalVectors.forEach(v => {
+                        let startPoint = [v.lat, v.lon];
+                        let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                    let vectorLine = L.polyline([startPoint, endPoint], {
-                        color: '#2563eb', weight: 4, opacity: 0.9
-                    }).addTo(plateLayersGroup);
+                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#2563eb', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
 
-                    let dx = v.dLon;
-                    let dy = v.dLat;
-                    let angle = Math.atan2(dy, dx);
-                    let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
-                    let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
+                        let dx = v.dLon;
+                        let dy = v.dLat;
+                        let angle = Math.atan2(dy, dx);
+                        let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
+                        let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
 
-                    L.polyline([h1, endPoint, h2], {
-                        color: '#dc2626', weight: 4, opacity: 0.95
-                    }).addTo(plateLayersGroup);
+                        L.polyline([h1, endPoint, h2], { color: '#dc2626', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
 
-                    let tipLabel = L.marker(endPoint, {
-                        icon: L.divIcon({
-                            className: '',
-                            html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal;">${v.vertical} (直近1年)</span></div>`,
-                            iconSize: [140, 32], iconAnchor: [-5, 16]
-                        })
-                    }).addTo(plateLayersGroup);
+                        let tipLabel = L.marker(endPoint, {
+                            icon: L.divIcon({
+                                className: '',
+                                html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal;">${v.vertical} (直近1年)</span></div>`,
+                                iconSize: [140, 32], iconAnchor: [-5, 16]
+                            })
+                        }).addTo(plateLayersGroup);
 
-                    let popupHtml = `<b>↗️ 地殻変動ベクトル (年間変化量)</b><br><b>${v.name}</b><br>水平変位: <b>${v.value}</b><br><b>${v.vertical}</b><br><span style="font-size:11px; color:#555;">(※基準期間: 直近1年間のGEONET観測速度)</span><br>${v.desc}`;
-                    vectorLine.bindPopup(popupHtml);
-                    tipLabel.bindPopup(popupHtml);
-                });
+                        let popupHtml = `<b>↗️ 地殻変動ベクトル (年間変化量)</b><br><b>${v.name}</b><br>水平変位: <b>${v.value}</b><br><b>${v.vertical}</b><br><span style="font-size:11px; color:#555;">(※基準期間: 直近1年間のGEONET観測速度)</span><br>${v.desc}`;
+                        vectorLine.bindPopup(popupHtml);
+                        tipLabel.bindPopup(popupHtml);
+                    });
+                }
+            } catch(e) {
+                console.warn("レイヤー描画時エラー（継続稼働中）:", e);
             }
         }
 
-        renderLayers();
+        safeRenderLayers();
 
-        // リスクエリア一覧（福井・若狭エリアのバッジを追加してリストと完全一致）
         var persistentRiskAreas = [
-            { 
-                lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', 
-                title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。（30年以内 70〜80%）', radius: 120000, color: '#ef4444'
-            },
-            { 
-                lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', 
-                title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。（30年以内 約70%）', radius: 90000, color: '#dc2626'
-            },
-            { 
-                lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', 
-                title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed'
-            },
-            { 
-                lat: 35.8, lon: 136.0, name: '福井・若狭歪み帯', prob: '活断層帯', strain: '微小隆起・歪み', badgeClass: 'risk-badge-purple', 
-                title: '福井・若狭 活断層・歪み帯', desc: '若狭湾から福井県内にかけての活断層集中エリア。地殻変動と微小隆起が観測されています。', radius: 65000, color: '#7c3aed'
-            },
-            { 
-                lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', 
-                title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#2563eb'
-            }
+            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。（30年以内 70〜80%）', radius: 120000, color: '#ef4444' },
+            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。（30年以内 約70%）', radius: 90000, color: '#dc2626' },
+            { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed' },
+            { lat: 35.8, lon: 136.0, name: '福井・若狭歪み帯', prob: '活断層帯', strain: '微小隆起・歪み', badgeClass: 'risk-badge-purple', title: '福井・若狭 活断層・歪み帯', desc: '若狭湾から福井県内にかけての活断層集中エリア。地殻変動と微小隆起が観測されています。', radius: 65000, color: '#7c3aed' },
+            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#2563eb' }
         ];
 
-        persistentRiskAreas.forEach(function(a) {
-            if (a.radius) {
-                var circle = L.circle([a.lat, a.lon], {
-                    radius: a.radius, color: a.color, weight: 1.5, fillColor: a.color, fillOpacity: 0.1, dashArray: '4, 4'
-                }).addTo(persistentRiskGroup);
-
-                circle.on('click', function() {
-                    focusArea(a.lat, a.lon, 7, a.title, a.desc);
-                });
-            }
-
-            var marker = L.marker([a.lat, a.lon], {
-                icon: L.divIcon({
-                    className: '',
-                    html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">${a.strain}</span></div>`,
-                    iconSize: [115, 34], iconAnchor: [57, 17]
-                })
+        if(persistentRiskGroup) {
+            persistentRiskAreas.forEach(function(a) {
+                try {
+                    if (a.radius) {
+                        var circle = L.circle([a.lat, a.lon], {
+                            radius: a.radius, color: a.color, weight: 1.5, fillColor: a.color, fillOpacity: 0.1, dashArray: '4, 4'
+                        }).addTo(persistentRiskGroup);
+                        circle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
+                    }
+                    var marker = L.marker([a.lat, a.lon], {
+                        icon: L.divIcon({
+                            className: '',
+                            html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">${a.strain}</span></div>`,
+                            iconSize: [115, 34], iconAnchor: [57, 17]
+                        })
+                    });
+                    marker.addTo(persistentRiskGroup);
+                } catch(e) {
+                    console.warn("リスクエリアマーカー生成エラー:", e);
+                }
             });
-            marker.addTo(persistentRiskGroup);
-        });
+        }
 
         var markerMap = {};
 
-        async function fetchEq() {
+        // 堅牢な地震データ取得関数（タイムアウト・フォールバック完備）
+        async function safeFetchEq() {
+            if(!eqLayer) return;
             eqLayer.clearLayers();
             markerMap = {};
             let filteredData = [];
 
             try {
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30');
+                // 5秒のタイムアウト付きフェッチ
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) throw new Error('Network response was not ok');
                 let data = await res.json();
                 
-                let filterM4 = document.getElementById('chkM4').checked;
+                let filterM4 = document.getElementById('chkM4')?.checked ?? false;
                 filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
                     let mag = parseFloat(item.earthquake.magnitude || "0");
@@ -329,11 +323,11 @@
                     return true;
                 });
             } catch(e) {
-                console.warn("外部API取得失敗。オフライン/デモデータを使用します。", e);
+                console.warn("外部API取得失敗またはタイムアウト。安全なオフライン/デモデータに切り替えます。", e);
                 filteredData = [
-                    { earthquake: { hypocenter: { name: "福井県嶺北", magnitude: "4.2", latitude: 36.0, longitude: 136.2 }, time: "2026-06-03T12:00:00" } },
-                    { earthquake: { hypocenter: { name: "福島県沖", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: "2026-06-03T10:00:00" } },
-                    { earthquake: { hypocenter: { name: "千葉県東方沖", magnitude: "4.8", latitude: 35.5, longitude: 140.5 }, time: "2026-06-03T08:00:00" } }
+                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "4.2", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "千葉県東方沖 (デモ)", magnitude: "4.8", latitude: 35.5, longitude: 140.5 }, time: new Date().toISOString() } }
                 ];
             }
 
@@ -341,70 +335,94 @@
             let chainPoints = [];
 
             for(let i=0; i<filteredData.length; i++) {
-                let item = filteredData[i];
-                let eq = item.earthquake;
-                let hypocenter = eq.hypocenter || {};
-                let displayName = hypocenter.name || "震源情報";
-                let mag = parseFloat(hypocenter.magnitude || "0");
-                let eqTime = item.time || "";
-                let uniqueId = "eq_" + i;
+                try {
+                    let item = filteredData[i];
+                    let eq = item.earthquake;
+                    if(!eq) continue;
+                    let hypocenter = eq.hypocenter || {};
+                    let displayName = hypocenter.name || "震源情報";
+                    let mag = parseFloat(hypocenter.magnitude || "0");
+                    let eqTime = item.time || "";
+                    let uniqueId = "eq_" + i;
 
-                html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                            <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                            <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
-                            <span>${displayName} (M${mag})</span>
-                         </div>`;
-                
-                let lat = hypocenter.latitude;
-                let lon = hypocenter.longitude;
-                
-                if (!lat || lat === -200 || lat === 0) continue;
+                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
+                                <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
+                                <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
+                                <span>${displayName} (M${mag})</span>
+                             </div>`;
+                    
+                    let lat = hypocenter.latitude;
+                    let lon = hypocenter.longitude;
+                    
+                    if (!lat || lat === -200 || lat === 0 || isNaN(lat) || isNaN(lon)) continue;
 
-                chainPoints.push([lat, lon]);
+                    chainPoints.push([lat, lon]);
 
-                (function(index, l, lo, m, name, time) {
-                    setTimeout(function() {
-                        var mainMarker = L.circleMarker([l, lo], { 
-                            radius: Math.max(5, m * 1.6), 
-                            color: index === 0 ? '#ff0000' : '#0284c7',
-                            fillColor: index === 0 ? '#ff4d4d' : '#38bdf8',
-                            fillOpacity: 0.85 
-                        }).addTo(eqLayer);
+                    (function(index, l, lo, m, name, time) {
+                        setTimeout(function() {
+                            try {
+                                if(!eqLayer) return;
+                                var mainMarker = L.circleMarker([l, lo], { 
+                                    radius: Math.max(5, m * 1.6), 
+                                    color: index === 0 ? '#ff0000' : '#0284c7',
+                                    fillColor: index === 0 ? '#ff4d4d' : '#38bdf8',
+                                    fillOpacity: 0.85 
+                                }).addTo(eqLayer);
 
-                        let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
-                        mainMarker.bindPopup(popupContent);
-                        markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                    }, index * 200);
-                })(i, lat, lon, mag, displayName, eqTime);
+                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
+                                mainMarker.bindPopup(popupContent);
+                                markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
+                            } catch(err) {
+                                console.warn("個別マーカー描画エラー:", err);
+                            }
+                        }, index * 100);
+                    })(i, lat, lon, mag, displayName, eqTime);
+                } catch(innerErr) {
+                    console.warn("地震データループ内エラー:", innerErr);
+                }
             }
 
-            let showChain = document.getElementById('chkEqChain').checked;
-            if (showChain && chainPoints.length > 1) {
-                let chainLine = L.polyline(chainPoints, {
-                    color: '#7c3aed',
-                    weight: 3,
-                    opacity: 0.7,
-                    dashArray: '6, 6'
-                }).addTo(eqLayer);
-                chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
+            try {
+                let showChain = document.getElementById('chkEqChain')?.checked ?? false;
+                if (showChain && chainPoints.length > 1) {
+                    let chainLine = L.polyline(chainPoints, {
+                        color: '#7c3aed', weight: 3, opacity: 0.7, dashArray: '6, 6'
+                    }).addTo(eqLayer);
+                    chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
+                }
+            } catch(chainErr) {
+                console.warn("連鎖ルート描画エラー:", chainErr);
             }
 
-            document.getElementById('earthquake-data').innerHTML = html;
-            document.getElementById('update-time').innerText = "更新: " + new Date().toLocaleTimeString();
+            const eqDataEl = document.getElementById('earthquake-data');
+            const updateTimeEl = document.getElementById('update-time');
+            if(eqDataEl) eqDataEl.innerHTML = html;
+            if(updateTimeEl) updateTimeEl.innerText = "更新: " + new Date().toLocaleTimeString();
         }
 
         function highlightAndOpenPopup(id) {
-            document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-            document.getElementById(id).classList.add('highlighted');
-            if (markerMap[id]) {
-                let m = markerMap[id];
-                map.setView([m.lat, m.lon], 8);
-                m.marker.openPopup();
+            try {
+                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
+                document.getElementById(id)?.classList.add('highlighted');
+                if (markerMap[id] && map) {
+                    let m = markerMap[id];
+                    map.setView([m.lat, m.lon], 8);
+                    m.marker.openPopup();
+                }
+            } catch(e) {
+                console.warn("ハイライト処理エラー:", e);
             }
         }
 
-        fetchEq();
-        setInterval(fetchEq, 15000);
+        // 初回実行と自動更新（エラーで停止しないよう setInterval 内もラップ）
+        safeFetchEq();
+        setInterval(() => {
+            try {
+                safeFetchEq();
+            } catch(e) {
+                console.warn("定期更新エラー（継続稼働中）:", e);
+            }
+        }, 15000);
     </script>
 </body>
 </html>
