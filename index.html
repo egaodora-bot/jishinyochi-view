@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート構造マップ（安定・確実なポップアップ版）</title>
+    <title>地震リスク・プレート構造マップ（完全確実クリック版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -78,6 +78,20 @@
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
         .strain-value-blue { font-size: 7px; color: #1d4ed8; font-weight: bold; display: block; background: #dbeafe; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
+
+        /* カスタムポップアップモーダル */
+        #custom-popup-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4); z-index: 99999; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #fff; padding: 15px; border-radius: 8px; width: 280px; max-width: 85%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 11px; line-height: 1.5; color: #333;
+        }
+        .modal-close-btn {
+            background: #0284c7; color: #fff; border: none; padding: 5px 10px; border-radius: 4px;
+            font-size: 10px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +139,15 @@
         </div>
     </div>
 
+    <!-- 詳細解説ポップアップ用モーダルウィンドウ -->
+    <div id="custom-popup-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modal-body-text"></div>
+            <button class="modal-close-btn" onclick="closeModalForce()">閉じる</button>
+            <div style="clear:both;"></div>
+        </div>
+    </div>
+
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -143,6 +166,19 @@
         function toggleBox(id) {
             var el = document.getElementById(id);
             el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function showRiskDetail(title, desc) {
+            document.getElementById('modal-body-text').innerHTML = `<b>${title}</b><br><br>${desc}`;
+            document.getElementById('custom-popup-modal').style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            document.getElementById('custom-popup-modal').style.display = 'none';
+        }
+
+        function closeModalForce() {
+            document.getElementById('custom-popup-modal').style.display = 'none';
         }
 
         var plateLayersGroup = L.layerGroup().addTo(map);
@@ -309,27 +345,32 @@
 
         renderLayers();
 
-        // 【バッジ専用の安定版】クリックだけで確実に詳細解説がポップアップする設計
+        // 【確実ポップアップ版】インラインでonclickイベントを直結
         var persistentRiskAreas = [
             { 
                 lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', badgeClass: 'risk-badge', 
-                detail: '<b>🌊 南海トラフ巨大地震想定エリア</b><br>海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
+                title: '🌊 南海トラフ巨大地震想定エリア',
+                detail: '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
             },
             { 
                 lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', badgeClass: 'risk-badge', 
-                detail: '<b>🏙️ 首都直下地震想定エリア</b><br>陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」となっており、複雑な歪みが発生しています。' 
+                title: '🏙️ 首都直下地震想定エリア',
+                detail: '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」となっており、複雑な歪みが発生しています。' 
             },
             { 
                 lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', badgeClass: 'risk-badge-purple', 
-                detail: '<b>⛰️ 中部山岳・糸魚川静岡構造線活断層帯</b><br>東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっている大地殻変動帯です。' 
+                title: '⛰️ 中部山岳・糸魚川静岡構造線活断層帯',
+                detail: '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっている大地殻変動帯です。' 
             },
             { 
                 lat: 39.5, lon: 143.0, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', badgeClass: 'risk-badge-blue', 
-                detail: '<b>🌊 東北地方太平洋沖（余効変動エリア）</b><br>東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が長期間継続している領域です。' 
+                title: '🌊 東北地方太平洋沖（余効変動エリア）',
+                detail: '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が長期間継続している領域です。' 
             },
             { 
-                lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', badgeClass: 'risk-badge-blue', 
-                detail: '<b>❄️ 北海道東部（千島海溝沿い・十勝沖〜根室沖）</b><br>太平洋プレートが北アメリカプレート（オホーツクプレート）の下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されている歪み集中エリアです。' 
+                lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', titlePrefix: '❄️',
+                title: '❄️ 北海道東部（千島海溝沿い）',
+                detail: '太平洋プレートが北アメリカプレート（オホーツクプレート）の下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されている歪み集中エリアです。' 
             }
         ];
 
@@ -337,11 +378,10 @@
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
+                    html: `<div class="${a.badgeClass}" onclick="showRiskDetail('${a.title}', '${a.detail}')">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
                     iconSize: [120, 38], iconAnchor: [60, 19]
                 })
             });
-            marker.bindPopup(a.detail);
             marker.addTo(persistentRiskGroup);
         });
 
