@@ -65,9 +65,9 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        .risk-badge { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
-        .risk-badge-purple { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
-        .risk-badge-blue { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #1d4ed8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
+        .risk-badge { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-purple { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-blue { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #1d4ed8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         
         .fault-subtext { font-size: 6.5px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 6.5px; color: #800080; font-weight: bold; display: block; background: rgba(243, 232, 255, 0.95); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
@@ -104,7 +104,6 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 地殻変動ベクトル矢印</label>
-                <!-- 初期状態でチェックを外し、非表示にしています -->
                 <label><input type="checkbox" id="chkEqChain" onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
@@ -169,8 +168,9 @@
                 .openOn(map);
         }
 
-        var plateLayersGroup = L.layerGroup().addTo(map);
+        // レイヤーの順番を調整して矢印が埋もれないようにします
         var persistentRiskGroup = L.layerGroup().addTo(map);
+        var plateLayersGroup = L.layerGroup().addTo(map); // ベクトルや境界線を上側に
         var eqLayer = L.layerGroup().addTo(map);
 
         var crustalVectors = [
@@ -191,7 +191,7 @@
                     [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                     [35.15, 138.65], [35.1, 138.5]
                 ], {
-                    color: '#ff4500', weight: 3.5, opacity: 0.9
+                    color: '#ff4500', weight: 4, opacity: 0.95
                 }).addTo(plateLayersGroup);
                 itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
             }
@@ -201,14 +201,15 @@
                     let startPoint = [v.lat, v.lon];
                     let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
+                    // 矢印をより太く、鮮やかにして目立たせる
                     let vectorLine = L.polyline([startPoint, endPoint], {
-                        color: '#2563eb', weight: 4, opacity: 0.8
+                        color: '#1d4ed8', weight: 6, opacity: 0.95
                     }).addTo(plateLayersGroup);
 
                     vectorLine.bindPopup(`<b>↗️ 地殻変動ベクトル (国土地理院参考)</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b><br>${v.desc}`);
 
                     let tipMarker = L.circleMarker(endPoint, {
-                        radius: 5, color: '#1d4ed8', fillColor: '#60a5fa', fillOpacity: 1, weight: 2
+                        radius: 7, color: '#1e3a8a', fillColor: '#38bdf8', fillOpacity: 1, weight: 2.5
                     }).addTo(plateLayersGroup);
                     
                     tipMarker.bindPopup(`<b>↗️ 地殻変動ベクトル</b><br><b>${v.name}</b><br>変位量: <b>${v.lengthCm}</b>`);
