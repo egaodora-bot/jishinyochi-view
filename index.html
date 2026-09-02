@@ -3,12 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（ハイライト・完全版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（白画面防止・完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; touch-action: manipulation; width: 100vw; height: 100vh; }
-        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        /* 🗺️ 白画面防止のため、bodyとhtml、mapのサイズを確実に対象化 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
         
         /* 📋 左上：リアルタイム変動データ表 */
         .risk-table-box {
@@ -88,7 +104,6 @@
 </head>
 <body>
 
-    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -101,12 +116,10 @@
         </table>
     </div>
 
-    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
         
-        <!-- ⚙️ フィルター開閉ボタンとパネル -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
         <div class="filter-panel" id="filterPanel">
             <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
@@ -117,7 +130,6 @@
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
-    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
         <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート境界</b></div></div>
@@ -138,11 +150,18 @@
         }).setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap & J-SHIS & GSI'
+            attribution: '&copy; OpenStreetMap & J-SHIS & GSI',
+            maxZoom: 18
         }).addTo(map);
 
+        // 🗺️ 白画面防止：DOM描画完了後とウィンドウリサイズ時にマップの大きさを強制再計算
         window.addEventListener('load', function() {
-            setTimeout(function() { map.invalidateSize(); }, 100);
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 200);
+        });
+        window.addEventListener('resize', function() {
+            map.invalidateSize();
         });
 
         function toggleFilterPanel() {
@@ -211,12 +230,12 @@
 
                 document.getElementById('wave-status').innerHTML = `⚡ <b>波の到達を追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>初期微動(P波): ${(radiusP/1000).toFixed(1)}km | 主要動(S波): ${(radiusS/1000).toFixed(1)}km`;
             } else {
-                document.getElementById('wave-status'].innerHTML = `📡 直近の揺れの波（収束済）`;
+                document.getElementById('wave-status').innerHTML = `📡 直近の揺れの波（収束済）`;
             }
         }
 
         var eqLayer = L.layerGroup().addTo(map);
-        var markerMap = {}; // リストとマップを紐付けるための辞書
+        var markerMap = {};
 
         async function fetchEq() {
             eqLayer.clearLayers();
@@ -270,7 +289,6 @@
 
                     var radiusSize = Math.max(6, mag * 3.5); 
 
-                    // 🔵 メインの円（青点滅または赤色）に直接ポップアップをバインド
                     var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
                         color: i === 0 ? '#00ffff' : '#ff4d4d', 
@@ -282,11 +300,9 @@
                     var popupContent = `<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
                     mainMarker.bindPopup(popupContent);
 
-                    // 中心部のドットにも同じポップアップ
                     var innerMarker = L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
                     innerMarker.bindPopup(popupContent);
 
-                    // リストとマーカーを関連付け
                     markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
 
                     if (i === 0) {
@@ -302,15 +318,11 @@
             }
         }
 
-        // リストをクリックした時に対応するマップの円をハイライトしてポップアップを開く関数
         function highlightAndOpenPopup(id) {
-            // すべてのリスト項目のハイライトを解除
             document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-            // 選択された項目をハイライト
             let item = document.getElementById(id);
             if (item) item.classList.add('highlighted');
 
-            // 対応するマーカーへ移動・ポップアップ展開
             if (markerMap[id]) {
                 let mData = markerMap[id];
                 map.setView([mData.lat, mData.lon], 8);
