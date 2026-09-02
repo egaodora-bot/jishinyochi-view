@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート＆火山帯構造マップ</title>
+    <title>地震リスク・プレート＆火山帯構造マップ（完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -75,21 +75,23 @@
 
         .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
+        .risk-badge-blue { background: rgba(255,255,255,0.95); border: 1.5px solid #1d4ed8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
+        .strain-value-blue { font-size: 7px; color: #1d4ed8; font-weight: bold; display: block; background: #dbeafe; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
     </style>
 </head>
 <body>
 
     <div class="risk-table-box">
-        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・火山監視</span><span>▼</span></div>
+        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 全国地殻変動・リスク監視</span><span>▼</span></div>
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 3px;">
-                <tr><th>エリア</th><th>発生確率</th><th>重なり・原因</th></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>P海P×ユーラシア</td></tr>
+                <tr><th>エリア</th><th>発生確率</th><th>原因・状態</th></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>海P×ユーラシア</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>3層サンドイッチ</td></tr>
-                <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層帯</b></td><td>東西陸Pの境界</td></tr>
-                <tr><td>火山帯連峰</td><td><b style="color:#dc2626;">活発</b></td><td>沈み込み帯マグマ</td></tr>
+                <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層帯</b></td><td>東西陸P境界</td></tr>
+                <tr><td>東北・北海道</td><td><b style="color:#1d4ed8;">余効・揺残</b></td><td>太平洋P沈み込み</td></tr>
             </table>
         </div>
     </div>
@@ -151,7 +153,12 @@
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
         }
 
-        var mainLayersGroup = L.layerGroup().addTo(map);
+        // プレート・火山帯専用のレイヤーグループ（ON/OFF連動）
+        var plateLayersGroup = L.layerGroup().addTo(map);
+
+        // リスクエリア＆震源専用の独立レイヤーグループ（常に消えずに常時表示）
+        var persistentRiskGroup = L.layerGroup().addTo(map);
+        var eqLayer = L.layerGroup().addTo(map);
 
         var plateData = [
             {
@@ -196,30 +203,29 @@
             }
         ];
 
-        // 火山帯および主要火山の定義
         var volcanoData = {
             belts: [
                 {
                     name: '🌋 富士火山帯（伊豆・小笠原弧）',
                     latlngs: [[35.36, 138.73], [35.1, 138.9], [34.8, 139.1], [34.1, 139.4], [33.1, 139.8]],
                     center: [34.6, 139.2],
-                    detail: '【富士火山帯】<br>伊豆半島から富士山、箱根を経て伊豆諸島へ連なる火山帯。フィリピン海プレートの沈み込みに伴い形成されました。'
+                    detail: '【富士火山帯】<br>伊豆半島から富士山、箱根を経て伊豆諸島へ連なる火山帯。'
                 },
                 {
                     name: '🌋 那須火山帯（東北日本弧）',
                     latlngs: [[41.5, 140.8], [39.7, 141.1], [38.2, 140.5], [37.3, 140.0], [36.5, 139.5]],
                     center: [38.5, 140.5],
-                    detail: '【那須火山帯】<br>東北地方の背骨に沿って南北に走る火山帯。太平洋プレートの沈み込み帯のマグマ活動によるものです。'
+                    detail: '【那須火山帯】<br>東北地方の背骨に沿って南北に走る火山帯。'
                 },
                 {
                     name: '🌋 白山・乗鞍火山帯（中部山岳）',
                     latlngs: [[37.0, 136.8], [36.3, 137.6], [35.9, 137.6], [35.2, 137.0]],
                     center: [36.1, 137.3],
-                    detail: '【中部山岳火山帯（白山・乗鞍・御嶽など）】<br>中部地方の険しい山岳地帯に位置する火山群。'
+                    detail: '【中部山岳火山帯】<br>中部地方の険しい山岳地帯に位置する火山群。'
                 }
             ],
             volcanoes: [
-                { name: '富士山', lat: 35.3606, lon: 138.7274, desc: '標高3,776m。日本最高峰の活火山（富士火山帯）。' },
+                { name: '富士山', lat: 35.3606, lon: 138.7274, desc: '標高3,776m。日本最高峰の活火山。' },
                 { name: '浅間山', lat: 36.4042, lon: 138.5258, desc: '群馬・長野県境にある活発な活火山。' },
                 { name: '御嶽山', lat: 35.8922, lon: 137.4844, desc: '長野・岐阜県境に位置する成層火山。' },
                 { name: '箱根山', lat: 35.2325, lon: 139.0233, desc: 'カルデラ地形を持つ著名な火山。' },
@@ -228,7 +234,7 @@
         };
 
         function renderLayers() {
-            mainLayersGroup.clearLayers();
+            plateLayersGroup.clearLayers();
 
             let showPac = document.getElementById('chkPlPacific').checked;
             let showPhi = document.getElementById('chkPlPilippine').checked;
@@ -244,7 +250,7 @@
                 'north': showNor
             };
 
-            // 1. プレート描画
+            // プレート描画
             plateData.forEach(p => {
                 if (activeMap[p.id]) {
                     let polygon = L.polygon(p.latlngs, {
@@ -253,7 +259,7 @@
                         fillColor: p.color,
                         fillOpacity: 0.1,
                         dashArray: '3, 3'
-                    }).addTo(mainLayersGroup);
+                    }).addTo(plateLayersGroup);
 
                     polygon.bindPopup(`<b>🗺️ ${p.name}</b><br><br>${p.detail}`);
 
@@ -264,11 +270,11 @@
                             iconSize: [120, 20], iconAnchor: [60, 10]
                         }),
                         interactive: false
-                    }).addTo(mainLayersGroup);
+                    }).addTo(plateLayersGroup);
                 }
             });
 
-            // 2. 境界線
+            // 境界線
             if (showZones) {
                 let itoShizuLine = L.polyline([
                     [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
@@ -277,11 +283,11 @@
                     color: '#ff4500',
                     weight: 4,
                     opacity: 0.9
-                }).addTo(mainLayersGroup);
+                }).addTo(plateLayersGroup);
                 itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
             }
 
-            // 3. 火山帯・主要火山表示
+            // 火山帯・主要火山
             if (showVol) {
                 volcanoData.belts.forEach(vb => {
                     let beltLine = L.polyline(vb.latlngs, {
@@ -289,7 +295,7 @@
                         weight: 4,
                         opacity: 0.7,
                         dashArray: '4, 4'
-                    }).addTo(mainLayersGroup);
+                    }).addTo(plateLayersGroup);
                     beltLine.bindPopup(`<b>${vb.name}</b><br><br>${vb.detail}`);
 
                     L.marker(vb.center, {
@@ -299,7 +305,7 @@
                             iconSize: [140, 20], iconAnchor: [70, 10]
                         }),
                         interactive: false
-                    }).addTo(mainLayersGroup);
+                    }).addTo(plateLayersGroup);
                 });
 
                 volcanoData.volcanoes.forEach(v => {
@@ -309,7 +315,7 @@
                         fillColor: '#ef4444',
                         fillOpacity: 0.9,
                         weight: 1.5
-                    }).addTo(mainLayersGroup);
+                    }).addTo(plateLayersGroup);
                     vMarker.bindPopup(`<b>🌋 ${v.name}</b><br><br>${v.desc}`);
                 });
             }
@@ -317,25 +323,26 @@
 
         renderLayers();
 
-        var futureRiskAreas = [
+        // 【重要】東北・北海道を含む全国すべてのリスク・余効変動エリアを常に独立して永続表示
+        var persistentRiskAreas = [
             { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】巨大地震想定エリア。' },
             { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】複数プレートが重なる交差点。' },
-            { lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部山岳】東西の陸プレートが接する帯域。' }
+            { lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部山岳】東西の陸プレートが接する帯域。' },
+            { lat: 39.5, lon: 143.0, radius: 130000, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', color: '#2563eb', badgeClass: 'risk-badge-blue', detail: '【東北沖・北海道東部】東日本大震災の余効変動およびプレート沈み込みによる揺れ残りと応力集中エリア。' }
         ];
 
-        futureRiskAreas.forEach(function(a) {
-            L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.15, radius: a.radius }).addTo(map);
+        persistentRiskAreas.forEach(function(a) {
+            L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.12, radius: a.radius }).addTo(persistentRiskGroup);
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="strain-value">📍 ${a.strain}</span></div>`,
-                    iconSize: [105, 38], iconAnchor: [52, 19]
+                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
+                    iconSize: [115, 38], iconAnchor: [57, 19]
                 })
-            }).addTo(map);
+            }).addTo(persistentRiskGroup);
             marker.bindPopup(`<b>📍 ${a.name}</b><br><br>${a.detail}`);
         });
 
-        var eqLayer = L.layerGroup().addTo(map);
         var markerMap = {};
 
         async function fetchEq() {
