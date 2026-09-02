@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート重なり構造マップ</title>
+    <title>地震リスク・プレート多重重なり構造マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -60,10 +60,10 @@
         .legend-title { font-weight: bold; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .legend-item { display: flex; align-items: center; margin-bottom: 1.5px; }
         .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
+        .line-box { width: 10px; height: 2.5px; margin-right: 4px; flex-shrink: 0; }
 
-        /* 🏷️ プレート名ラベル用スタイル */
         .plate-name-label {
-            background: rgba(255, 255, 255, 0.85); border: 1px solid #666; padding: 1px 4px;
+            background: rgba(255, 255, 255, 0.9); border: 1px solid #666; padding: 1px 4px;
             font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
             white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
         }
@@ -86,8 +86,8 @@
                 <tr><th>エリア</th><th>発生確率</th><th>重なり・原因</th></tr>
                 <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>P海P×ユーラシア</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>3層サンドイッチ</td></tr>
+                <tr><td>中部(糸静線)</td><td><b style="color:#d9534f;">活断層帯</b></td><td>東西陸Pの衝突帯</td></tr>
                 <tr><td>東北(余効)</td><td><b style="color:#d9534f;">揺れ残り</b></td><td>太平洋P沈み込み</td></tr>
-                <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>太平洋P×北米P</td></tr>
             </table>
         </div>
     </div>
@@ -100,10 +100,11 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
-                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderPlateLayers()"> 太平洋プレート(薄青)</label>
-                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderPlateLayers()"> フィリピン海P(薄緑)</label>
-                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderPlateLayers()"> ユーラシアP(薄黄)</label>
-                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderPlateLayers()"> 北アメリカP(薄紫)</label>
+                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderPlateLayers()"> 太平洋プレート</label>
+                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderPlateLayers()"> フィリピン海プレート</label>
+                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderPlateLayers()"> ユーラシアプレート</label>
+                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderPlateLayers()"> 北アメリカプレート</label>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="renderPlateLayers()"> ⚠️ 衝突帯・重なり帯ライン</label>
             </div>
             <div id="earthquake-data" style="margin-top: 3px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波計算: 待機中</div>
@@ -118,7 +119,8 @@
             <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海プレート</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアプレート</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカプレート</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生地点</b></div></div>
+            <div class="legend-item"><span class="line-box" style="background:#ff4500;"></span><div><b>陸プレート衝突帯(糸静線)</b></div></div>
+            <div class="legend-item"><span class="line-box" style="background:#8a2be2;"></span><div><b>3層サンドイッチ重なり帯</b></div></div>
         </div>
     </div>
 
@@ -148,7 +150,6 @@
 
         var plateLayersGroup = L.layerGroup().addTo(map);
 
-        // 薄く色づけされたプレート領域と、中央のプレート名ラベル用座標
         var plateData = [
             {
                 id: 'north',
@@ -156,7 +157,7 @@
                 color: '#9333ea',
                 latlngs: [[45.5, 140.0], [45.5, 146.0], [40.0, 144.0], [35.0, 140.0], [38.0, 137.0], [42.0, 139.0]],
                 center: [41.0, 141.5],
-                detail: '【北アメリカプレート】<br>北海道・東北・関東の東日本が乗る陸のプレート。地下で太平洋プレートと重なり合っています。'
+                detail: '【北アメリカプレート】<br>北海道・東北・関東の東日本が乗る陸のプレート。'
             },
             {
                 id: 'eurasia',
@@ -164,23 +165,23 @@
                 color: '#ca8a04',
                 latlngs: [[43.0, 130.0], [38.0, 138.0], [35.0, 138.0], [33.0, 134.0], [31.0, 130.0], [36.0, 128.0]],
                 center: [36.0, 133.5],
-                detail: '【ユーラシアプレート】<br>中部・西日本・九州が乗る陸のプレート。南側からフィリピン海プレートが潜り込んでいます。'
+                detail: '【ユーラシアプレート】<br>中部・西日本・九州が乗る陸のプレート。'
             },
             {
                 id: 'pacific',
-                name: '太平洋プレート（海のプレート）',
+                name: '太平洋プレート',
                 color: '#2563eb',
                 latlngs: [[46.0, 144.0], [46.0, 152.0], [35.0, 150.0], [35.0, 142.0], [40.0, 144.0]],
                 center: [41.0, 147.5],
-                detail: '【太平洋プレート】<br>東日本の地下へ年間8〜10cmで沈み込む海のプレート。巨大地震の主要な発生源。'
+                detail: '【太平洋プレート】<br>東日本の地下へ向かって沈み込む海のプレート。'
             },
             {
                 id: 'philippine',
-                name: 'フィリピン海プレート（海のプレート）',
+                name: 'フィリピン海プレート',
                 color: '#16a34a',
                 latlngs: [[35.0, 138.0], [34.0, 141.0], [28.0, 138.0], [30.0, 130.0], [33.0, 134.0]],
                 center: [32.0, 135.5],
-                detail: '【フィリピン海プレート】<br>関東や東海・紀伊半島・九州の地下へ沈み込む海のプレート。南海トラフや首都直下の原因に。'
+                detail: '【フィリピン海プレート】<br>関東や東海・九州の地下へ沈み込む海のプレート。'
             }
         ];
 
@@ -191,6 +192,7 @@
             let showPhi = document.getElementById('chkPlPilippine').checked;
             let showEur = document.getElementById('chkPlEurasia').checked;
             let showNor = document.getElementById('chkPlNorth').checked;
+            let showZones = document.getElementById('chkPlZones').checked;
 
             let activeMap = {
                 'pacific': showPac,
@@ -199,20 +201,19 @@
                 'north': showNor
             };
 
+            // 1. 各プレートの領域を描画
             plateData.forEach(p => {
                 if (activeMap[p.id]) {
-                    // プレートの面（非常に薄い色で重なりが分かるようにする）
                     let polygon = L.polygon(p.latlngs, {
                         color: p.color,
                         weight: 1.5,
                         fillColor: p.color,
-                        fillOpacity: 0.1, // 薄く設定
+                        fillOpacity: 0.1,
                         dashArray: '3, 3'
                     }).addTo(plateLayersGroup);
 
                     polygon.bindPopup(`<b>🗺️ ${p.name}</b><br><br>${p.detail}`);
 
-                    // プレート名の常時ラベル
                     L.marker(p.center, {
                         icon: L.divIcon({
                             className: '',
@@ -223,14 +224,35 @@
                     }).addTo(plateLayersGroup);
                 }
             });
+
+            // 2. 特殊な「衝突帯」および「多重重なり帯」のハイライターを描画
+            if (showZones) {
+                // ① 糸魚川静岡構造線（東西の陸プレート衝突帯：中部〜長野〜静岡）
+                let itoShizuLine = L.polyline([[37.0, 138.0], [36.0, 138.0], [35.36, 138.73], [35.1, 138.6]], {
+                    color: '#ff4500',
+                    weight: 4,
+                    opacity: 0.8
+                }).addTo(plateLayersGroup);
+                itoShizuLine.bindPopup('<b>🔥 陸プレート衝突帯（糸魚川静岡構造線）</b><br>北アメリカプレートとユーラシアプレートが真正面からぶつかり合って圧縮されている最前線です。');
+
+                // ② 関東・首都圏「3層サンドイッチ重なり帯」
+                let kantoSandwich = L.polygon([[36.5, 139.0], [36.2, 140.8], [35.0, 140.5], [34.8, 138.8]], {
+                    color: '#8a2be2',
+                    weight: 2,
+                    dashArray: '5, 5',
+                    fillColor: '#8a2be2',
+                    fillOpacity: 0.25
+                }).addTo(plateLayersGroup);
+                kantoSandwich.bindPopup('<b>🥪 関東・東海「3層サンドイッチ重なり帯」</b><br>地表（陸P）のすぐ下に、フィリピン海Pと太平洋Pがミルフィーユ状に重なり合っている特殊なテクトニック交差点です。');
+            }
         }
 
         renderPlateLayers();
 
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '重なり帯', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】<br>フィリピン海プレートとユーラシアプレートの境界（重なり部分）で発生する巨大地震想定エリア。' },
-            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】<br>陸のプレートの下に太平洋Pとフィリピン海Pが入り込む「三重の重なり構造」の直上。' },
-            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北(余効)', prob: '継続中', strain: '太平洋P沈み込み', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方】<br>太平洋プレートが深く沈み込む境界域。巨大地震の余効変動が継続中。' }
+            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】<br>フィリピン海プレートがユーラシアプレートの下へ沈み込む巨大地震想定エリア。' },
+            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】<br>複数のプレートが立体的に重なり合う交差点の真上。' },
+            { lat: 36.2, lon: 138.0, radius: 45000, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【中部山岳・糸静線周辺】<br>東西の陸プレートが押し合うことで内陸活断層のひずみが蓄積しやすいエリア。' }
         ];
 
         futureRiskAreas.forEach(function(a) {
@@ -239,7 +261,7 @@
                 icon: L.divIcon({
                     className: '',
                     html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="strain-value">📍 ${a.strain}</span></div>`,
-                    iconSize: [95, 38], iconAnchor: [47, 19]
+                    iconSize: [105, 38], iconAnchor: [52, 19]
                 })
             }).addTo(map);
             marker.bindPopup(`<b>📍 ${a.name}</b><br><br>${a.detail}`);
