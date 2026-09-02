@@ -3,28 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（白画面防止・完全版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（過去2週間・完全版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* 🗺️ 白画面防止のため、bodyとhtml、mapのサイズを確実に対象化 */
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: #f0f0f0;
         }
-        #map {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
+        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
         /* 📋 左上：リアルタイム変動データ表 */
         .risk-table-box {
@@ -50,9 +38,9 @@
         .info-box h3 { margin: 0 0 2px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        /* 📜 地震リスト（約20件表示・ハイライト対応） */
+        /* 📜 地震リスト（過去2週間分を考慮し高さを拡張） */
         #earthquake-data {
-            max-height: 160px;
+            max-height: 200px;
             overflow-y: auto;
             scroll-behavior: smooth;
             padding-right: 2px;
@@ -104,6 +92,7 @@
 </head>
 <body>
 
+    <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
         <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
         <table class="risk-table">
@@ -116,10 +105,12 @@
         </table>
     </div>
 
+    <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
         
+        <!-- ⚙️ フィルター開閉ボタンとパネル -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
         <div class="filter-panel" id="filterPanel">
             <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
@@ -130,6 +121,7 @@
         <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
+    <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
         <div class="legend-title">🗺️ 画面の見方</div>
         <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート境界</b></div></div>
@@ -154,11 +146,8 @@
             maxZoom: 18
         }).addTo(map);
 
-        // 🗺️ 白画面防止：DOM描画完了後とウィンドウリサイズ時にマップの大きさを強制再計算
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                map.invalidateSize();
-            }, 200);
+            setTimeout(function() { map.invalidateSize(); }, 200);
         });
         window.addEventListener('resize', function() {
             map.invalidateSize();
@@ -241,25 +230,32 @@
             eqLayer.clearLayers();
             markerMap = {};
             try {
-                let res = await fetch('https://api.p2pquake.net/v2/history?limit=30');
+                // 🔄 過去2週間分を網羅できるよう最大件数（limit=100）を指定して取得
+                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
                 let data = await res.json();
                 
                 let filterM4 = document.getElementById('chkM4').checked;
+                let now = new Date();
+                let twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
                 let filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
+                    let eqTime = new Date(item.time);
+                    // 📅 過去2週間以内のデータに絞り込み
+                    if (eqTime < twoWeeksAgo) return false;
+
                     let mag = parseFloat(item.earthquake.magnitude || "0");
                     if (filterM4 && mag < 4.0) return false;
                     return true;
                 });
 
-                let displayCount = Math.min(20, filteredData.length);
                 let html = "";
                 
-                if (displayCount === 0) {
-                    html = `<div class="eq-item" style="text-align:center; color:#666;">条件に合致する地震はありません</div>`;
+                if (filteredData.length === 0) {
+                    html = `<div class="eq-item" style="text-align:center; color:#666;">過去2週間以内の該当地震はありません</div>`;
                 }
 
-                for(let i=0; i<displayCount; i++) {
+                for(let i=0; i<filteredData.length; i++) {
                     let item = filteredData[i];
                     let eq = item.earthquake;
                     let hypocenter = eq.hypocenter || {};
@@ -287,7 +283,7 @@
                         }
                     }
 
-                    var radiusSize = Math.max(6, mag * 3.5); 
+                    var radiusSize = Math.max(5, mag * 3.0); 
 
                     var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
@@ -300,7 +296,7 @@
                     var popupContent = `<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
                     mainMarker.bindPopup(popupContent);
 
-                    var innerMarker = L.circleMarker([lat, lon], { radius: 3, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
+                    var innerMarker = L.circleMarker([lat, lon], { radius: 2.5, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
                     innerMarker.bindPopup(popupContent);
 
                     markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
