@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・プレート構造マップ（完全確実クリック版）</title>
+    <title>地震リスク・プレート構造マップ（安定・解説パネル連動版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -53,13 +53,15 @@
 
         .risk-explain-box {
             position: absolute; bottom: 15px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; max-width: 190px;
-            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; width: 210px;
+            pointer-events: auto; max-height: 50vh; overflow-y: auto;
         }
-        .risk-explain-title { font-weight: bold; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .legend-item { display: flex; align-items: center; margin-bottom: 1.5px; }
-        .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
+        .risk-explain-title { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .explain-item { margin-bottom: 5px; padding: 3px; border-radius: 4px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
+        .explain-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .explain-item b { display: block; color: #1e293b; font-size: 9.5px; }
+        .explain-item span { color: #475569; font-size: 8px; display: block; }
 
         .plate-name-label {
             background: rgba(255, 255, 255, 0.9); border: 1px solid #666; padding: 1px 4px;
@@ -78,20 +80,6 @@
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
         .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
         .strain-value-blue { font-size: 7px; color: #1d4ed8; font-weight: bold; display: block; background: #dbeafe; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
-
-        /* カスタムポップアップモーダル */
-        #custom-popup-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.4); z-index: 99999; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: #fff; padding: 15px; border-radius: 8px; width: 280px; max-width: 85%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 11px; line-height: 1.5; color: #333;
-        }
-        .modal-close-btn {
-            background: #0284c7; color: #fff; border: none; padding: 5px 10px; border-radius: 4px;
-            font-size: 10px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -130,21 +118,30 @@
         </div>
     </div>
 
+    <!-- 右下に常時表示し、クリックで地図移動＆詳細確認ができる解説パネル -->
     <div class="risk-explain-box">
-        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ リスク・歪エリア解説</span><span>▼</span></div>
+        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ 歪・沈み込みエリア解説</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 3px;">
-            <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>南海トラフ・首都直下</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>中部・糸静線活断層帯</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>東北沖・北海道東部</b></div></div>
-        </div>
-    </div>
-
-    <!-- 詳細解説ポップアップ用モーダルウィンドウ -->
-    <div id="custom-popup-modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="modal-body-text"></div>
-            <button class="modal-close-btn" onclick="closeModalForce()">閉じる</button>
-            <div style="clear:both;"></div>
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。')">
+                <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (確率:70〜80%)</span>
+                <span>フィリピン海P × ユーラシアP</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」です。')">
+                <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (確率:約70%)</span>
+                <span>3層サンドイッチ構造</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(36.2, 138.0, 8, '中部山岳・糸静線活断層帯', '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。')">
+                <span style="color:#800080; font-weight:bold;">■ 中部・糸静線帯 (活断層帯)</span>
+                <span>東西陸P境界・圧縮帯</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北地方太平洋沖（余効変動）', '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が継続しています。')">
+                <span style="color:#2563eb; font-weight:bold;">■ 東北沖 (余効・揺残)</span>
+                <span>太平洋P沈み込み継続</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(42.8, 144.3, 7, '北海道東部（千島海溝沿い）', '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されています。')">
+                <span style="color:#2563eb; font-weight:bold;">■ 北海道東部 (超巨大想定)</span>
+                <span>千島海溝・太平洋P×北米P</span>
+            </div>
         </div>
     </div>
 
@@ -168,17 +165,10 @@
             el.style.display = (el.style.display === 'none') ? 'block' : 'none';
         }
 
-        function showRiskDetail(title, desc) {
-            document.getElementById('modal-body-text').innerHTML = `<b>${title}</b><br><br>${desc}`;
-            document.getElementById('custom-popup-modal').style.display = 'flex';
-        }
-
-        function closeModal(e) {
-            document.getElementById('custom-popup-modal').style.display = 'none';
-        }
-
-        function closeModalForce() {
-            document.getElementById('custom-popup-modal').style.display = 'none';
+        // 解説パネルをクリックしたとき、地図がそのエリアにスムーズに移動しアラートで詳細を表示
+        function focusArea(lat, lon, zoom, title, desc) {
+            map.setView([lat, lon], zoom);
+            alert("【" + title + "】\n\n" + desc);
         }
 
         var plateLayersGroup = L.layerGroup().addTo(map);
@@ -345,32 +335,27 @@
 
         renderLayers();
 
-        // 【確実ポップアップ版】インラインでonclickイベントを直結
+        // マップ上のリスクバッジ（クリックで解説パネルと連動して詳細へフォーカス＆表示）
         var persistentRiskAreas = [
             { 
                 lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70〜80%', strain: '海P×陸P境界', badgeClass: 'risk-badge', 
-                title: '🌊 南海トラフ巨大地震想定エリア',
-                detail: '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
+                title: '南海トラフ巨大地震想定', desc: '海のプレート（フィリピン海プレート）が陸のプレート（ユーラシアプレート）の下へ年間数センチの速度で沈み込み、極限まで歪みが蓄積している領域です。' 
             },
             { 
                 lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', badgeClass: 'risk-badge', 
-                title: '🏙️ 首都直下地震想定エリア',
-                detail: '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」となっており、複雑な歪みが発生しています。' 
+                title: '首都直下地震想定', desc: '陸のプレートの地下に、太平洋プレートとフィリピン海プレートの2枚の海のプレートが重なり合って入り込む「3層サンドイッチ構造」です。' 
             },
             { 
                 lat: 36.2, lon: 138.0, name: '中部・糸静線帯', prob: '活断層帯', strain: '東西圧縮', badgeClass: 'risk-badge-purple', 
-                title: '⛰️ 中部山岳・糸魚川静岡構造線活断層帯',
-                detail: '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっている大地殻変動帯です。' 
+                title: '中部山岳・糸静線活断層帯', desc: '東日本の北アメリカプレートと西日本のユーラシアプレートが真正面からぶつかり合い、強い東西圧縮の力が加わっています。' 
             },
             { 
                 lat: 39.5, lon: 143.0, name: '東北沖(余効・揺残)', prob: '継続中', strain: '太平洋P沈み込み', badgeClass: 'risk-badge-blue', 
-                title: '🌊 東北地方太平洋沖（余効変動エリア）',
-                detail: '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が長期間継続している領域です。' 
+                title: '東北地方太平洋沖（余効変動）', desc: '東日本大震災（M9.0）の発生以降も、太平洋プレートの沈み込みに伴って地殻の「余効変動（引っ張られる歪みの残存）」が継続しています。' 
             },
             { 
-                lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', titlePrefix: '❄️',
-                title: '❄️ 北海道東部（千島海溝沿い）',
-                detail: '太平洋プレートが北アメリカプレート（オホーツクプレート）の下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されている歪み集中エリアです。' 
+                lat: 42.8, lon: 144.3, name: '北海道東部(千島海溝)', prob: '超巨大想定', strain: '太平洋P×北米P', badgeClass: 'risk-badge-blue', 
+                title: '北海道東部（千島海溝沿い）', desc: '太平洋プレートが北アメリカプレートの下へ急角度で沈み込み、M9クラスの超巨大地震および津波の発生リスクが指摘されています。' 
             }
         ];
 
@@ -378,7 +363,7 @@
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}" onclick="showRiskDetail('${a.title}', '${a.detail}')">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
+                    html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="${a.badgeClass === 'risk-badge-blue' ? 'strain-value-blue' : 'strain-value'}">📍 ${a.strain}</span></div>`,
                     iconSize: [120, 38], iconAnchor: [60, 19]
                 })
             });
