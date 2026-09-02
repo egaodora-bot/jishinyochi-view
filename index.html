@@ -63,12 +63,6 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        .volcano-belt-label {
-            background: rgba(254, 226, 226, 0.75); border: 1px solid #dc2626; color: #b91c1c; padding: 1px 4px;
-            font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
-            white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
-        }
-
         .risk-badge { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
         .risk-badge-purple { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
         .risk-badge-blue { background: rgba(255, 255, 255, 0.95); border: 1.5px solid #1d4ed8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #1d4ed8; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 3000; }
@@ -107,7 +101,6 @@
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
-                <label><input type="checkbox" id="chkVolcanoes" checked onchange="renderLayers()"> 🌋 火山帯表示</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
             </div>
@@ -175,41 +168,10 @@
         var persistentRiskGroup = L.layerGroup().addTo(map);
         var eqLayer = L.layerGroup().addTo(map);
 
-        var volcanoData = {
-            belts: [
-                {
-                    name: '🌋 富士火山帯',
-                    latlngs: [[35.36, 138.73], [35.1, 138.9], [34.8, 139.1], [34.1, 139.4], [33.1, 139.8]],
-                    center: [34.6, 139.2],
-                    detail: '【富士火山帯】<br>伊豆半島から富士山、箱根を経て伊豆諸島へ連なる火山帯。'
-                },
-                {
-                    name: '🌋 那須火山帯',
-                    latlngs: [[41.5, 140.8], [39.7, 141.1], [38.2, 140.5], [37.3, 140.0], [36.5, 139.5]],
-                    center: [38.5, 140.5],
-                    detail: '【那須火山帯】<br>東北地方の背骨に沿って南北に走る火山帯。'
-                },
-                {
-                    name: '🌋 白山・乗鞍火山帯',
-                    latlngs: [[37.0, 136.8], [36.3, 137.6], [35.9, 137.6], [35.2, 137.0]],
-                    center: [36.1, 137.3],
-                    detail: '【中部山岳火山帯】<br>中部地方の険しい山岳地帯に位置する火山群。'
-                }
-            ],
-            volcanoes: [
-                { name: '富士山', lat: 35.3606, lon: 138.7274, desc: '日本最高峰の活火山。' },
-                { name: '浅間山', lat: 36.4042, lon: 138.5258, desc: '群馬・長野県境にある活発な活火山。' },
-                { name: '御嶽山', lat: 35.8922, lon: 137.4844, desc: '長野・岐阜県境に位置する成層火山。' },
-                { name: '箱根山', lat: 35.2325, lon: 139.0233, desc: 'カルデラ地形を持つ著名な火山。' },
-                { name: '阿蘇山', lat: 32.8842, lon: 131.1039, desc: '世界最大級のカルデラを持つ九州の活火山。' }
-            ]
-        };
-
         function renderLayers() {
             plateLayersGroup.clearLayers();
 
             let showZones = document.getElementById('chkPlZones').checked;
-            let showVol = document.getElementById('chkVolcanoes').checked;
 
             if (showZones) {
                 let itoShizuLine = L.polyline([
@@ -221,38 +183,6 @@
                     opacity: 0.9
                 }).addTo(plateLayersGroup);
                 itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
-            }
-
-            if (showVol) {
-                volcanoData.belts.forEach(vb => {
-                    let beltLine = L.polyline(vb.latlngs, {
-                        color: '#dc2626',
-                        weight: 3.5,
-                        opacity: 0.7,
-                        dashArray: '4, 4'
-                    }).addTo(plateLayersGroup);
-                    beltLine.bindPopup(`<b>${vb.name}</b><br><br>${vb.detail}`);
-
-                    L.marker(vb.center, {
-                        icon: L.divIcon({
-                            className: '',
-                            html: `<div class="volcano-belt-label">${vb.name}</div>`,
-                            iconSize: [120, 18], iconAnchor: [60, 9]
-                        }),
-                        interactive: false
-                    }).addTo(plateLayersGroup);
-                });
-
-                volcanoData.volcanoes.forEach(v => {
-                    let vMarker = L.circleMarker([v.lat, v.lon], {
-                        radius: 5,
-                        color: '#b91c1c',
-                        fillColor: '#ef4444',
-                        fillOpacity: 0.9,
-                        weight: 1
-                    }).addTo(plateLayersGroup);
-                    vMarker.bindPopup(`<b>🌋 ${v.name}</b><br><br>${v.desc}`);
-                });
             }
         }
 
