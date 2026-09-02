@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（過去2週間・完全版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（青色マーカー版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -38,7 +38,7 @@
         .info-box h3 { margin: 0 0 2px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        /* 📜 地震リスト（過去2週間分を考慮し高さを拡張） */
+        /* 📜 地震リスト */
         #earthquake-data {
             max-height: 200px;
             overflow-y: auto;
@@ -52,7 +52,7 @@
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
         .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #d9534f; font-size: 9px; }
+        .eq-time { font-weight: bold; color: #0284c7; font-size: 9px; }
         .eq-desc { font-size: 9px; }
 
         /* 🎛️ フィルター開閉エリア */
@@ -110,7 +110,6 @@
         <h3>🚨 地震速報・揺れ到達予想</h3>
         <div id="update-time" class="update-time">取得中...</div>
         
-        <!-- ⚙️ フィルター開閉ボタンとパネル -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
         <div class="filter-panel" id="filterPanel">
             <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
@@ -128,6 +127,7 @@
         <div class="legend-item"><span class="line-box" style="background:#d97706;"></span><div><b>主要活断層（中央構造線等）</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>警戒エリア</b></div></div>
         <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>ひずみ・余効変動エリア</b></div></div>
+        <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生（過去2週間）</b></div></div>
         <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>初期微動（P波）の波面</b></div></div>
         <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>主要動（S波）の波面</b></div></div>
     </div>
@@ -230,7 +230,6 @@
             eqLayer.clearLayers();
             markerMap = {};
             try {
-                // 🔄 過去2週間分を網羅できるよう最大件数（limit=100）を指定して取得
                 let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
                 let data = await res.json();
                 
@@ -241,7 +240,6 @@
                 let filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
                     let eqTime = new Date(item.time);
-                    // 📅 過去2週間以内のデータに絞り込み
                     if (eqTime < twoWeeksAgo) return false;
 
                     let mag = parseFloat(item.earthquake.magnitude || "0");
@@ -285,11 +283,12 @@
 
                     var radiusSize = Math.max(5, mag * 3.0); 
 
+                    // 🔵 地震発生マーカーの色を青系に変更（最新はシアン点滅、履歴は青色）
                     var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
-                        color: i === 0 ? '#00ffff' : '#ff4d4d', 
-                        fillColor: i === 0 ? '#00ffff' : '#ff9900', 
-                        fillOpacity: 0.6, 
+                        color: i === 0 ? '#00ffff' : '#3b82f6', 
+                        fillColor: i === 0 ? '#00ffff' : '#60a5fa', 
+                        fillOpacity: 0.65, 
                         className: i === 0 ? 'animated-blue-blink' : '' 
                     }).addTo(eqLayer);
 
