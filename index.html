@@ -104,7 +104,8 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 地殻変動ベクトル矢印</label>
-                <label><input type="checkbox" id="chkEqChain" checked onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
+                <!-- 初期状態でチェックを外し、非表示にしています -->
+                <label><input type="checkbox" id="chkEqChain" onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
             </div>
@@ -281,7 +282,6 @@
                 });
             } catch(e) {
                 console.warn("外部API取得失敗。オフライン/デモデータを使用します。", e);
-                // 通信制限やブロック時のフォールバック（デモ用の連鎖データ）
                 filteredData = [
                     { earthquake: { hypocenter: { name: "茨城県南部", magnitude: "4.5", latitude: 36.1, longitude: 140.1 }, time: "2026-06-03T12:00:00" } },
                     { earthquake: { hypocenter: { name: "福島県沖", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: "2026-06-03T10:00:00" } },
