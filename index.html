@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（リスク別色分け・完全安定版）</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（最終確認版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -37,11 +37,11 @@
         .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 4px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 4px; }
-        .eq-dot { display: inline-block; background: #dc2626; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #991b1b; width: 10px; height: 10px; }
+        .eq-dot { display: inline-block; background: #0284c7; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #dc2626; width: 10px; height: 10px; }
         
         .filter-toggle-btn {
-            background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 2px 4px; border-radius: 4px;
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
             font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
@@ -50,7 +50,7 @@
         }
         .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
-        .wave-alert { margin-top: 3px; background: #fee2e2; padding: 2px 4px; border-radius: 4px; color: #991b1b; font-weight: bold; font-size: 7.5px; border-left: 3px solid #dc2626; }
+        .wave-alert { margin-top: 3px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 7.5px; border-left: 3px solid #0284c7; }
         .noise-filter-status { margin-top: 2px; background: #f1f5f9; padding: 2px 4px; border-radius: 4px; color: #334155; font-size: 7.5px; font-weight: bold; }
 
         .risk-explain-box {
@@ -65,19 +65,17 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        /* ベクトルチップ */
         .vector-tip-label {
-            background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
+            background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
             font-size: 9.5px; font-weight: bold; padding: 3px 6px; border-radius: 4px;
             white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); text-align: center;
         }
 
-        /* リスク別バッジ（赤：最高リスク、紫：歪み集中、青：通常・余効） */
         .risk-badge-red { background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         .risk-badge-purple { background: rgba(124, 58, 237, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         .risk-badge-blue { background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         
-        .fault-subtext { font-size: 6.5px; color: #fee2e2; font-weight: normal; display: block; }
+        .fault-subtext { font-size: 6.5px; color: #e0f2fe; font-weight: normal; display: block; }
         .strain-value { font-size: 6.5px; color: #f1f5f9; font-weight: bold; display: block; background: rgba(255, 255, 255, 0.2); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
 
         @media screen and (max-width: 600px) {
@@ -160,7 +158,7 @@
     <script>
         var map;
         try {
-            map = L.map('map', { zoomControl: true }).setView([41.0, 141.0], 5);
+            map = L.map('map', { zoomControl: true }).setView([38.0, 137.0], 5);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap & 国土地理院(GEONET参考)',
                 maxZoom: 18,
@@ -217,7 +215,7 @@
                     let itoShizuLine = L.polyline([
                         [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                         [35.15, 138.65], [35.1, 138.5]
-                    ], { color: '#dc2626', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                    ], { color: '#0284c7', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
                     itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
                 }
 
@@ -240,7 +238,7 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
+                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#0284c7', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
 
                         let dx = v.dLon;
                         let dy = v.dLat;
@@ -248,12 +246,12 @@
                         let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
                         let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
 
-                        L.polyline([h1, endPoint, h2], { color: '#991b1b', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                        L.polyline([h1, endPoint, h2], { color: '#0369a1', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
 
                         let tipLabel = L.marker(endPoint, {
                             icon: L.divIcon({
                                 className: '',
-                                html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#fee2e2;">${v.vertical} (直近1年)</span></div>`,
+                                html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
                                 iconSize: [140, 32], iconAnchor: [-5, 16]
                             })
                         }).addTo(plateLayersGroup);
@@ -264,7 +262,7 @@
                     });
                 }
             } catch(e) {
-                console.warn("レイヤー描画時エラー（継続稼働中）:", e);
+                console.warn("レイヤー描画時エラー:", e);
             }
         }
 
@@ -352,7 +350,7 @@
 
                     html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
                                 <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
+                                <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
                                 <span>${displayName} (M${mag})</span>
                              </div>`;
                     
@@ -369,12 +367,12 @@
                                 if(!eqLayer) return;
                                 var mainMarker = L.circleMarker([l, lo], { 
                                     radius: Math.max(5, m * 1.6), 
-                                    color: index === 0 ? '#991b1b' : '#dc2626',
-                                    fillColor: index === 0 ? '#ef4444' : '#f87171',
+                                    color: index === 0 ? '#991b1b' : '#0369a1',
+                                    fillColor: index === 0 ? '#ef4444' : '#0284c7',
                                     fillOpacity: 0.85 
                                 }).addTo(eqLayer);
 
-                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔴 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
+                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
                                 mainMarker.bindPopup(popupContent);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {
@@ -391,7 +389,7 @@
                 let showChain = document.getElementById('chkEqChain')?.checked ?? false;
                 if (showChain && chainPoints.length > 1) {
                     let chainLine = L.polyline(chainPoints, {
-                        color: '#dc2626', weight: 3, opacity: 0.7, dashArray: '6, 6'
+                        color: '#0284c7', weight: 3, opacity: 0.7, dashArray: '6, 6'
                     }).addTo(eqLayer);
                     chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
                 }
@@ -424,7 +422,7 @@
             try {
                 safeFetchEq();
             } catch(e) {
-                console.warn("定期更新エラー（継続稼働中）:", e);
+                console.warn("定期更新エラー:", e);
             }
         }, 15000);
     </script>
