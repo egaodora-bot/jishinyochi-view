@@ -426,16 +426,21 @@
                     
                     if (!lat || lat === -200 || lat === 0) continue;
 
-                    var mainMarker = L.circleMarker([lat, lon], { 
-                        radius: Math.max(4, mag * 1.8), 
-                        color: i === 0 ? '#ff0000' : '#3b82f6', 
-                        fillColor: i === 0 ? '#ff4d4d' : '#60a5fa', 
-                        fillOpacity: 0.7 
-                    }).addTo(eqLayer);
+                    // 発生順に順次点灯（アニメーション演出）
+                    (function(index, l, lo, m, name, time) {
+                        setTimeout(function() {
+                            var mainMarker = L.circleMarker([l, lo], { 
+                                radius: Math.max(4, m * 1.8), 
+                                color: index === 0 ? '#ff0000' : '#3b82f6', 
+                                fillColor: index === 0 ? '#ff4d4d' : '#60a5fa', 
+                                fillOpacity: 0.7 
+                            }).addTo(eqLayer);
 
-                    let popupContent = `<b>🔵 震源地</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
-                    mainMarker.bindPopup(popupContent);
-                    markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
+                            let popupContent = `<b>🔵 震源地</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
+                            mainMarker.bindPopup(popupContent);
+                            markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
+                        }, index * 100); // 100ミリ秒ごとに1つずつ点灯
+                    })(i, lat, lon, mag, displayName, eqTime);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
                 document.getElementById('update-time').innerText = "更新: " + new Date().toLocaleTimeString();
