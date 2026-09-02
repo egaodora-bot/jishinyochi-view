@@ -82,11 +82,10 @@
         .strain-value { font-size: 6.5px; color: #800080; font-weight: bold; display: block; background: rgba(243, 232, 255, 0.95); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
         .strain-value-blue { font-size: 6.5px; color: #1d4ed8; font-weight: bold; display: block; background: rgba(219, 234, 254, 0.95); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
 
-        /* スマホ向けのレイアウト自動調整（画面いっぱいに広がるのを防ぐ） */
         @media screen and (max-width: 600px) {
             .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 9px; }
             .info-box { top: 8px; right: 6px; width: 48%; max-height: 35vh; }
-            .risk-explain-box { display: none; } /* スマホでは画面を圧迫するため解説ボックスを非表示（必要に応じてボタン等で開閉可能） */
+            .risk-explain-box { display: none; }
             #earthquake-data { max-height: 70px; }
         }
     </style>
@@ -175,7 +174,10 @@
 
         function focusArea(lat, lon, zoom, title, desc) {
             map.setView([lat, lon], zoom);
-            alert("【" + title + "】\n\n" + desc);
+            L.popup()
+                .setLatLng([lat, lon])
+                .setContent(`<b>【${title}】</b><br>${desc}`)
+                .openOn(map);
         }
 
         var plateLayersGroup = L.layerGroup().addTo(map);
