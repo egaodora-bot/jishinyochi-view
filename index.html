@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動ベクトルマップ</title>
+    <title>地震連鎖・地殻変動ベクトルマップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -37,8 +37,8 @@
         .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 4px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
-        .eq-num { display: inline-block; background: #0284c7; color: white; font-weight: bold; font-size: 7.5px; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; flex-shrink: 0; }
-        .eq-num.latest { background: #dc2626; }
+        .eq-dot { display: inline-block; background: #0284c7; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #dc2626; width: 10px; height: 10px; }
         
         .filter-toggle-btn {
             background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
@@ -73,20 +73,6 @@
         .strain-value { font-size: 6.5px; color: #800080; font-weight: bold; display: block; background: rgba(243, 232, 255, 0.95); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
         .strain-value-blue { font-size: 6.5px; color: #1d4ed8; font-weight: bold; display: block; background: rgba(219, 234, 254, 0.95); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
 
-        /* マップ上の地震ピン番号スタイル */
-        .eq-pin-num {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #0284c7;
-            color: #0284c7;
-            font-weight: bold;
-            font-size: 9px;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            text-align: center;
-            line-height: 14px;
-        }
-
         @media screen and (max-width: 600px) {
             .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 9px; }
             .info-box { top: 8px; right: 6px; width: 48%; max-height: 35vh; }
@@ -118,6 +104,7 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="renderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="renderLayers()"> ↗️ 地殻変動ベクトル矢印</label>
+                <label><input type="checkbox" id="chkEqChain" checked onchange="fetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
             </div>
@@ -130,11 +117,11 @@
     <div class="risk-explain-box">
         <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレートが陸の下へ沈み込み、歪みが蓄積しています。30年以内の発生確率 70〜80%')">
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ巨大地震想定', '海のプレートが陸の下へ沈み込み、歪みが蓄積しています。（30年以内 70〜80%）')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 南海トラフ (70〜80%)</span>
                 <span>フィリピン海P × ユーラシアP</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '3層構造。上空電磁波異常や地殻変動シグナルが観測されています。30年以内の発生確率 約70%')">
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下地震想定', '3層構造。上空電磁波異常や地殻変動シグナルが観測されています。（30年以内 約70%）')">
                 <span style="color:#ff4d4d; font-weight:bold;">■ 首都直下 (約70%)</span>
                 <span>上空電磁波異常・3層構造</span>
             </div>
@@ -259,7 +246,6 @@
                     radius: a.radius, color: a.color, weight: 1.5, fillColor: a.color, fillOpacity: 0.1, dashArray: '4, 4'
                 }).addTo(persistentRiskGroup);
 
-                // 円をクリックしたとき詳細ポップアップが開くように修正
                 circle.on('click', function() {
                     focusArea(a.lat, a.lon, 7, a.title, a.desc);
                 });
@@ -285,75 +271,7 @@
                 let data = await res.json();
                 
                 let filterM4 = document.getElementById('chkM4').checked;
+                let showChain = document.getElementById('chkEqChain').checked;
                 let filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
-                    let mag = parseFloat(item.earthquake.magnitude || "0");
-                    if (filterM4 && mag < 4.0) return false;
-                    return true;
-                });
-
-                let html = "";
-                for(let i=0; i<filteredData.length; i++) {
-                    let item = filteredData[i];
-                    let eq = item.earthquake;
-                    let hypocenter = eq.hypocenter || {};
-                    let displayName = hypocenter.name || "震源情報";
-                    let mag = parseFloat(hypocenter.magnitude || "0");
-                    let eqTime = item.time || "";
-                    let uniqueId = "eq_" + i;
-                    let numLabel = i + 1;
-
-                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                                <span class="eq-num ${i === 0 ? 'latest' : ''}">${numLabel}</span>
-                                <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
-                                <span>${displayName} (M${mag})</span>
-                             </div>`;
-                    
-                    let lat = hypocenter.latitude;
-                    let lon = hypocenter.longitude;
-                    
-                    if (!lat || lat === -200 || lat === 0) continue;
-
-                    (function(index, l, lo, m, name, time, n) {
-                        setTimeout(function() {
-                            var mainMarker = L.circleMarker([l, lo], { 
-                                radius: Math.max(6, m * 1.8), 
-                                color: index === 0 ? '#ff0000' : '#0026ff',
-                                fillColor: index === 0 ? '#ff4d4d' : '#00ccff',
-                                fillOpacity: 0.85 
-                            }).addTo(eqLayer);
-
-                            mainMarker.bindTooltip(`${n}`, {
-                                permanent: true,
-                                direction: 'center',
-                                className: 'eq-pin-num'
-                            });
-
-                            let popupContent = `<b>🔵 発生順: 第${n}報</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
-                            mainMarker.bindPopup(popupContent);
-                            markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                        }, index * 250);
-                    })(i, lat, lon, mag, displayName, eqTime, numLabel);
-                }
-                document.getElementById('earthquake-data').innerHTML = html;
-                document.getElementById('update-time').innerText = "更新: " + new Date().toLocaleTimeString();
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        function highlightAndOpenPopup(id) {
-            document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-            document.getElementById(id).classList.add('highlighted');
-            if (markerMap[id]) {
-                let m = markerMap[id];
-                map.setView([m.lat, m.lon], 8);
-                m.marker.openPopup();
-            }
-        }
-
-        fetchEq();
-        setInterval(fetchEq, 15000);
-    </script>
-</body>
-</html>
+                    let mag
