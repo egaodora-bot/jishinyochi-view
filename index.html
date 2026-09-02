@@ -426,20 +426,20 @@
                     
                     if (!lat || lat === -200 || lat === 0) continue;
 
-                    // 発生順に順次点灯（アニメーション演出）
+                    // 発生順にゆっくり順次点灯（250ms間隔に調整）、過去の地震は鮮やかなシアン・青系に変更
                     (function(index, l, lo, m, name, time) {
                         setTimeout(function() {
                             var mainMarker = L.circleMarker([l, lo], { 
                                 radius: Math.max(4, m * 1.8), 
-                                color: index === 0 ? '#ff0000' : '#3b82f6', 
-                                fillColor: index === 0 ? '#ff4d4d' : '#60a5fa', 
-                                fillOpacity: 0.7 
+                                color: index === 0 ? '#ff0000' : '#0026ff',       // 一番新しい地震は赤、過去はより目立つ鮮やかな青
+                                fillColor: index === 0 ? '#ff4d4d' : '#00ccff',   // 過去の地震の内部は目立つシアン（明るい青）
+                                fillOpacity: 0.85 
                             }).addTo(eqLayer);
 
                             let popupContent = `<b>🔵 震源地</b><br>規模: M${m}<br>${name}<br>${time.replace('T', ' ').substring(0, 16)}`;
                             mainMarker.bindPopup(popupContent);
                             markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                        }, index * 100); // 100ミリ秒ごとに1つずつ点灯
+                        }, index * 250); // 1つにつき250ミリ秒遅延させてじっくり点灯
                     })(i, lat, lon, mag, displayName, eqTime);
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
