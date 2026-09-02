@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（青基調高視認性・高安定版）</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（リスク別色分け・完全安定版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -36,12 +36,12 @@
         #earthquake-data { max-height: 90px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
         .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 4px; }
         .eq-item:hover { background: #f1f5f9; }
-        .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
-        .eq-dot { display: inline-block; background: #0284c7; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #1d4ed8; width: 10px; height: 10px; }
+        .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 4px; }
+        .eq-dot { display: inline-block; background: #dc2626; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #991b1b; width: 10px; height: 10px; }
         
         .filter-toggle-btn {
-            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
+            background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 2px 4px; border-radius: 4px;
             font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
@@ -50,7 +50,7 @@
         }
         .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
-        .wave-alert { margin-top: 3px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 7.5px; border-left: 3px solid #0284c7; }
+        .wave-alert { margin-top: 3px; background: #fee2e2; padding: 2px 4px; border-radius: 4px; color: #991b1b; font-weight: bold; font-size: 7.5px; border-left: 3px solid #dc2626; }
         .noise-filter-status { margin-top: 2px; background: #f1f5f9; padding: 2px 4px; border-radius: 4px; color: #334155; font-size: 7.5px; font-weight: bold; }
 
         .risk-explain-box {
@@ -65,20 +65,20 @@
         .explain-item b { display: block; color: #1e293b; font-size: 9px; }
         .explain-item span { color: #475569; font-size: 7.5px; display: block; }
 
-        /* 青ベース＋白文字による高視認性ベクトルチップ */
+        /* ベクトルチップ */
         .vector-tip-label {
-            background: rgba(29, 78, 216, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
+            background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
             font-size: 9.5px; font-weight: bold; padding: 3px 6px; border-radius: 4px;
             white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); text-align: center;
         }
 
-        /* 青ベース＋白文字のリスクバッジ群 */
-        .risk-badge { background: rgba(29, 78, 216, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-purple { background: rgba(91, 33, 182, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-blue { background: rgba(3, 105, 161, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        /* リスク別バッジ（赤：最高リスク、紫：歪み集中、青：通常・余効） */
+        .risk-badge-red { background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-purple { background: rgba(124, 58, 237, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-blue { background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         
-        .fault-subtext { font-size: 6.5px; color: #e0f2fe; font-weight: normal; display: block; }
-        .strain-value { font-size: 6.5px; color: #e2e8f0; font-weight: bold; display: block; background: rgba(255, 255, 255, 0.2); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
+        .fault-subtext { font-size: 6.5px; color: #fee2e2; font-weight: normal; display: block; }
+        .strain-value { font-size: 6.5px; color: #f1f5f9; font-weight: bold; display: block; background: rgba(255, 255, 255, 0.2); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
 
         @media screen and (max-width: 600px) {
             .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 9px; }
@@ -95,11 +95,12 @@
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 2px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
-                <tr><td>北海道東部</td><td><b style="color:#1d4ed8;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
-                <tr><td>東北沖</td><td><b style="color:#1d4ed8;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
-                <tr><td>首都直下</td><td><b style="color:#1d4ed8;">南東15cm/年</b></td><td>微小沈降</td></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#1d4ed8;">北西25cm/年</b></td><td>沈降傾向</td></tr>
+                <tr><td>北海道東部</td><td><b style="color:#dc2626;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
+                <tr><td>東北沖</td><td><b style="color:#0284c7;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
+                <tr><td>首都直下</td><td><b style="color:#dc2626;">南東15cm/年</b></td><td>微小沈降</td></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#dc2626;">北西25cm/年</b></td><td>沈降傾向</td></tr>
                 <tr><td>新潟・北陸</td><td><b style="color:#7c3aed;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
+                <tr><td>福井・若狭</td><td><b style="color:#7c3aed;">歪み・活断層帯</b></td><td>微小変動</td></tr>
             </table>
         </div>
     </div>
@@ -112,7 +113,7 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量・ベクトル矢印</label>
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（青網掛け）</label>
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（網掛け）</label>
                 <label><input type="checkbox" id="chkEqChain" onchange="safeFetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="safeFetchEq()"> M4.0以上のみ</label>
@@ -126,21 +127,25 @@
     <div class="risk-explain-box">
         <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (期間・基準)</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性とひずみ蓄積が指摘されています。')">
-                <span style="color:#1d4ed8; font-weight:bold;">■ 北海道東部 (千島海溝)</span>
+            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性が指摘されています。')">
+                <span style="color:#dc2626; font-weight:bold;">■ 北海道東部 (千島海溝)【最高リスク】</span>
                 <span>水平:西〜北西8cm/年 / 垂直:沈降 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。')">
-                <span style="color:#1d4ed8; font-weight:bold;">■ 南海トラフ (沈降・歪み)</span>
+                <span style="color:#dc2626; font-weight:bold;">■ 南海トラフ (沈降・歪み)【最高リスク】</span>
                 <span>水平:北西25cm/年 / 垂直:沈降 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。')">
-                <span style="color:#1d4ed8; font-weight:bold;">■ 首都直下 (圧縮・沈降)</span>
+                <span style="color:#dc2626; font-weight:bold;">■ 首都直下 (圧縮・沈降)【最高リスク】</span>
                 <span>水平:南東15cm/年 / 垂直:微小沈降 (直近1年)</span>
             </div>
             <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
-                <span style="color:#7c3aed; font-weight:bold;">■ 新潟・北陸 歪み集中帯</span>
+                <span style="color:#7c3aed; font-weight:bold;">■ 新潟・北陸 歪み集中帯【要警戒】</span>
                 <span>急激な歪み・年間変動 隆起横ずれ</span>
+            </div>
+            <div class="explain-item" onclick="focusArea(35.8, 136.2, 8, '福井・若狭 歪み帯', '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。')">
+                <span style="color:#7c3aed; font-weight:bold;">■ 福井・若狭 歪み帯【要警戒】</span>
+                <span>活断層密集・微小変動蓄積</span>
             </div>
             <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '2011年震災後からの継続的な余効変動（直近1年間の年間変化速度）です。')">
                 <span style="color:#0284c7; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
@@ -212,19 +217,19 @@
                     let itoShizuLine = L.polyline([
                         [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                         [35.15, 138.65], [35.1, 138.5]
-                    ], { color: '#1d4ed8', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                    ], { color: '#dc2626', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
                     itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
                 }
 
                 if (showStrain) {
                     let strainZones = [
-                        { center: [42.8, 144.0], radius: 90000, name: '千島海溝・北海道東部' },
-                        { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯' },
-                        { center: [35.8, 136.0], radius: 65000, name: '福井・若狭 歪み集中帯' }
+                        { center: [42.8, 144.0], radius: 90000, name: '千島海溝・北海道東部', color: '#dc2626' },
+                        { center: [37.2, 138.8], radius: 70000, name: '新潟・北陸 歪み集中帯', color: '#7c3aed' },
+                        { center: [35.8, 136.2], radius: 65000, name: '福井・若狭 歪み集中帯', color: '#7c3aed' }
                     ];
                     strainZones.forEach(sz => {
                         let zoneCircle = L.circle(sz.center, {
-                            radius: sz.radius, color: '#1d4ed8', weight: 2, fillColor: '#3b82f6', fillOpacity: 0.2, dashArray: '3, 3'
+                            radius: sz.radius, color: sz.color, weight: 2, fillColor: sz.color, fillOpacity: 0.15, dashArray: '3, 3'
                         }).addTo(plateLayersGroup);
                         zoneCircle.bindPopup(`<b>⚡ 歪み集中エリア (${sz.name})</b><br>地殻の変動速度が周囲より速く、ひずみが蓄積している警戒ゾーンです。`);
                     });
@@ -235,7 +240,7 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#0284c7', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
+                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
 
                         let dx = v.dLon;
                         let dy = v.dLat;
@@ -243,12 +248,12 @@
                         let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
                         let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
 
-                        L.polyline([h1, endPoint, h2], { color: '#1d4ed8', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                        L.polyline([h1, endPoint, h2], { color: '#991b1b', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
 
                         let tipLabel = L.marker(endPoint, {
                             icon: L.divIcon({
                                 className: '',
-                                html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
+                                html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#fee2e2;">${v.vertical} (直近1年)</span></div>`,
                                 iconSize: [140, 32], iconAnchor: [-5, 16]
                             })
                         }).addTo(plateLayersGroup);
@@ -266,10 +271,11 @@
         safeRenderLayers();
 
         var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.5, name: '北海道東部(千島海溝)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等で切迫性が指摘されている巨大地震の想定震源域です。', radius: 130000, color: '#1d4ed8' },
-            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, color: '#1d4ed8' },
-            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, color: '#2563eb' },
+            { lat: 42.8, lon: 144.5, name: '北海道東部(千島)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等で切迫性が指摘されている巨大地震の想定震源域です。', radius: 130000, color: '#dc2626' },
+            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, color: '#dc2626' },
+            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, color: '#dc2626' },
             { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed' },
+            { lat: 35.8, lon: 136.2, name: '福井・若狭帯', prob: '活断層密集', strain: '微小変動蓄積', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。', radius: 70000, color: '#7c3aed' },
             { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#0284c7' }
         ];
 
@@ -325,8 +331,8 @@
                 console.warn("外部API取得失敗。安全なデモデータに切り替えます。", e);
                 filteredData = [
                     { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "千葉県東方沖 (デモ)", magnitude: "4.8", latitude: 35.5, longitude: 140.5 }, time: new Date().toISOString() } }
+                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } }
                 ];
             }
 
@@ -346,7 +352,7 @@
 
                     html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
                                 <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#1d4ed8; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
+                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
                                 <span>${displayName} (M${mag})</span>
                              </div>`;
                     
@@ -363,12 +369,12 @@
                                 if(!eqLayer) return;
                                 var mainMarker = L.circleMarker([l, lo], { 
                                     radius: Math.max(5, m * 1.6), 
-                                    color: index === 0 ? '#1e40af' : '#0284c7',
-                                    fillColor: index === 0 ? '#3b82f6' : '#38bdf8',
+                                    color: index === 0 ? '#991b1b' : '#dc2626',
+                                    fillColor: index === 0 ? '#ef4444' : '#f87171',
                                     fillOpacity: 0.85 
                                 }).addTo(eqLayer);
 
-                                let popupContent = `<b>${index === 0 ? '🔵 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
+                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔴 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
                                 mainMarker.bindPopup(popupContent);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {
@@ -385,7 +391,7 @@
                 let showChain = document.getElementById('chkEqChain')?.checked ?? false;
                 if (showChain && chainPoints.length > 1) {
                     let chainLine = L.polyline(chainPoints, {
-                        color: '#1d4ed8', weight: 3, opacity: 0.7, dashArray: '6, 6'
+                        color: '#dc2626', weight: 3, opacity: 0.7, dashArray: '6, 6'
                     }).addTo(eqLayer);
                     chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
                 }
