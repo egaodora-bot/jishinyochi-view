@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆プレート色分け監視マップ</title>
+    <title>地震リスク・地殻変動＆プレート正しい位置関係マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -14,13 +14,11 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* 📋 左上：リアルタイム変動データ表 */
         .risk-table-box {
             position: absolute; top: 50px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 280px;
-            pointer-events: auto;
-            max-height: 40vh; overflow-y: auto;
+            pointer-events: auto; max-height: 40vh; overflow-y: auto;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -29,24 +27,16 @@
         .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
         .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
 
-        /* 🚨 右上：地震速報・システム状況 */
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 240px; font-size: 10px;
-            pointer-events: auto;
-            max-height: 50vh; display: flex; flex-direction: column;
+            pointer-events: auto; max-height: 50vh; display: flex; flex-direction: column;
         }
         .info-box h3 { margin: 0 0 2px 0; font-size: 10.5px; display: flex; justify-content: space-between; align-items: center; }
         .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
         
-        /* 📜 地震リスト */
-        #earthquake-data {
-            max-height: 100px;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-            padding-right: 2px;
-        }
+        #earthquake-data { max-height: 100px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
         #earthquake-data::-webkit-scrollbar { width: 4px; }
         #earthquake-data::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
@@ -57,7 +47,6 @@
         .eq-time { font-weight: bold; color: #0284c7; font-size: 8.5px; }
         .eq-desc { font-size: 8.5px; }
 
-        /* 🎛️ フィルター開閉エリア */
         .filter-toggle-btn {
             background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
             font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
@@ -71,7 +60,6 @@
         .wave-alert { margin-top: 3px; background: #fff3cd; padding: 2px 4px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 7.5px; border-left: 3px solid #ffc107; }
         .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 7.5px; font-weight: bold; }
 
-        /* 🗺️ 右下：凡例 */
         .legend {
             position: absolute; bottom: 15px; right: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
@@ -84,7 +72,6 @@
         .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
         .line-box { width: 10px; height: 2.5px; margin-right: 4px; flex-shrink: 0; }
 
-        /* 🏷️ バッジスタイル */
         .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
@@ -125,10 +112,10 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
-                <label><input type="checkbox" id="chkPlPacific" checked onchange="togglePlateLayers()"> 太平洋プレート</label>
-                <label><input type="checkbox" id="chkPlPilippine" checked onchange="togglePlateLayers()"> フィリピン海プレート</label>
-                <label><input type="checkbox" id="chkPlEurasia" checked onchange="togglePlateLayers()"> ユーラシアプレート</label>
-                <label><input type="checkbox" id="chkPlNorth" checked onchange="togglePlateLayers()"> 北アメリカ(オホーツク)</label>
+                <label><input type="checkbox" id="chkPlPacific" checked onchange="togglePlateLayers()"> 太平洋プレート(海)</label>
+                <label><input type="checkbox" id="chkPlPilippine" checked onchange="togglePlateLayers()"> フィリピン海プレート(海)</label>
+                <label><input type="checkbox" id="chkPlEurasia" checked onchange="togglePlateLayers()"> ユーラシアP(西日本)</label>
+                <label><input type="checkbox" id="chkPlNorth" checked onchange="togglePlateLayers()"> 北アメリカP(東日本)</label>
             </div>
             <div id="earthquake-data" style="margin-top: 3px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波計算: 待機中</div>
@@ -139,10 +126,10 @@
     <div class="legend">
         <div class="legend-title" onclick="toggleLegend()"><span>🗺️ 画面の見方</span><span>▼</span></div>
         <div class="legend-content" id="legendContent" style="margin-top: 3px;">
-            <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋P (青)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海P (緑)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (黄)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (紫)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋P (東側沈み込み)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海P (南側沈み込み)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (西日本が乗る)</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (東日本が乗る)</b></div></div>
             <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生(2週間)</b></div></div>
             <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>P波波面</b></div></div>
             <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>S波波面</b></div></div>
@@ -163,12 +150,8 @@
             maxZoom: 18
         }).addTo(map);
 
-        window.addEventListener('load', function() {
-            setTimeout(function() { map.invalidateSize(); }, 200);
-        });
-        window.addEventListener('resize', function() {
-            map.invalidateSize();
-        });
+        window.addEventListener('load', function() { setTimeout(function() { map.invalidateSize(); }, 200); });
+        window.addEventListener('resize', function() { map.invalidateSize(); });
 
         function toggleFilterPanel() {
             var panel = document.getElementById('filterPanel');
@@ -185,37 +168,37 @@
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
         }
 
-        // プレートごとの領域レイヤー定義（色分け＆ポップアップ付）
         var plateLayersGroup = L.layerGroup().addTo(map);
 
+        // 日本列島がその上や境界に位置するよう、正確にエリアを覆う形に座標を調整
         var plateData = [
             {
-                id: 'pacific',
-                name: '太平洋プレート',
-                color: '#2563eb',
-                latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0], [32.0, 145.0], [40.0, 150.0]],
-                detail: '【太平洋プレート】<br>・特徴: 日本列島の下へ年間約8〜10cmの猛烈な速度で沈み込んでいます。<br>・影響: 東北地方太平洋沖地震（東日本大震災）や千島海溝沿いの超巨大地震の震源となります。'
-            },
-            {
-                id: 'philippine',
-                name: 'フィリピン海プレート',
-                color: '#16a34a',
-                latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0], [28.0, 130.0], [30.0, 137.0], [33.0, 139.5]],
-                detail: '【フィリピン海プレート】<br>・特徴: 南海トラフや相模トラフに沿って日本列島の下へ沈み込んでいます。<br>・影響: 南海トラフ巨大地震や首都直下地震、関東大震災などの要因となります。'
+                id: 'north',
+                name: '北アメリカプレート（東日本が乗る陸のプレート）',
+                color: '#9333ea',
+                latlngs: [[45.5, 140.0], [45.5, 146.0], [40.0, 144.0], [35.0, 140.0], [38.0, 137.0], [42.0, 139.0]],
+                detail: '【北アメリカプレート（オホーツクプレート）】<br>・位置: 北海道から東北・関東までの東日本がこのプレートの上に直接乗っています。'
             },
             {
                 id: 'eurasia',
-                name: 'ユーラシアプレート（アムールプレート）',
+                name: 'ユーラシアプレート（西日本が乗る陸のプレート）',
                 color: '#ca8a04',
-                latlngs: [[45.0, 135.0], [37.0, 136.0], [34.0, 133.0], [33.0, 130.0], [38.0, 132.0], [43.0, 133.0]],
-                detail: '【ユーラシアプレート（西日本側）】<br>・特徴: 日本海側から西日本にかけての基盤となるプレートです。<br>・影響: 日本海東縁変動帯や内陸部の活断層地震（新潟県中越地震や熊本地震など）に関係します。'
+                latlngs: [[43.0, 130.0], [38.0, 138.0], [35.0, 138.0], [33.0, 134.0], [31.0, 130.0], [36.0, 128.0]],
+                detail: '【ユーラシアプレート（アムールプレート）】<br>・位置: 中部地方（糸魚川静岡構造線より西）から西日本、九州にかけての基盤となるプレートです。'
             },
             {
-                id: 'north',
-                name: '北アメリカプレート（オホーツクプレート）',
-                color: '#9333ea',
-                latlngs: [[45.0, 141.0], [40.0, 141.0], [37.0, 139.0], [42.0, 139.0], [45.0, 143.0]],
-                detail: '【北アメリカプレート（東日本側）】<br>・特徴: 北海道から東北地方の北日本側を覆うプレートです。<br>・影響: 糸魚川静岡構造線を境に西側のユーラシアプレートと衝突しています。'
+                id: 'pacific',
+                name: '太平洋プレート（東日本・北日本へ沈み込む海のプレート）',
+                color: '#2563eb',
+                latlngs: [[46.0, 144.0], [46.0, 152.0], [35.0, 150.0], [35.0, 142.0], [40.0, 144.0]],
+                detail: '【太平洋プレート】<br>・位置: 東側の太平洋側から、北日本や東日本の地下へ向かって年間8〜10cmのスピードで沈み込んでいます。'
+            },
+            {
+                id: 'philippine',
+                name: 'フィリピン海プレート（西日本・中部へ沈み込む海のプレート）',
+                color: '#16a34a',
+                latlngs: [[35.0, 138.0], [34.0, 141.0], [28.0, 138.0], [30.0, 130.0], [33.0, 134.0]],
+                detail: '【フィリピン海プレート】<br>・位置: 南側の海域から、南海トラフや相模トラフに沿って日本列島の下へ沈み込んでいます。'
             }
         ];
 
@@ -240,11 +223,11 @@
                         color: p.color,
                         weight: 2,
                         fillColor: p.color,
-                        fillOpacity: 0.15,
-                        dashArray: '3, 3'
+                        fillOpacity: 0.18,
+                        dashArray: '4, 4'
                     }).addTo(plateLayersGroup);
 
-                    polygon.bindPopup(`<b>🗺️ プレート情報: ${p.name}</b><br><br>${p.detail}`);
+                    polygon.bindPopup(`<b>🗺️ プレート構造: ${p.name}</b><br><br>${p.detail}`);
                 }
             });
         }
@@ -253,7 +236,6 @@
             renderPlateLayers();
         }
 
-        // 初期描画時にプレートを描画
         renderPlateLayers();
 
         var futureRiskAreas = [
@@ -332,7 +314,6 @@
                 });
 
                 let html = "";
-                
                 if (filteredData.length === 0) {
                     html = `<div class="eq-item" style="text-align:center; color:#666;">該当する地震はありません</div>`;
                 }
@@ -356,17 +337,16 @@
                     
                     if (!lat || lat === -200 || !lon || lon === -200) {
                         lat = 35.68; lon = 139.69;
-                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1 || displayName.indexOf('天草') !== -1) {
+                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1) {
                             lat = 32.79; lon = 130.74; 
                         } else if (displayName.indexOf('日向灘') !== -1 || displayName.indexOf('宮崎') !== -1) {
                             lat = 31.90; lon = 131.68;
-                        } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1 || displayName.indexOf('岩手') !== -1) {
+                        } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1) {
                             lat = 38.26; lon = 140.87; 
                         }
                     }
 
                     var radiusSize = Math.max(4, mag * 2.5); 
-
                     var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
                         color: i === 0 ? '#00ffff' : '#3b82f6', 
