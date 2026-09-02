@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（青色マーカー版）</title>
+    <title>地震リスク・地殻変動＆P波S波波面伝播監視マップ（スマホ最適化版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -17,13 +17,14 @@
         /* 📋 左上：リアルタイム変動データ表 */
         .risk-table-box {
             position: absolute; top: 50px; left: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 310px;
+            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 280px;
             pointer-events: auto;
+            max-height: 40vh; overflow-y: auto;
         }
-        .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 11px; color: #333; }
+        .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .risk-table th, .risk-table td { text-align: left; padding: 3px 2px; border-bottom: 1px solid #eee; font-size: 9px; overflow: hidden; text-overflow: ellipsis; }
+        .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8.5px; overflow: hidden; text-overflow: ellipsis; }
         .risk-table th:nth-child(1), .risk-table td:nth-child(1) { width: 28%; }
         .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
         .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
@@ -31,105 +32,119 @@
         /* 🚨 右上：地震速報・システム状況 */
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 270px; font-size: 10px;
+            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 240px; font-size: 10px;
             pointer-events: auto;
+            max-height: 45vh; display: flex; flex-direction: column;
         }
-        .info-box h3 { margin: 0 0 2px 0; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
-        .update-time { font-size: 9px; color: #666; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
+        .info-box h3 { margin: 0 0 2px 0; font-size: 10.5px; display: flex; justify-content: space-between; align-items: center; }
+        .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
         
         /* 📜 地震リスト */
         #earthquake-data {
-            max-height: 200px;
+            max-height: 120px;
             overflow-y: auto;
             scroll-behavior: smooth;
             padding-right: 2px;
         }
-        #earthquake-data::-webkit-scrollbar { width: 5px; }
+        #earthquake-data::-webkit-scrollbar { width: 4px; }
         #earthquake-data::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-        .eq-item { border-bottom: 1px solid #eee; padding: 4px 2px; cursor: pointer; transition: background 0.2s; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
         .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #0284c7; font-size: 9px; }
-        .eq-desc { font-size: 9px; }
+        .eq-time { font-weight: bold; color: #0284c7; font-size: 8.5px; }
+        .eq-desc { font-size: 8.5px; }
 
         /* 🎛️ フィルター開閉エリア */
         .filter-toggle-btn {
-            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 6px; border-radius: 4px;
-            font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 4px; display: inline-block; width: 100%; text-align: center;
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
+            font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px; border-radius: 4px; margin-top: 3px; font-size: 9px;
+            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; margin-top: 2px; font-size: 8.5px;
         }
-        .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
+        .filter-panel label { display: block; margin-bottom: 1px; cursor: pointer; }
         
-        .wave-alert { margin-top: 4px; background: #fff3cd; padding: 3px 5px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 8px; border-left: 3px solid #ffc107; }
-        .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 8px; font-weight: bold; }
+        .wave-alert { margin-top: 3px; background: #fff3cd; padding: 2px 4px; border-radius: 4px; color: #856404; font-weight: bold; font-size: 7.5px; border-left: 3px solid #ffc107; }
+        .noise-filter-status { margin-top: 2px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-size: 7.5px; font-weight: bold; }
 
         /* 🗺️ 右下：凡例 */
         .legend {
-            position: absolute; bottom: 20px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; max-width: 220px;
+            position: absolute; bottom: 15px; right: 8px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; max-width: 180px;
             pointer-events: auto;
         }
-        .legend-title { font-weight: bold; margin-bottom: 3px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 11px; }
-        .legend-item { display: flex; align-items: center; margin-bottom: 2px; }
-        .color-box { width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; flex-shrink: 0; }
-        .line-box { width: 12px; height: 3px; margin-right: 5px; flex-shrink: 0; }
+        .legend-title { font-weight: bold; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .legend-content { display: block; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 1.5px; }
+        .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
+        .line-box { width: 10px; height: 2.5px; margin-right: 4px; flex-shrink: 0; }
 
         /* 🏷️ バッジスタイル */
-        .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 3px 5px; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
-        .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 3px 5px; font-size: 9px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
-        .fault-subtext { font-size: 7.5px; color: #555; font-weight: normal; display: block; }
-        .strain-value { font-size: 7.5px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 1px 2px; border-radius: 2px; margin-top: 1px; }
+        .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
+        .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
+        .fault-subtext { font-size: 7px; color: #555; font-weight: normal; display: block; }
+        .strain-value { font-size: 7px; color: #800080; font-weight: bold; display: block; background: #f3e8ff; padding: 0.5px 1px; border-radius: 2px; margin-top: 0.5px; }
 
         @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
         .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
+
+        /* 📱 スマホ画面向けの縦長・小画面対応メディアクエリ */
+        @media screen and (max-width: 600px) {
+            .risk-table-box { width: 210px; top: 45px; left: 4px; font-size: 8.5px; }
+            .info-box { width: 190px; top: 4px; right: 4px; font-size: 8.5px; }
+            .legend { bottom: 8px; right: 4px; max-width: 150px; font-size: 8px; }
+            #earthquake-data { max-height: 80px; }
+        }
     </style>
 </head>
 <body>
 
     <!-- 📋 左上：リアルタイム変動データ表 -->
     <div class="risk-table-box">
-        <div class="risk-table-title">📊 地殻の動き・前兆の監視</div>
-        <table class="risk-table">
-            <tr><th>エリア</th><th>発生確率</th><th>地表・上空の異変</th></tr>
-            <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>地面のずれ: <b>年3.2cm</b></td></tr>
-            <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空の異変: <span style="color:#800080; font-weight:bold;">現在発生中</span></td></tr>
-            <tr><td>東北地方（余効）</td><td><b style="color:#d9534f;">揺れ残り継続中</b></td><td>東向きのずれ: <b>年5.4cm</b></td></tr>
-            <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>プレート圧力: <b>年8.1cm</b></td></tr>
-            <tr><td>熊本・九州内陸</td><td><b style="color:#800080;">活動継続中</b></td><td>活断層ひずみ: <span style="color:#800080; font-weight:bold;">要警戒</span></td></tr>
-        </table>
+        <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動監視</span><span>▼</span></div>
+        <div id="riskTableContent">
+            <table class="risk-table" style="margin-top: 3px;">
+                <tr><th>エリア</th><th>発生確率</th><th>異変</th></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>ずれ:年3.2cm</td></tr>
+                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空異変中</td></tr>
+                <tr><td>東北(余効)</td><td><b style="color:#d9534f;">揺れ残り</b></td><td>東向:年5.4cm</td></tr>
+                <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>圧力:年8.1cm</td></tr>
+                <tr><td>熊本九州</td><td><b style="color:#800080;">活動中</b></td><td>ひずみ要警戒</td></tr>
+            </table>
+        </div>
     </div>
 
     <!-- 🚨 右上：地震速報・システム状況 -->
     <div class="info-box">
-        <h3>🚨 地震速報・揺れ到達予想</h3>
-        <div id="update-time" class="update-time">取得中...</div>
-        
-        <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ 表示フィルター設定（切替）</div>
-        <div class="filter-panel" id="filterPanel">
-            <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ表示</label>
+        <h3><span>🚨 地震速報・予想</span><span style="font-size:9px; cursor:pointer;" onclick="toggleBox('infoBoxContent')">▼</span></h3>
+        <div id="infoBoxContent">
+            <div id="update-time" class="update-time">取得中...</div>
+            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ フィルター切替</div>
+            <div class="filter-panel" id="filterPanel">
+                <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上のみ</label>
+            </div>
+            <div id="earthquake-data" style="margin-top: 3px;">読込中...</div>
+            <div class="wave-alert" id="wave-status">🌊 P/S波計算: 待機中</div>
+            <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止: 有効</div>
         </div>
-
-        <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
-        <div class="wave-alert" id="wave-status">🌊 揺れの波（P/S波）計算: 待機中</div>
-        <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止フィルター: 有効</div>
     </div>
 
     <!-- 🗺️ 右下：凡例 -->
     <div class="legend">
-        <div class="legend-title">🗺️ 画面の見方</div>
-        <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート境界</b></div></div>
-        <div class="legend-item"><span class="line-box" style="background:#d97706;"></span><div><b>主要活断層（中央構造線等）</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>警戒エリア</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>ひずみ・余効変動エリア</b></div></div>
-        <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生（過去2週間）</b></div></div>
-        <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>初期微動（P波）の波面</b></div></div>
-        <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>主要動（S波）の波面</b></div></div>
+        <div class="legend-title" onclick="toggleLegend()"><span>🗺️ 画面の見方</span><span>▼</span></div>
+        <div class="legend-content" id="legendContent" style="margin-top: 3px;">
+            <div class="legend-item"><span class="line-box" style="background:#002244;"></span><div><b>海溝・プレート</b></div></div>
+            <div class="legend-item"><span class="line-box" style="background:#d97706;"></span><div><b>主要活断層</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#ff4d4d;"></span><div><b>警戒エリア</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#800080;"></span><div><b>ひずみ・余効</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生(2週間)</b></div></div>
+            <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>P波波面</b></div></div>
+            <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>S波波面</b></div></div>
+        </div>
     </div>
 
     <div id="map"></div>
@@ -158,6 +173,16 @@
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
 
+        function toggleBox(elementId) {
+            var el = document.getElementById(elementId);
+            el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function toggleLegend() {
+            var content = document.getElementById('legendContent');
+            content.style.display = (content.style.display === 'none') ? 'block' : 'none';
+        }
+
         var tectonicLines = [
             { name: '日本海溝・千島海溝', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[45.0, 148.0], [41.0, 144.5], [37.0, 142.5], [35.0, 142.0]] },
             { name: '南海トラフ', color: '#002244', weight: 3.5, dashArray: '5, 5', latlngs: [[34.0, 138.0], [32.5, 134.0], [31.8, 132.0]] },
@@ -173,11 +198,11 @@
         });
 
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '地面のずれ: 年3.2cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ巨大地震の想定震源域】<br>・発生確率: 70〜80%<br>・GPS観測による地面のずれ: 年3.2cm' },
-            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空の異変: 発生中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
-            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪（余効）', prob: '揺れ残り継続中', strain: '東向きのずれ: 年5.4cm', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方の余効変動エリア】<br>・東日本大震災の余波（揺れの残り）が継続中<br>・東向きの地殻変動: 年5.4cm' },
-            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: 'プレート圧力: 年8.1cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【千島海溝周辺の警戒エリア】<br>・発生確率: 80%超<br>・プレートが押す圧力: 年8.1cm' },
-            { lat: 32.79, lon: 130.74, radius: 60000, name: '熊本・九州内陸', prob: '活動継続中', strain: '活断層ひずみ: 要警戒', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【熊本・日奈久断層帯周辺】<br>・2016年前震・本震以降も断層周辺の微小地震が継続。<br>・地殻内部のひずみが徐々に再蓄積しているため警戒が必要。' }
+            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: 'ずれ:年3.2cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ巨大地震の想定震源域】<br>・発生確率: 70〜80%<br>・GPS観測による地面のずれ: 年3.2cm' },
+            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空異変中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
+            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪（余効）', prob: '揺れ残り継続', strain: '東向:年5.4cm', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方の余効変動エリア】<br>・東日本大震災の余波（揺れの残り）が継続中<br>・東向きの地殻変動: 年5.4cm' },
+            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: '圧力:年8.1cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【千島海溝周辺の警戒エリア】<br>・発生確率: 80%超<br>・プレートが押す圧力: 年8.1cm' },
+            { lat: 32.79, lon: 130.74, radius: 60000, name: '熊本・九州内陸', prob: '活動継続中', strain: 'ひずみ要警戒', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【熊本・日奈久断層帯周辺】<br>・2016年前震・本震以降も断層周辺の微小地震が継続。<br>・地殻内部のひずみが徐々に再蓄積しているため警戒が必要。' }
         ];
 
         futureRiskAreas.forEach(function(a) {
@@ -190,8 +215,8 @@
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率: ${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
-                    iconSize: [105, 42], iconAnchor: [52, 21]
+                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
+                    iconSize: [95, 38], iconAnchor: [47, 19]
                 }),
                 bubblingMouseEvents: false
             }).addTo(map);
@@ -217,7 +242,7 @@
                 L.circle([lat, lon], { color: '#00bfff', weight: 1.5, dashArray: '4, 4', fill: false, radius: radiusP }).addTo(waveLayer);
                 L.circle([lat, lon], { color: '#ff0055', weight: 2.5, fill: true, fillColor: '#ff0055', fillOpacity: 0.08, radius: radiusS }).addTo(waveLayer);
 
-                document.getElementById('wave-status').innerHTML = `⚡ <b>波の到達を追跡中 (${Math.floor(elapsedSeconds)}秒経過)</b><br>初期微動(P波): ${(radiusP/1000).toFixed(1)}km | 主要動(S波): ${(radiusS/1000).toFixed(1)}km`;
+                document.getElementById('wave-status').innerHTML = `⚡ <b>波の追跡 (${Math.floor(elapsedSeconds)}秒経過)</b><br>P波: ${(radiusP/1000).toFixed(1)}km | S波: ${(radiusS/1000).toFixed(1)}km`;
             } else {
                 document.getElementById('wave-status').innerHTML = `📡 直近の揺れの波（収束済）`;
             }
@@ -250,7 +275,7 @@
                 let html = "";
                 
                 if (filteredData.length === 0) {
-                    html = `<div class="eq-item" style="text-align:center; color:#666;">過去2週間以内の該当地震はありません</div>`;
+                    html = `<div class="eq-item" style="text-align:center; color:#666;">該当する地震はありません</div>`;
                 }
 
                 for(let i=0; i<filteredData.length; i++) {
@@ -281,9 +306,8 @@
                         }
                     }
 
-                    var radiusSize = Math.max(5, mag * 3.0); 
+                    var radiusSize = Math.max(4, mag * 2.5); 
 
-                    // 🔵 地震発生マーカーの色を青系に変更（最新はシアン点滅、履歴は青色）
                     var mainMarker = L.circleMarker([lat, lon], { 
                         radius: radiusSize, 
                         color: i === 0 ? '#00ffff' : '#3b82f6', 
@@ -295,7 +319,7 @@
                     var popupContent = `<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
                     mainMarker.bindPopup(popupContent);
 
-                    var innerMarker = L.circleMarker([lat, lon], { radius: 2.5, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
+                    var innerMarker = L.circleMarker([lat, lon], { radius: 2, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
                     innerMarker.bindPopup(popupContent);
 
                     markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
@@ -309,7 +333,7 @@
                 document.getElementById('update-time').innerText = "最終更新: " + d.getHours() + ":" + String(d.getMinutes()).padStart(2,'0');
             } catch(e) {
                 console.error(e);
-                document.getElementById('earthquake-data').innerHTML = "取得エラー（接続確認中）";
+                document.getElementById('earthquake-data').innerHTML = "取得エラー";
             }
         }
 
