@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地震リスク・地殻変動＆プレート正しい位置関係マップ</title>
+    <title>地震リスク・プレート重なり構造マップ</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -23,9 +23,6 @@
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #333; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8.5px; overflow: hidden; text-overflow: ellipsis; }
-        .risk-table th:nth-child(1), .risk-table td:nth-child(1) { width: 28%; }
-        .risk-table th:nth-child(2), .risk-table td:nth-child(2) { width: 27%; }
-        .risk-table th:nth-child(3), .risk-table td:nth-child(3) { width: 45%; }
 
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
@@ -37,16 +34,10 @@
         .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
         
         #earthquake-data { max-height: 100px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        #earthquake-data::-webkit-scrollbar { width: 4px; }
-        #earthquake-data::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-
         .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #e0f2fe; border-left: 3px solid #0284c7; padding-left: 4px; }
-        .eq-item:last-child { border-bottom: none; }
-        .eq-time { font-weight: bold; color: #0284c7; font-size: 8.5px; }
-        .eq-desc { font-size: 8.5px; }
-
+        
         .filter-toggle-btn {
             background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
             font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
@@ -67,10 +58,15 @@
             pointer-events: auto;
         }
         .legend-title { font-weight: bold; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .legend-content { display: block; }
         .legend-item { display: flex; align-items: center; margin-bottom: 1.5px; }
         .color-box { width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; flex-shrink: 0; }
-        .line-box { width: 10px; height: 2.5px; margin-right: 4px; flex-shrink: 0; }
+
+        /* 🏷️ プレート名ラベル用スタイル */
+        .plate-name-label {
+            background: rgba(255, 255, 255, 0.85); border: 1px solid #666; padding: 1px 4px;
+            font-size: 7.5px; font-weight: bold; border-radius: 3px; text-align: center;
+            white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); pointer-events: none;
+        }
 
         .risk-badge { background: rgba(255,255,255,0.95); border: 1.5px solid #b52b27; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #b52b27; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
         .risk-badge-purple { background: rgba(255,255,255,0.95); border: 1.5px solid #6b21a8; padding: 2px 4px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #6b21a8; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; pointer-events: auto; }
@@ -79,13 +75,6 @@
 
         @keyframes pure-blink { 0% { opacity: 0.3; } 50% { opacity: 1.0; } 100% { opacity: 0.3; } }
         .animated-blue-blink { animation: pure-blink 1.2s infinite ease-in-out; }
-
-        @media screen and (max-width: 600px) {
-            .risk-table-box { width: 210px; top: 45px; left: 4px; font-size: 8.5px; }
-            .info-box { width: 190px; top: 4px; right: 4px; font-size: 8.5px; }
-            .legend { bottom: 8px; right: 4px; max-width: 150px; font-size: 8px; }
-            #earthquake-data { max-height: 80px; }
-        }
     </style>
 </head>
 <body>
@@ -94,12 +83,11 @@
         <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動監視</span><span>▼</span></div>
         <div id="riskTableContent">
             <table class="risk-table" style="margin-top: 3px;">
-                <tr><th>エリア</th><th>発生確率</th><th>異変</th></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>ずれ:年3.2cm</td></tr>
-                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>上空異変中</td></tr>
-                <tr><td>東北(余効)</td><td><b style="color:#d9534f;">揺れ残り</b></td><td>東向:年5.4cm</td></tr>
-                <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>圧力:年8.1cm</td></tr>
-                <tr><td>熊本九州</td><td><b style="color:#800080;">活動中</b></td><td>ひずみ要警戒</td></tr>
+                <tr><th>エリア</th><th>発生確率</th><th>重なり・原因</th></tr>
+                <tr><td>南海トラフ</td><td><b style="color:#d9534f;">70-80%</b></td><td>P海P×ユーラシア</td></tr>
+                <tr><td>首都直下</td><td><b style="color:#d9534f;">約70%</b></td><td>3層サンドイッチ</td></tr>
+                <tr><td>東北(余効)</td><td><b style="color:#d9534f;">揺れ残り</b></td><td>太平洋P沈み込み</td></tr>
+                <tr><td>千島海溝</td><td><b style="color:#d9534f;">80%超</b></td><td>太平洋P×北米P</td></tr>
             </table>
         </div>
     </div>
@@ -112,10 +100,10 @@
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkM4" onchange="fetchEq()"> M4.0以上の地震のみ</label>
                 <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
-                <label><input type="checkbox" id="chkPlPacific" checked onchange="togglePlateLayers()"> 太平洋プレート(海)</label>
-                <label><input type="checkbox" id="chkPlPilippine" checked onchange="togglePlateLayers()"> フィリピン海プレート(海)</label>
-                <label><input type="checkbox" id="chkPlEurasia" checked onchange="togglePlateLayers()"> ユーラシアP(西日本)</label>
-                <label><input type="checkbox" id="chkPlNorth" checked onchange="togglePlateLayers()"> 北アメリカP(東日本)</label>
+                <label><input type="checkbox" id="chkPlPacific" checked onchange="renderPlateLayers()"> 太平洋プレート(薄青)</label>
+                <label><input type="checkbox" id="chkPlPilippine" checked onchange="renderPlateLayers()"> フィリピン海P(薄緑)</label>
+                <label><input type="checkbox" id="chkPlEurasia" checked onchange="renderPlateLayers()"> ユーラシアP(薄黄)</label>
+                <label><input type="checkbox" id="chkPlNorth" checked onchange="renderPlateLayers()"> 北アメリカP(薄紫)</label>
             </div>
             <div id="earthquake-data" style="margin-top: 3px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波計算: 待機中</div>
@@ -126,13 +114,11 @@
     <div class="legend">
         <div class="legend-title" onclick="toggleLegend()"><span>🗺️ 画面の見方</span><span>▼</span></div>
         <div class="legend-content" id="legendContent" style="margin-top: 3px;">
-            <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋P (東側沈み込み)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海P (南側沈み込み)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアP (西日本が乗る)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカP (東日本が乗る)</b></div></div>
-            <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生(2週間)</b></div></div>
-            <div class="legend-item"><span class="line-box" style="border: 1px dashed #00bfff;"></span><div><b>P波波面</b></div></div>
-            <div class="legend-item"><span class="line-box" style="border: 2px solid #ff0055;"></span><div><b>S波波面</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#2563eb;"></span><div><b>太平洋プレート</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#16a34a;"></span><div><b>フィリピン海プレート</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#ca8a04;"></span><div><b>ユーラシアプレート</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#9333ea;"></span><div><b>北アメリカプレート</b></div></div>
+            <div class="legend-item"><span class="color-box" style="background:#3b82f6;"></span><div><b>地震発生地点</b></div></div>
         </div>
     </div>
 
@@ -140,29 +126,21 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map', {
-            zoomControl: true,
-            fadeAnimation: true
-        }).setView([37.5, 138.0], 5);
+        var map = L.map('map', { zoomControl: true }).setView([37.5, 138.0], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap & J-SHIS & GSI',
+            attribution: '&copy; OpenStreetMap & J-SHIS',
             maxZoom: 18
         }).addTo(map);
-
-        window.addEventListener('load', function() { setTimeout(function() { map.invalidateSize(); }, 200); });
-        window.addEventListener('resize', function() { map.invalidateSize(); });
 
         function toggleFilterPanel() {
             var panel = document.getElementById('filterPanel');
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
         }
-
-        function toggleBox(elementId) {
-            var el = document.getElementById(elementId);
+        function toggleBox(id) {
+            var el = document.getElementById(id);
             el.style.display = (el.style.display === 'none') ? 'block' : 'none';
         }
-
         function toggleLegend() {
             var content = document.getElementById('legendContent');
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
@@ -170,35 +148,39 @@
 
         var plateLayersGroup = L.layerGroup().addTo(map);
 
-        // 日本列島がその上や境界に位置するよう、正確にエリアを覆う形に座標を調整
+        // 薄く色づけされたプレート領域と、中央のプレート名ラベル用座標
         var plateData = [
             {
                 id: 'north',
-                name: '北アメリカプレート（東日本が乗る陸のプレート）',
+                name: '北アメリカプレート（東日本）',
                 color: '#9333ea',
                 latlngs: [[45.5, 140.0], [45.5, 146.0], [40.0, 144.0], [35.0, 140.0], [38.0, 137.0], [42.0, 139.0]],
-                detail: '【北アメリカプレート（オホーツクプレート）】<br>・位置: 北海道から東北・関東までの東日本がこのプレートの上に直接乗っています。'
+                center: [41.0, 141.5],
+                detail: '【北アメリカプレート】<br>北海道・東北・関東の東日本が乗る陸のプレート。地下で太平洋プレートと重なり合っています。'
             },
             {
                 id: 'eurasia',
-                name: 'ユーラシアプレート（西日本が乗る陸のプレート）',
+                name: 'ユーラシアプレート（西日本）',
                 color: '#ca8a04',
                 latlngs: [[43.0, 130.0], [38.0, 138.0], [35.0, 138.0], [33.0, 134.0], [31.0, 130.0], [36.0, 128.0]],
-                detail: '【ユーラシアプレート（アムールプレート）】<br>・位置: 中部地方（糸魚川静岡構造線より西）から西日本、九州にかけての基盤となるプレートです。'
+                center: [36.0, 133.5],
+                detail: '【ユーラシアプレート】<br>中部・西日本・九州が乗る陸のプレート。南側からフィリピン海プレートが潜り込んでいます。'
             },
             {
                 id: 'pacific',
-                name: '太平洋プレート（東日本・北日本へ沈み込む海のプレート）',
+                name: '太平洋プレート（海のプレート）',
                 color: '#2563eb',
                 latlngs: [[46.0, 144.0], [46.0, 152.0], [35.0, 150.0], [35.0, 142.0], [40.0, 144.0]],
-                detail: '【太平洋プレート】<br>・位置: 東側の太平洋側から、北日本や東日本の地下へ向かって年間8〜10cmのスピードで沈み込んでいます。'
+                center: [41.0, 147.5],
+                detail: '【太平洋プレート】<br>東日本の地下へ年間8〜10cmで沈み込む海のプレート。巨大地震の主要な発生源。'
             },
             {
                 id: 'philippine',
-                name: 'フィリピン海プレート（西日本・中部へ沈み込む海のプレート）',
+                name: 'フィリピン海プレート（海のプレート）',
                 color: '#16a34a',
                 latlngs: [[35.0, 138.0], [34.0, 141.0], [28.0, 138.0], [30.0, 130.0], [33.0, 134.0]],
-                detail: '【フィリピン海プレート】<br>・位置: 南側の海域から、南海トラフや相模トラフに沿って日本列島の下へ沈み込んでいます。'
+                center: [32.0, 135.5],
+                detail: '【フィリピン海プレート】<br>関東や東海・紀伊半島・九州の地下へ沈み込む海のプレート。南海トラフや首都直下の原因に。'
             }
         ];
 
@@ -219,75 +201,49 @@
 
             plateData.forEach(p => {
                 if (activeMap[p.id]) {
+                    // プレートの面（非常に薄い色で重なりが分かるようにする）
                     let polygon = L.polygon(p.latlngs, {
                         color: p.color,
-                        weight: 2,
+                        weight: 1.5,
                         fillColor: p.color,
-                        fillOpacity: 0.18,
-                        dashArray: '4, 4'
+                        fillOpacity: 0.1, // 薄く設定
+                        dashArray: '3, 3'
                     }).addTo(plateLayersGroup);
 
-                    polygon.bindPopup(`<b>🗺️ プレート構造: ${p.name}</b><br><br>${p.detail}`);
+                    polygon.bindPopup(`<b>🗺️ ${p.name}</b><br><br>${p.detail}`);
+
+                    // プレート名の常時ラベル
+                    L.marker(p.center, {
+                        icon: L.divIcon({
+                            className: '',
+                            html: `<div class="plate-name-label" style="color: ${p.color}; border-color: ${p.color};">${p.name.split('（')[0]}</div>`,
+                            iconSize: [110, 20], iconAnchor: [55, 10]
+                        }),
+                        interactive: false
+                    }).addTo(plateLayersGroup);
                 }
             });
-        }
-
-        function togglePlateLayers() {
-            renderPlateLayers();
         }
 
         renderPlateLayers();
 
         var futureRiskAreas = [
-            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: 'ずれ:年3.2cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ巨大地震の想定震源域】<br>・発生確率: 70〜80%<br>・GPS観測による地面のずれ: 年3.2cm' },
-            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '上空異変中', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下地震のリスクエリア】<br>・発生確率: 約70%<br>・上空（電離圏）の電子数に一時的な異変を観測中' },
-            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北歪（余効）', prob: '揺れ残り継続', strain: '東向:年5.4cm', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方の余効変動エリア】<br>・東日本大震災の余波（揺れの残り）が継続中<br>・東向きの地殻変動: 年5.4cm' },
-            { lat: 41.5, lon: 143.5, radius: 100000, name: '千島海溝', prob: '80%超', strain: '圧力:年8.1cm', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【千島海溝周辺の警戒エリア】<br>・発生確率: 80%超<br>・プレートが押す圧力: 年8.1cm' },
-            { lat: 32.79, lon: 130.74, radius: 60000, name: '熊本・九州内陸', prob: '活動継続中', strain: 'ひずみ要警戒', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【熊本・日奈久断層帯周辺】<br>・2016年前震・本震以降も断層周辺の微小地震が継続。<br>・地殻内部のひずみが徐々に再蓄積しているため警戒が必要。' }
+            { lat: 33.5, lon: 134.5, radius: 110000, name: '南海トラフ', prob: '70〜80%', strain: '重なり帯', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【南海トラフ】<br>フィリピン海プレートとユーラシアプレートの境界（重なり部分）で発生する巨大地震想定エリア。' },
+            { lat: 35.68, lon: 139.69, radius: 55000, name: '首都直下', prob: '約70%', strain: '3層サンドイッチ', color: '#ff4d4d', badgeClass: 'risk-badge', detail: '【首都直下】<br>陸のプレートの下に太平洋Pとフィリピン海Pが入り込む「三重の重なり構造」の直上。' },
+            { lat: 38.5, lon: 141.0, radius: 95000, name: '東北(余効)', prob: '継続中', strain: '太平洋P沈み込み', color: '#800080', badgeClass: 'risk-badge-purple', detail: '【東北地方】<br>太平洋プレートが深く沈み込む境界域。巨大地震の余効変動が継続中。' }
         ];
 
         futureRiskAreas.forEach(function(a) {
-            var circle = L.circle([a.lat, a.lon], { 
-                color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.2, radius: a.radius, bubblingMouseEvents: false 
-            }).addTo(map);
-            
-            circle.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
-
+            L.circle([a.lat, a.lon], { color: a.color, fill: true, fillColor: a.color, fillOpacity: 0.15, radius: a.radius }).addTo(map);
             var marker = L.marker([a.lat, a.lon], {
                 icon: L.divIcon({
                     className: '',
-                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="strain-value">📐 ${a.strain}</span></div>`,
+                    html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">確率:${a.prob}</span><span class="strain-value">📍 ${a.strain}</span></div>`,
                     iconSize: [95, 38], iconAnchor: [47, 19]
-                }),
-                bubblingMouseEvents: false
+                })
             }).addTo(map);
-
-            marker.bindPopup(`<b>📍 ${a.name} の状況</b><br><br>${a.detail}`);
-            marker.on('click touchend', function(e) { L.DomEvent.stopPropagation(e); marker.openPopup(); });
+            marker.bindPopup(`<b>📍 ${a.name}</b><br><br>${a.detail}`);
         });
-
-        var VELOCITY_P = 6.0; 
-        var VELOCITY_S = 3.5; 
-        var waveLayer = L.layerGroup().addTo(map);
-
-        function updateWaveFronts(lat, lon, eqTimeStr, mag) {
-            waveLayer.clearLayers();
-            var now = new Date();
-            var eqTime = new Date(eqTimeStr);
-            var elapsedSeconds = (now - eqTime) / 1000;
-
-            if (elapsedSeconds > 0 && elapsedSeconds < 300) {
-                var radiusP = elapsedSeconds * VELOCITY_P * 1000; 
-                var radiusS = elapsedSeconds * VELOCITY_S * 1000;
-
-                L.circle([lat, lon], { color: '#00bfff', weight: 1.5, dashArray: '4, 4', fill: false, radius: radiusP }).addTo(waveLayer);
-                L.circle([lat, lon], { color: '#ff0055', weight: 2.5, fill: true, fillColor: '#ff0055', fillOpacity: 0.08, radius: radiusS }).addTo(waveLayer);
-
-                document.getElementById('wave-status').innerHTML = `⚡ <b>波の追跡 (${Math.floor(elapsedSeconds)}秒経過)</b><br>P波: ${(radiusP/1000).toFixed(1)}km | S波: ${(radiusS/1000).toFixed(1)}km`;
-            } else {
-                document.getElementById('wave-status').innerHTML = `📡 直近の揺れの波（収束済）`;
-            }
-        }
 
         var eqLayer = L.layerGroup().addTo(map);
         var markerMap = {};
@@ -296,28 +252,18 @@
             eqLayer.clearLayers();
             markerMap = {};
             try {
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
+                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=50');
                 let data = await res.json();
                 
                 let filterM4 = document.getElementById('chkM4').checked;
-                let now = new Date();
-                let twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
                 let filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
-                    let eqTime = new Date(item.time);
-                    if (eqTime < twoWeeksAgo) return false;
-
                     let mag = parseFloat(item.earthquake.magnitude || "0");
                     if (filterM4 && mag < 4.0) return false;
                     return true;
                 });
 
                 let html = "";
-                if (filteredData.length === 0) {
-                    html = `<div class="eq-item" style="text-align:center; color:#666;">該当する地震はありません</div>`;
-                }
-
                 for(let i=0; i<filteredData.length; i++) {
                     let item = filteredData[i];
                     let eq = item.earthquake;
@@ -328,68 +274,44 @@
                     let uniqueId = "eq_" + i;
 
                     html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                                <span class="eq-time">🕒 ${eqTime.replace('T', ' ').substring(0, 16)}</span><br>
-                                <span class="eq-desc">${displayName} (M${mag})</span>
+                                <span style="color:#0284c7; font-weight:bold;">🕒 ${eqTime.replace('T', ' ').substring(0, 16)}</span><br>
+                                <span>${displayName} (M${mag})</span>
                              </div>`;
                     
                     let lat = hypocenter.latitude;
                     let lon = hypocenter.longitude;
-                    
-                    if (!lat || lat === -200 || !lon || lon === -200) {
-                        lat = 35.68; lon = 139.69;
-                        if (displayName.indexOf('熊本') !== -1 || displayName.indexOf('阿蘇') !== -1) {
-                            lat = 32.79; lon = 130.74; 
-                        } else if (displayName.indexOf('日向灘') !== -1 || displayName.indexOf('宮崎') !== -1) {
-                            lat = 31.90; lon = 131.68;
-                        } else if (displayName.indexOf('宮城') !== -1 || displayName.indexOf('福島') !== -1) {
-                            lat = 38.26; lon = 140.87; 
-                        }
-                    }
+                    if (!lat || lat === -200) { lat = 35.68; lon = 139.69; }
 
-                    var radiusSize = Math.max(4, mag * 2.5); 
                     var mainMarker = L.circleMarker([lat, lon], { 
-                        radius: radiusSize, 
+                        radius: Math.max(4, mag * 2), 
                         color: i === 0 ? '#00ffff' : '#3b82f6', 
                         fillColor: i === 0 ? '#00ffff' : '#60a5fa', 
-                        fillOpacity: 0.65, 
-                        className: i === 0 ? 'animated-blue-blink' : '' 
+                        fillOpacity: 0.7 
                     }).addTo(eqLayer);
 
-                    var popupContent = `<b>🔵 震源地 (${i === 0 ? '最新' : '履歴'})</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}`;
+                    let popupContent = `<b>🔵 震源地</b><br>規模: M${mag}<br>${displayName}<br>${eqTime.replace('T', ' ').substring(0, 16)}<br><small>※プレート境界・重なり部付近で多発</small>`;
                     mainMarker.bindPopup(popupContent);
-
-                    var innerMarker = L.circleMarker([lat, lon], { radius: 2, color: '#fff', fillColor: '#333', fillOpacity: 1 }).addTo(eqLayer);
-                    innerMarker.bindPopup(popupContent);
-
                     markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
-
-                    if (i === 0) {
-                        updateWaveFronts(lat, lon, eqTime, mag);
-                    }
                 }
                 document.getElementById('earthquake-data').innerHTML = html;
-                let d = new Date();
-                document.getElementById('update-time').innerText = "最終更新: " + d.getHours() + ":" + String(d.getMinutes()).padStart(2,'0');
+                document.getElementById('update-time').innerText = "最終更新: " + new Date().toLocaleTimeString();
             } catch(e) {
                 console.error(e);
-                document.getElementById('earthquake-data').innerHTML = "取得エラー";
             }
         }
 
         function highlightAndOpenPopup(id) {
             document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-            let item = document.getElementById(id);
-            if (item) item.classList.add('highlighted');
-
+            document.getElementById(id).classList.add('highlighted');
             if (markerMap[id]) {
-                let mData = markerMap[id];
-                map.setView([mData.lat, mData.lon], 8);
-                mData.marker.openPopup();
+                let m = markerMap[id];
+                map.setView([m.lat, m.lon], 8);
+                m.marker.openPopup();
             }
         }
 
         fetchEq();
-        setInterval(fetchEq, 15000); 
+        setInterval(fetchEq, 15000);
     </script>
 </body>
 </html>
