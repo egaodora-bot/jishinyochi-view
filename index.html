@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（位置調整完了版）</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（ベクトルクリーン表示版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -195,11 +195,12 @@
         var plateLayersGroup = map ? L.layerGroup().addTo(map) : null;
         var eqLayer = map ? L.layerGroup().addTo(map) : null;
 
+        // 各観測点の起点 (lat, lon) から独立した変動ベクトル
         var crustalVectors = [
-            { name: '北海道東部観測点 (千島海溝)', lat: 42.8, lon: 144.0, dLat: 0.04, dLon: -0.4, value: '西〜北西 約8cm/年', vertical: '垂直: 沈降・歪み蓄積', desc: '太平洋プレートの沈み込みによる十勝・根室沖のひずみ蓄積（直近1年間）' },
-            { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.6, value: '東へ 約45cm/年', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの引き延ばし（直近1年間）' },
-            { name: '関東平野観測点 (首都圏)', lat: 35.8, lon: 139.8, dLat: 0.03, dLon: 0.2, value: '南東へ 約15cm/年', vertical: '垂直: 微小沈降', desc: 'プレート沈み込みに伴うひずみ蓄積と圧縮（直近1年間）' },
-            { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.1, dLon: 0.15, value: '北西へ 約25cm/年', vertical: '垂直: 沈降進行中', desc: 'フィリピン海プレート押し込みによる陸側の引きずり（直近1年間）' },
+            { name: '北海道東部観測点 (千島海溝)', lat: 42.8, lon: 144.0, dLat: 0.04, dLon: -0.35, value: '西〜北西 約8cm/年', vertical: '垂直: 沈降・歪み蓄積', desc: '太平洋プレートの沈み込みによる十勝・根室沖のひずみ蓄積（直近1年間）' },
+            { name: '東北沖観測点 (余効変動)', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.5, value: '東へ 約45cm/年', vertical: '垂直: 変動継続', desc: '東日本大震災後の余効変動による東向きの引き延ばし（直近1年間）' },
+            { name: '関東平野観測点 (首都圏)', lat: 35.68, lon: 139.69, dLat: 0.02, dLon: 0.25, value: '南東へ 約15cm/年', vertical: '垂直: 微小沈降', desc: 'プレート沈み込みに伴うひずみ蓄積と圧縮（直近1年間）' },
+            { name: '東海・南海トラフ観測点', lat: 34.0, lon: 137.0, dLat: -0.08, dLon: 0.15, value: '北西へ 約25cm/年', vertical: '垂直: 沈降進行中', desc: 'フィリピン海プレート押し込みによる陸側の引きずり（直近1年間）' },
             { name: '新潟・北陸観測点 (歪み帯)', lat: 37.2, lon: 138.8, dLat: 0.02, dLon: -0.2, value: '西へ 約12cm/年(圧縮)', vertical: '垂直: 隆起傾向', desc: '日本海側の圧縮ひずみと活断層帯の変動（直近1年間）' }
         ];
 
@@ -238,13 +239,19 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
+                        // 観測点に小さな基準マーカー（起点ドット）を配置
+                        L.circleMarker(startPoint, {
+                            radius: 5, color: '#ffffff', fillColor: '#0284c7', fillOpacity: 1, weight: 2
+                        }).addTo(plateLayersGroup);
+
+                        // 独立した変動ベクトル線
                         let vectorLine = L.polyline([startPoint, endPoint], { color: '#0284c7', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
 
                         let dx = v.dLon;
                         let dy = v.dLat;
                         let angle = Math.atan2(dy, dx);
-                        let h1 = [endPoint[0] - 0.05 * Math.sin(angle - 0.5), endPoint[1] - 0.05 * Math.cos(angle - 0.5)];
-                        let h2 = [endPoint[0] - 0.05 * Math.sin(angle + 0.5), endPoint[1] - 0.05 * Math.cos(angle + 0.5)];
+                        let h1 = [endPoint[0] - 0.04 * Math.sin(angle - 0.5), endPoint[1] - 0.04 * Math.cos(angle - 0.5)];
+                        let h2 = [endPoint[0] - 0.04 * Math.sin(angle + 0.5), endPoint[1] - 0.04 * Math.cos(angle + 0.5)];
 
                         L.polyline([h1, endPoint, h2], { color: '#0369a1', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
 
@@ -252,7 +259,7 @@
                             icon: L.divIcon({
                                 className: '',
                                 html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
-                                iconSize: [140, 36], iconAnchor: [70, 18] // 修正: アンカーを中央に補正
+                                iconSize: [140, 36], iconAnchor: [70, 18]
                             })
                         }).addTo(plateLayersGroup);
 
@@ -290,7 +297,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
-                            iconSize: [130, 36], iconAnchor: [65, 18] // 修正: アンカーを中央に補正
+                            iconSize: [130, 36], iconAnchor: [65, 18]
                         })
                     });
                     marker.addTo(persistentRiskGroup);
