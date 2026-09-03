@@ -96,7 +96,6 @@
         .explain-item span { color: #334155; font-size: 10.5px; display: block; margin-top: 2px; }
         .risk-explain-box.expanded .explain-item span { font-size: 12px; }
 
-        /* 矢印のラベルを「赤色（高視認性）」に変更 */
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; color: #ffffff;
             font-size: 11px; font-weight: bold; padding: 4px 9px; border-radius: 5px;
@@ -285,12 +284,10 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                        // 開始点のピンを赤色ベースに変更
                         L.circleMarker(startPoint, {
                             radius: 6, color: '#ffffff', fillColor: '#dc2626', fillOpacity: 1, weight: 2.5
                         }).addTo(plateLayersGroup);
 
-                        // ベクトル線を「赤色(#dc2626)・太め」に変更
                         let vectorLine = L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 5, opacity: 0.95 }).addTo(plateLayersGroup);
 
                         let dx = v.dLon;
@@ -299,7 +296,6 @@
                         let h1 = [endPoint[0] - 0.04 * Math.sin(angle - 0.5), endPoint[1] - 0.04 * Math.cos(angle - 0.5)];
                         let h2 = [endPoint[0] - 0.04 * Math.sin(angle + 0.5), endPoint[1] - 0.04 * Math.cos(angle + 0.5)];
 
-                        // 矢印の先端も目立つ赤色(#b91c1c)に強化
                         L.polyline([h1, endPoint, h2], { color: '#b91c1c', weight: 6, opacity: 1 }).addTo(plateLayersGroup);
 
                         let labelPos = [endPoint[0] + (dy >= 0 ? 0.038 : -0.038), endPoint[1]];
@@ -378,7 +374,7 @@
 
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
 
                 let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30', { signal: controller.signal });
                 clearTimeout(timeoutId);
@@ -394,7 +390,7 @@
                     return true;
                 });
             } catch(e) {
-                console.warn("外部API取得失敗。安全なデモデータに切り替えます。", e);
+                console.warn("外部API取得失敗またはブロック。安全なデモデータに切り替えます。", e);
                 filteredData = [
                     { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
                     { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
@@ -420,7 +416,7 @@
                                 <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
                                 <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
                                 <span>${displayName} (M${mag})</span>
-                             </div>`;
+                           </div>`;
                     
                     let lat = hypocenter.latitude;
                     let lon = hypocenter.longitude;
@@ -485,15 +481,3 @@
                 console.warn("ハイライト処理エラー:", e);
             }
         }
-
-        safeFetchEq();
-        setInterval(() => {
-            try {
-                safeFetchEq();
-            } catch(e) {
-                console.warn("定期更新エラー:", e);
-            }
-        }, 15000);
-    </script>
-</body>
-</html>
