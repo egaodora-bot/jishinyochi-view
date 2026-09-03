@@ -474,4 +474,26 @@
 
         function highlightAndOpenPopup(id) {
             try {
-                document.querySelectorAll('.eq-item').forEach(el =>
+                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
+                document.getElementById(id)?.classList.add('highlighted');
+                if (markerMap[id] && map) {
+                    let m = markerMap[id];
+                    map.setView([m.lat, m.lon], 8);
+                    m.marker.openPopup();
+                }
+            } catch(e) {
+                console.warn("ハイライト処理エラー:", e);
+            }
+        }
+
+        safeFetchEq();
+        setInterval(() => {
+            try {
+                safeFetchEq();
+            } catch(e) {
+                console.warn("定期更新エラー:", e);
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
