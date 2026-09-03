@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイム防災マップ（最終統合版）</title>
+    <title>地殻変動・歪み集中・リアルタイム防災マップ（最終四隅解説版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -18,11 +18,16 @@
             position: absolute; top: 8px; left: 8px; z-index: 1000;
             background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 290px;
-            pointer-events: auto; max-height: 45vh; overflow-y: auto;
+            pointer-events: auto; max-height: 48vh; overflow-y: auto;
         }
         .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8px; overflow: hidden; text-overflow: ellipsis; }
+
+        .circle-legend-note {
+            margin-top: 5px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; font-size: 8px; color: #334155; line-height: 1.3;
+        }
+        .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 1px; }
 
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
@@ -100,6 +105,11 @@
                 <tr><td>新潟・北陸</td><td><b style="color:#7c3aed;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
                 <tr><td>福井・若狭</td><td><b style="color:#7c3aed;">歪み・活断層帯</b></td><td>微小変動</td></tr>
             </table>
+            <div class="circle-legend-note">
+                <b>🔵 同心円（多重円）の読み方</b>
+                • <b>内側（核）:</b> 主な震源域・高リスク帯<br>
+                • <b>中層・外側:</b> 連動型地震・最大波及範囲
+            </div>
         </div>
     </div>
 
@@ -123,15 +133,15 @@
     </div>
 
     <div class="risk-explain-box">
-        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (二重丸・基準)</span><span>▼</span></div>
+        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (二重・三重丸基準)</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性が指摘されています。二重丸の外側は連動型地震の最大想定範囲です。')">
+            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴う巨大地震想定。内側＝中核震源域、外側＝連動型・最大波及範囲を示します。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 北海道東部 (千島海溝)【最高リスク】</span>
-                <span>二重丸: 最大震源域 / 水平:西〜北西8cm/年</span>
+                <span>三重丸: 震源〜連動最大広域想定</span>
             </div>
             <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。広域の想定範囲を示します。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 南海トラフ (沈降・歪み)【最高リスク】</span>
-                <span>二重丸: 巨大地震想定域 / 水平:北西25cm/年</span>
+                <span>多重円: 巨大地震想定の広域波及域</span>
             </div>
             <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 首都直下 (圧縮・沈降)【最高リスク】</span>
@@ -238,15 +248,12 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
-                        // 起点マーカー
                         L.circleMarker(startPoint, {
                             radius: 5, color: '#ffffff', fillColor: '#0284c7', fillOpacity: 1, weight: 2
                         }).addTo(plateLayersGroup);
 
-                        // ベクトル本体の線
                         let vectorLine = L.polyline([startPoint, endPoint], { color: '#0284c7', weight: 4, opacity: 0.9 }).addTo(plateLayersGroup);
 
-                        // 矢印の先端（アローヘッド）を明瞭に描画
                         let dx = v.dLon;
                         let dy = v.dLat;
                         let angle = Math.atan2(dy, dx);
@@ -255,7 +262,6 @@
 
                         L.polyline([h1, endPoint, h2], { color: '#0369a1', weight: 5, opacity: 1 }).addTo(plateLayersGroup);
 
-                        // 矢印の先端を隠さないよう、オフセットした位置にラベルを配置
                         let labelPos = [endPoint[0] + (dy >= 0 ? 0.035 : -0.035), endPoint[1]];
                         let tipLabel = L.marker(labelPos, {
                             icon: L.divIcon({
@@ -277,173 +283,7 @@
 
         safeRenderLayers();
 
-        // 警戒エリアと二重丸（内側・外側）
+        // 警戒エリアと多重同心円（内側・中層・外側）
         var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.5, name: '北海道東部(千島)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。二重丸の外側は連動型地震等の最大広域想定範囲です。', radius: 130000, outerRadius: 210000, color: '#dc2626' },
-            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, outerRadius: 190000, color: '#dc2626' },
-            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, outerRadius: 140000, color: '#dc2626' },
-            { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 70000, outerRadius: 110000, color: '#7c3aed' },
-            { lat: 35.8, lon: 136.2, name: '福井・若狭帯', prob: '活断層密集', strain: '微小変動蓄積', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。', radius: 65000, outerRadius: 100000, color: '#7c3aed' },
-            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, outerRadius: 200000, color: '#0284c7' }
-        ];
-
-        if(persistentRiskGroup) {
-            persistentRiskAreas.forEach(function(a) {
-                try {
-                    // 内側の円
-                    if (a.radius) {
-                        var innerCircle = L.circle([a.lat, a.lon], {
-                            radius: a.radius, color: a.color, weight: 1.5, fillColor: a.color, fillOpacity: 0.1, dashArray: '4, 4'
-                        }).addTo(persistentRiskGroup);
-                        innerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
-                    }
-                    // 外側の円（二重丸の構成）
-                    if (a.outerRadius) {
-                        var outerCircle = L.circle([a.lat, a.lon], {
-                            radius: a.outerRadius, color: a.color, weight: 1, fillColor: 'transparent', fillOpacity: 0, dashArray: '6, 6'
-                        }).addTo(persistentRiskGroup);
-                        outerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
-                    }
-
-                    var marker = L.marker([a.lat, a.lon], {
-                        icon: L.divIcon({
-                            className: '',
-                            html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
-                            iconSize: [130, 36], iconAnchor: [65, 18]
-                        })
-                    });
-                    marker.addTo(persistentRiskGroup);
-                } catch(e) {
-                    console.warn("リスクエリアマーカー生成エラー:", e);
-                }
-            });
-        }
-
-        var markerMap = {};
-
-        async function safeFetchEq() {
-            if(!eqLayer) return;
-            eqLayer.clearLayers();
-            markerMap = {};
-            let filteredData = [];
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30', { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                if (!res.ok) throw new Error('Network response was not ok');
-                let data = await res.json();
-                
-                let filterM4 = document.getElementById('chkM4')?.checked ?? false;
-                filteredData = data.filter(item => {
-                    if (!item.earthquake) return false;
-                    let mag = parseFloat(item.earthquake.magnitude || "0");
-                    if (filterM4 && mag < 4.0) return false;
-                    return true;
-                });
-            } catch(e) {
-                console.warn("外部API取得失敗。安全なデモデータに切り替えます。", e);
-                filteredData = [
-                    { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } }
-                ];
-            }
-
-            let html = "";
-            let chainPoints = [];
-
-            for(let i=0; i<filteredData.length; i++) {
-                try {
-                    let item = filteredData[i];
-                    let eq = item.earthquake;
-                    if(!eq) continue;
-                    let hypocenter = eq.hypocenter || {};
-                    let displayName = hypocenter.name || "震源情報";
-                    let mag = parseFloat(hypocenter.magnitude || "0");
-                    let eqTime = item.time || "";
-                    let uniqueId = "eq_" + i;
-
-                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                                <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
-                                <span>${displayName} (M${mag})</span>
-                             </div>`;
-                    
-                    let lat = hypocenter.latitude;
-                    let lon = hypocenter.longitude;
-                    
-                    if (!lat || lat === -200 || lat === 0 || isNaN(lat) || isNaN(lon)) continue;
-
-                    chainPoints.push([lat, lon]);
-
-                    (function(index, l, lo, m, name, time) {
-                        setTimeout(function() {
-                            try {
-                                if(!eqLayer) return;
-                                var mainMarker = L.circleMarker([l, lo], { 
-                                    radius: Math.max(5, m * 1.6), 
-                                    color: index === 0 ? '#991b1b' : '#0369a1',
-                                    fillColor: index === 0 ? '#ef4444' : '#0284c7',
-                                    fillOpacity: 0.85 
-                                }).addTo(eqLayer);
-
-                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
-                                mainMarker.bindPopup(popupContent);
-                                markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                            } catch(err) {
-                                console.warn("個別マーカー描画エラー:", err);
-                            }
-                        }, index * 100);
-                    })(i, lat, lon, mag, displayName, eqTime);
-                } catch(innerErr) {
-                    console.warn("地震データループ内エラー:", innerErr);
-                }
-            }
-
-            try {
-                let showChain = document.getElementById('chkEqChain')?.checked ?? false;
-                if (showChain && chainPoints.length > 1) {
-                    let chainLine = L.polyline(chainPoints, {
-                        color: '#0284c7', weight: 3, opacity: 0.7, dashArray: '6, 6'
-                    }).addTo(eqLayer);
-                    chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
-                }
-            } catch(chainErr) {
-                console.warn("連鎖ルート描画エラー:", chainErr);
-            }
-
-            const eqDataEl = document.getElementById('earthquake-data');
-            const updateTimeEl = document.getElementById('update-time');
-            if(eqDataEl) eqDataEl.innerHTML = html;
-            if(updateTimeEl) updateTimeEl.innerText = "更新: " + new Date().toLocaleTimeString();
-        }
-
-        function highlightAndOpenPopup(id) {
-            try {
-                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-                document.getElementById(id)?.classList.add('highlighted');
-                if (markerMap[id] && map) {
-                    let m = markerMap[id];
-                    map.setView([m.lat, m.lon], 8);
-                    m.marker.openPopup();
-                }
-            } catch(e) {
-                console.warn("ハイライト処理エラー:", e);
-            }
-        }
-
-        safeFetchEq();
-        setInterval(() => {
-            try {
-                safeFetchEq();
-            } catch(e) {
-                console.warn("定期更新エラー:", e);
-            }
-        }, 15000);
-    </script>
-</body>
-</html>
+            { lat: 42.8, lon: 144.5, name: '北海道東部(千島)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。多重の円は主震源域から連動型地震・最大広域想定範囲を示します。', radius: 100000, midRadius: 160000, outerRadius: 220000, color: '#dc2626' },
+            { lat: 33.5, lon: 134.5, name: '南海トラフ
