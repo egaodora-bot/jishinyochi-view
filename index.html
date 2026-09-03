@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイム防災マップ（タイル修正版）</title>
+    <title>地殻変動・歪み集中・リアルタイム防災マップ（スムーズズーム＆視認性改善版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -14,78 +14,79 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
+        /* 四隅パネルの文字サイズをPCでも見やすく拡大 */
         .risk-table-box {
-            position: absolute; top: 8px; left: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 290px;
-            pointer-events: auto; max-height: 48vh; overflow-y: auto;
+            position: absolute; top: 12px; left: 12px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.96); padding: 10px 12px; border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3); font-size: 12px; width: 330px;
+            pointer-events: auto; max-height: 52vh; overflow-y: auto;
         }
-        .risk-table-title { font-weight: bold; margin-bottom: 3px; border-bottom: 2px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .risk-table-title { font-weight: bold; margin-bottom: 5px; border-bottom: 2px solid #ddd; padding-bottom: 4px; font-size: 13px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .risk-table th, .risk-table td { text-align: left; padding: 2px; border-bottom: 1px solid #eee; font-size: 8px; overflow: hidden; text-overflow: ellipsis; }
+        .risk-table th, .risk-table td { text-align: left; padding: 4px; border-bottom: 1px solid #eee; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
 
         .circle-legend-note {
-            margin-top: 5px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; font-size: 8px; color: #334155; line-height: 1.3;
+            margin-top: 8px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 6px; font-size: 10.5px; color: #334155; line-height: 1.4;
         }
-        .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 1px; }
+        .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 2px; }
 
         .info-box {
-            position: absolute; top: 8px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 230px; font-size: 10px;
-            pointer-events: auto; max-height: 45vh; display: flex; flex-direction: column;
+            position: absolute; top: 12px; right: 12px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.96); padding: 10px 12px; border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3); width: 270px; font-size: 12px;
+            pointer-events: auto; max-height: 50vh; display: flex; flex-direction: column;
         }
-        .info-box h3 { margin: 0 0 2px 0; font-size: 10.5px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; }
-        .update-time { font-size: 8.5px; color: #666; margin-bottom: 2px; border-bottom: 1px solid #ddd; padding-bottom: 1px; }
+        .info-box h3 { margin: 0 0 4px 0; font-size: 13px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; }
+        .update-time { font-size: 11px; color: #666; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         
-        #earthquake-data { max-height: 90px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .eq-item { border-bottom: 1px solid #eee; padding: 3px 2px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 4px; }
+        #earthquake-data { max-height: 120px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
+        .eq-item { border-bottom: 1px solid #eee; padding: 5px 3px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .eq-item:hover { background: #f1f5f9; }
-        .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 4px; }
-        .eq-dot { display: inline-block; background: #0284c7; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #dc2626; width: 10px; height: 10px; }
+        .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 6px; }
+        .eq-dot { display: inline-block; background: #0284c7; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #dc2626; width: 11px; height: 11px; }
         
         .filter-toggle-btn {
-            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 3px 6px; border-radius: 4px;
-            font-size: 8.5px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 5px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 5px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; margin-top: 2px; font-size: 8.5px;
-            max-height: 140px; overflow-y: auto;
+            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; margin-top: 4px; font-size: 11px;
+            max-height: 150px; overflow-y: auto;
         }
-        .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
+        .filter-panel label { display: block; margin-bottom: 4px; cursor: pointer; }
         
-        .wave-alert { margin-top: 3px; background: #e0f2fe; padding: 3px 6px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 8px; border-left: 3px solid #0284c7; }
-        .noise-filter-status { margin-top: 2px; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; color: #334155; font-size: 8px; font-weight: bold; }
+        .wave-alert { margin-top: 5px; background: #e0f2fe; padding: 5px 8px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 10.5px; border-left: 3px solid #0284c7; }
+        .noise-filter-status { margin-top: 4px; background: #f1f5f9; padding: 5px 8px; border-radius: 4px; color: #334155; font-size: 10.5px; font-weight: bold; }
 
         .risk-explain-box {
-            position: absolute; bottom: 15px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 9px; width: 220px;
-            pointer-events: auto; max-height: 38vh; overflow-y: auto;
+            position: absolute; bottom: 15px; right: 12px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.96); padding: 10px 12px; border-radius: 8px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.3); font-size: 11px; width: 260px;
+            pointer-events: auto; max-height: 42vh; overflow-y: auto;
         }
-        .risk-explain-title { font-weight: bold; margin-bottom: 4px; border-bottom: 1px solid #ddd; padding-bottom: 2px; font-size: 10px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .explain-item { margin-bottom: 4px; padding: 2px; border-radius: 4px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
+        .risk-explain-title { font-weight: bold; margin-bottom: 6px; border-bottom: 1px solid #ddd; padding-bottom: 3px; font-size: 12.5px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .explain-item { margin-bottom: 6px; padding: 4px; border-radius: 4px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
         .explain-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .explain-item b { display: block; color: #1e293b; font-size: 9px; }
-        .explain-item span { color: #475569; font-size: 7.5px; display: block; }
+        .explain-item b { display: block; color: #1e293b; font-size: 11px; }
+        .explain-item span { color: #475569; font-size: 9.5px; display: block; }
 
         .vector-tip-label {
             background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
-            font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;
+            font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px;
             white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); text-align: center;
         }
 
-        .risk-badge-red { background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-purple { background: rgba(124, 58, 237, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-blue { background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; padding: 2px 5px; font-size: 8px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-red { background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; padding: 3px 7px; font-size: 9.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-purple { background: rgba(124, 58, 237, 0.95); border: 1.5px solid #ffffff; padding: 3px 7px; font-size: 9.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-blue { background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; padding: 3px 7px; font-size: 9.5px; font-weight: bold; border-radius: 4px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         
-        .fault-subtext { font-size: 6.5px; color: #e0f2fe; font-weight: normal; display: block; }
-        .strain-value { font-size: 6.5px; color: #f1f5f9; font-weight: bold; display: block; background: rgba(255, 255, 255, 0.2); padding: 0.5px; border-radius: 2px; margin-top: 0.5px; }
+        .fault-subtext { font-size: 8px; color: #e0f2fe; font-weight: normal; display: block; }
+        .strain-value { font-size: 8px; color: #f1f5f9; font-weight: bold; display: block; background: rgba(255, 255, 255, 0.2); padding: 1px; border-radius: 2px; margin-top: 1px; }
 
         @media screen and (max-width: 600px) {
-            .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 9px; }
-            .info-box { top: 8px; right: 6px; width: 48%; max-height: 35vh; }
+            .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 9px; padding: 6px; }
+            .info-box { top: 8px; right: 6px; width: 48%; max-height: 35vh; padding: 6px; }
             .risk-explain-box { display: none; }
             #earthquake-data { max-height: 70px; }
         }
@@ -96,7 +97,7 @@
     <div class="risk-table-box">
         <div class="risk-table-title" onclick="toggleBox('riskTableContent')"><span>📊 地殻変動・歪み (年間変化)</span><span>▼</span></div>
         <div id="riskTableContent">
-            <table class="risk-table" style="margin-top: 2px;">
+            <table class="risk-table" style="margin-top: 4px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
                 <tr><td>北海道東部</td><td><b style="color:#dc2626;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
                 <tr><td>東北沖</td><td><b style="color:#0284c7;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
@@ -114,7 +115,7 @@
     </div>
 
     <div class="info-box">
-        <h3><span>🚨 地震速報</span><span style="font-size:9px; cursor:pointer;" onclick="toggleBox('infoBoxContent')">▼</span></h3>
+        <h3><span>🚨 地震速報</span><span style="font-size:11px; cursor:pointer;" onclick="toggleBox('infoBoxContent')">▼</span></h3>
         <div id="infoBoxContent">
             <div id="update-time" class="update-time">取得中...</div>
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
@@ -123,10 +124,10 @@
                 <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量・ベクトル矢印</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（網掛け）</label>
                 <label><input type="checkbox" id="chkEqChain" onchange="safeFetchEq()"> 🔗 発生順の連鎖ルート線</label>
-                <hr style="border:0; border-top:1px solid #cbd5e1; margin:2px 0;">
+                <hr style="border:0; border-top:1px solid #cbd5e1; margin:4px 0;">
                 <label><input type="checkbox" id="chkM4" onchange="safeFetchEq()"> M4.0以上のみ</label>
             </div>
-            <div id="earthquake-data" style="margin-top: 2px;">読込中...</div>
+            <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波: 待機中</div>
             <div class="noise-filter-status" id="noise-status">🛡️ 誤作動防止: 有効</div>
         </div>
@@ -134,7 +135,7 @@
 
     <div class="risk-explain-box">
         <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (二重・三重丸基準)</span><span>▼</span></div>
-        <div id="riskExplainContent" style="margin-top: 2px;">
+        <div id="riskExplainContent" style="margin-top: 4px;">
             <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴う巨大地震想定。内側＝中核震源域、外側＝連動型・最大波及範囲を示します。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 北海道東部 (千島海溝)【最高リスク】</span>
                 <span>三重丸: 震源〜連動最大広域想定</span>
@@ -168,20 +169,19 @@
     <script>
         var map;
         try {
-            map = L.map('map', { zoomControl: true }).setView([38.0, 137.0], 5);
+            // スムーズな拡大縮小を行うための設定 (zoomSnap: 0.25, wheelPxPerZoomLevel: 120)
+            map = L.map('map', { 
+                zoomControl: true,
+                zoomSnap: 0.25,
+                wheelPxPerZoomLevel: 120
+            }).setView([38.0, 137.0], 5);
             
-            // 国土地理院タイルをメインに設定（OSMがブロックされる環境対策）
+            // 国土地理院タイル
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
                 maxZoom: 18,
                 minZoom: 4,
                 errorTileUrl: ''
-            }).addTo(map);
-
-            // 万が一のためのバックアップ（OpenStreetMap）
-            var backupLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                opacity: 0
             }).addTo(map);
 
         } catch (e) {
@@ -276,8 +276,8 @@
                         let tipLabel = L.marker(labelPos, {
                             icon: L.divIcon({
                                 className: '',
-                                html: `<div class="vector-tip-label">↗️ ${v.value}<br><span style="font-size:7px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
-                                iconSize: [130, 32], iconAnchor: [65, 16]
+                                html: `<div class="vector-tip-label">↗️ ${v.value}<br><span style="font-size:8px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
+                                iconSize: [140, 34], iconAnchor: [70, 17]
                             })
                         }).addTo(plateLayersGroup);
 
@@ -328,7 +328,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
-                            iconSize: [130, 36], iconAnchor: [65, 18]
+                            iconSize: [140, 38], iconAnchor: [70, 19]
                         })
                     });
                     marker.addTo(persistentRiskGroup);
