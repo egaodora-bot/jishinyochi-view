@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地殻変動・歪み集中・リアルタイム防災マップ</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         html, body {
@@ -191,19 +190,16 @@
 
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map;
         try {
-            // マップ初期化
             map = L.map('map', { 
                 zoomControl: true,
                 zoomSnap: 0.1,
                 wheelPxPerZoomLevel: 240
             }).setView([38.0, 137.0], 5);
             
-            // 国土地理院タイルレイヤー追加
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
                 maxZoom: 18,
@@ -211,11 +207,8 @@
                 errorTileUrl: ''
             }).addTo(map);
 
-            // ウィンドウサイズ変動やレイアウト確定後に地図サイズを再計算させる（白画面対策）
             setTimeout(function() {
-                if(map) {
-                    map.invalidateSize();
-                }
+                if(map) map.invalidateSize();
             }, 250);
 
         } catch (e) {
@@ -284,8 +277,9 @@
                         { center: [35.8, 136.2], radius: 65000, name: '福井・若狭 歪み集中帯', color: '#7c3aed' }
                     ];
                     strainZones.forEach(sz => {
+                        // 歪み集中帯の網掛け・枠線をくっきり調整
                         let zoneCircle = L.circle(sz.center, {
-                            radius: sz.radius, color: sz.color, weight: 2.5, fillColor: sz.color, fillOpacity: 0.15, dashArray: '3, 3'
+                            radius: sz.radius, color: sz.color, weight: 3, opacity: 0.8, fillColor: sz.color, fillOpacity: 0.22, dashArray: '4, 4'
                         }).addTo(plateLayersGroup);
                         zoneCircle.bindPopup(`<b>⚡ 歪み集中エリア (${sz.name})</b><br>地殻の変動速度が周囲より速く、ひずみが蓄積している警戒ゾーンです。`);
                     });
@@ -343,21 +337,22 @@
         if(persistentRiskGroup) {
             persistentRiskAreas.forEach(function(a) {
                 try {
+                    // 同心円（多重円）の線を太くし、不透明度を上げてくっきり表示
                     if (a.radius) {
                         var innerCircle = L.circle([a.lat, a.lon], {
-                            radius: a.radius, color: a.color, weight: 2, fillColor: a.color, fillOpacity: 0.12, dashArray: '4, 4'
+                            radius: a.radius, color: a.color, weight: 3, opacity: 0.9, fillColor: a.color, fillOpacity: 0.18, dashArray: '4, 4'
                         }).addTo(persistentRiskGroup);
                         innerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
                     }
                     if (a.midRadius) {
                         var midCircle = L.circle([a.lat, a.lon], {
-                            radius: a.midRadius, color: a.color, weight: 1.5, fillColor: 'transparent', fillOpacity: 0, dashArray: '3, 6'
+                            radius: a.midRadius, color: a.color, weight: 2.5, opacity: 0.85, fillColor: a.color, fillOpacity: 0.08, dashArray: '5, 5'
                         }).addTo(persistentRiskGroup);
                         midCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
                     }
                     if (a.outerRadius) {
                         var outerCircle = L.circle([a.lat, a.lon], {
-                            radius: a.outerRadius, color: a.color, weight: 1.5, fillColor: 'transparent', fillOpacity: 0, dashArray: '6, 6'
+                            radius: a.outerRadius, color: a.color, weight: 2, opacity: 0.8, fillColor: 'transparent', fillOpacity: 0, dashArray: '6, 6'
                         }).addTo(persistentRiskGroup);
                         outerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
                     }
