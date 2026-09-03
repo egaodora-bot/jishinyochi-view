@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（最終確認版）</title>
+    <title>地殻変動・歪み集中・リアルタイムマップ（位置調整完了版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -252,7 +252,7 @@
                             icon: L.divIcon({
                                 className: '',
                                 html: `<div class="vector-tip-label">📍 ${v.value}<br><span style="font-size:7.5px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
-                                iconSize: [140, 32], iconAnchor: [-5, 16]
+                                iconSize: [140, 36], iconAnchor: [70, 18] // 修正: アンカーを中央に補正
                             })
                         }).addTo(plateLayersGroup);
 
@@ -290,7 +290,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
-                            iconSize: [130, 34], iconAnchor: [65, 17]
+                            iconSize: [130, 36], iconAnchor: [65, 18] // 修正: アンカーを中央に補正
                         })
                     });
                     marker.addTo(persistentRiskGroup);
