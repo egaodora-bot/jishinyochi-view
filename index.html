@@ -26,12 +26,10 @@
         #infoBox { top: 10px; right: 10px; width: 240px; }
         #explainBox { bottom: 10px; right: 10px; }
 
-        /* 折りたたみ時の挙動：コンテンツを完全に非表示にして高さをなくす */
         .panel-box .panel-content { display: block; max-height: 32vh; overflow-y: auto; margin-top: 6px; }
         .panel-box.collapsed .panel-content { display: none !important; }
         .panel-box.collapsed { width: 180px; padding-bottom: 8px; }
 
-        /* 拡大時のスタイル */
         .panel-box.expanded {
             width: 88vw !important; max-width: 550px !important; z-index: 2000; font-size: 15px;
         }
@@ -44,6 +42,8 @@
         .risk-table th, .risk-table td { text-align: left; padding: 5px 3px; border-bottom: 1px solid #e2e8f0; font-size: 11.5px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; }
         .panel-box.expanded .risk-table th, .panel-box.expanded .risk-table td { font-size: 15px; padding: 8px; }
         .risk-table th { font-weight: bold; color: #0f172a; }
+        .risk-table tr.clickable-row { cursor: pointer; transition: background 0.2s; }
+        .risk-table tr.clickable-row:hover { background: #f1f5f9; }
 
         .circle-legend-note {
             margin-top: 8px; background: #f1f5f9; border: 1px solid #94a3b8; padding: 6px; border-radius: 6px; font-size: 11px; color: #0f172a; line-height: 1.4; font-weight: 500;
@@ -113,12 +113,23 @@
         <div class="panel-content" onclick="event.stopPropagation()">
             <table class="risk-table">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
-                <tr><td>北海道東部</td><td><b style="color:#b91c1c;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
-                <tr><td>東北沖</td><td><b style="color:#b91c1c;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
-                <tr><td>首都直下</td><td><b style="color:#b91c1c;">南東15cm/年</b></td><td>微小沈降</td></tr>
-                <tr><td>南海トラフ</td><td><b style="color:#b91c1c;">北西25cm/年</b></td><td>沈降傾向</td></tr>
-                <tr><td>新潟・北陸</td><td><b style="color:#6d28d9;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
-                <tr><td>福井・若狭</td><td><b style="color:#6d28d9;">歪み・活断層帯</b></td><td>微小変動</td></tr>
+                <tr class="clickable-row" onclick="focusArea(42.8, 144.5, 7, '北海道東部 (千島海溝)', '年間変動: 西〜北西へ約8cm/年<br>垂直移動: 沈降・歪み蓄積<br>解説: 太平洋プレートの沈み込みに伴う巨大地震想定エリア。')">
+                    <td>北海道東部</td><td><b style="color:#b91c1c;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td>
+                </tr>
+                <tr class="clickable-row" onclick="focusArea(39.0, 142.0, 7, '東北沖 (余効変動)', '年間変動: 東へ約45cm/年<br>垂直移動: 沈降→巨大反発（余効変動）<br>解説: 2011年震災後から継続している東向きの引き延ばし。')">
+                    <td>東北沖</td><td><b style="color:#b91c1c;">東へ45cm/年</b></td><td>沈降→反発</td>
+                </tr>
+                <tr class="clickable-row" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '年間変動: 南東へ約15cm/年<br>垂直移動: 微小沈降・強い圧縮<br>解説: プレートが重なる3層構造で強い圧縮シグナルが観測されています。')">
+                    <td>首都直下</td><td><b style="color:#b91c1c;">南東15cm/年</b></td><td>微小沈降</td>
+                </tr>
+                <tr class="clickable-row" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '年間変動: 北西へ約25cm/年<br>垂直移動: 沈降傾向<br>解説: 海側プレートに引きずられ陸側が沈降し、歪みが蓄積しています。')">
+                    <td>南海トラフ</td><td><b style="color:#b91c1c;">北西25cm/年</b></td><td>沈降傾向</td>
+                </tr>
+                <tr class="clickable-row" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '年間変動: 歪み集中（年間急変）<br>垂直移動: 隆起・横ずれ<br>解説: 地殻が急激に歪み、内陸活断層による地震活動が活発な帯状エリア。')">
+                    <td>新潟・北陸</td><td><b style="color:#6d28d9;">歪み集中(年間)</b></td><td>隆起・横ずれ</td>
+                </tr>
+                <tr class="clickable-row" onclick="focusArea(35.8, 136.2, 8, '福井・若狭 歪み集中帯', '年間変動: 歪み・活断層帯<br>垂直移動: 微小変動蓄積<br>解説: 内陸活断層が密集する歪みゾーン。')">
+                    <td>福井・若狭</td><td><b style="color:#6d28d9;">歪み・活断層帯</b></td><td>微小変動</td></tr>
             </table>
             <div class="circle-legend-note">
                 <b>🔵 同心円の読み方</b>
@@ -126,7 +137,7 @@
                 • <b>中・外側:</b> 連動型・最大波及範囲
             </div>
             <div class="panel-action-bar">
-                <span style="font-size:10px; color:#64748b;">※タイトルタップで収納</span>
+                <span style="font-size:10px; color:#64748b;">※行タップで詳細表示</span>
                 <button style="font-size:11px; padding:3px 8px; cursor:pointer;" onclick="toggleExpand('tableBox', event)">拡大表示切替</button>
             </div>
         </div>
@@ -165,27 +176,27 @@
             <span style="font-size:10.5px; color:#555; font-weight:normal;">[± 閉じる]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
-            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', 'プレート沈み込みに伴う巨大地震想定。')">
+            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '年間変動: 西〜北西約8cm/年<br>垂直変動: 沈降・歪み蓄積<br>解説: プレート沈み込みに伴う巨大地震想定。')">
                 <span style="color:#b91c1c; font-weight:bold;">■ 北海道東部【最高リスク】</span>
                 <span>三重丸: 震源〜連動最大広域想定</span>
             </div>
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられ陸側が沈降。')">
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '年間変動: 北西へ約25cm/年<br>垂直変動: 沈降傾向<br>解説: 海側プレートに引きずられ陸側が沈降。')">
                 <span style="color:#b91c1c; font-weight:bold;">■ 南海トラフ【最高リスク】</span>
                 <span>多重円: 巨大地震想定の広域波及域</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '強い圧縮・微小沈降が観測されています。')">
+            <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '年間変動: 南東へ約15cm/年<br>垂直変動: 微小沈降<br>解説: 強い圧縮・微小沈降が観測されています。')">
                 <span style="color:#b91c1c; font-weight:bold;">■ 首都直下【最高リスク】</span>
                 <span>水平:南東15cm/年 / 垂直:微小沈降</span>
             </div>
-            <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '地殻が急激に歪み地震活動が活発な帯状エリア。')">
+            <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '年間変動: 歪み集中（年間急変）<br>垂直変動: 隆起・横ずれ<br>解説: 地殻が急激に歪み地震活動が活発な帯状エリア。')">
                 <span style="color:#6d28d9; font-weight:bold;">■ 新潟・北陸 歪み帯【要警戒】</span>
                 <span>局所歪み・年間変動 隆起横ずれ</span>
             </div>
-            <div class="explain-item" onclick="focusArea(35.8, 136.2, 8, '福井・若狭 歪み帯', '内陸活断層が密集する歪みゾーン。')">
+            <div class="explain-item" onclick="focusArea(35.8, 136.2, 8, '福井・若狭 歪み帯', '年間変動: 歪み・活断層帯<br>垂直変動: 微小変動蓄積<br>解説: 内陸活断層が密集する歪みゾーン。')">
                 <span style="color:#6d28d9; font-weight:bold;">■ 福井・若狭 歪み帯【要警戒】</span>
                 <span>活断層密集・微小変動蓄積</span>
             </div>
-            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '2011年震災後からの継続的な余効変動。')">
+            <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '年間変動: 東へ約45cm/年<br>垂直変動: 沈降→反発継続<br>解説: 2011年震災後からの継続的な余効変動。')">
                 <span style="color:#0369a1; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
                 <span>水平:東45cm/年 / 垂直:変動継続</span>
             </div>
@@ -224,26 +235,24 @@
             console.error("マップ初期化エラー:", e);
         }
 
-        // 確実に折りたたむためのトグル関数
         function toggleCollapse(id, event) {
             if(event) event.stopPropagation();
             var box = document.getElementById(id);
             if (box) {
                 box.classList.toggle('collapsed');
                 if (box.classList.contains('collapsed')) {
-                    box.classList.remove('expanded'); // 開閉時は拡大を解除
+                    box.classList.remove('expanded');
                 }
                 setTimeout(function() { if(map) map.invalidateSize(); }, 300);
             }
         }
 
-        // 拡大・縮小の切り替え
         function toggleExpand(id, event) {
             if(event) event.stopPropagation();
             var box = document.getElementById(id);
             if (box) {
                 box.classList.toggle('expanded');
-                box.classList.remove('collapsed'); // 拡大時は必ず開いた状態にする
+                box.classList.remove('collapsed');
                 setTimeout(function() { if(map) map.invalidateSize(); }, 300);
             }
         }
@@ -259,7 +268,7 @@
                     map.setView([lat, lon], zoom);
                     L.popup()
                         .setLatLng([lat, lon])
-                        .setContent(`<b>【${title}】</b><br>${desc}`)
+                        .setContent(`<b style="font-size:14px; color:#0f172a;">【${title}】</b><hr style="margin:4px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:12.5px; line-height:1.5; display:block;">${desc}</span>`)
                         .openOn(map);
                 }
             } catch(e) {
@@ -449,7 +458,7 @@
             try {
                 let showChain = document.getElementById('chkEqChain')?.checked ?? false;
                 if (showChain && chainPoints.length > 1) {
-                    L.polyline(chainPoints, { color: '#dc2626', weight: 3, opacity: 0.7, dashArray: '5, 5' }).eqLayer;
+                    L.polyline(chainPoints, { color: '#dc2626', weight: 3, opacity: 0.7, dashArray: '5, 5' }).addTo(eqLayer);
                 }
             } catch(chainErr) {}
 
