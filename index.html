@@ -60,11 +60,11 @@
         .info-box.expanded .eq-item { font-size: 14px; padding: 10px 6px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 6px; }
-        .eq-dot { display: inline-block; background: #0284c7; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #dc2626; width: 12px; height: 12px; }
+        .eq-dot { display: inline-block; background: #dc2626; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #991b1b; width: 12px; height: 12px; }
         
         .filter-toggle-btn {
-            background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; padding: 6px 10px; border-radius: 6px;
+            background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 6px 10px; border-radius: 6px;
             font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 6px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
@@ -73,7 +73,7 @@
         }
         .filter-panel label { display: block; margin-bottom: 5px; cursor: pointer; }
         
-        .wave-alert { margin-top: 6px; background: #e0f2fe; padding: 6px 10px; border-radius: 6px; color: #0369a1; font-weight: bold; font-size: 11.5px; border-left: 3px solid #0284c7; }
+        .wave-alert { margin-top: 6px; background: #fee2e2; padding: 6px 10px; border-radius: 6px; color: #991b1b; font-weight: bold; font-size: 11.5px; border-left: 3px solid #dc2626; }
         .noise-filter-status { margin-top: 5px; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; color: #334155; font-size: 11.5px; font-weight: bold; border: 1px solid #cbd5e1; }
 
         .risk-explain-box {
@@ -96,10 +96,11 @@
         .explain-item span { color: #334155; font-size: 10.5px; display: block; margin-top: 2px; }
         .risk-explain-box.expanded .explain-item span { font-size: 12px; }
 
+        /* 矢印のラベルを「赤色（高視認性）」に変更 */
         .vector-tip-label {
-            background: rgba(2, 132, 199, 0.98); border: 1.5px solid #ffffff; color: #ffffff;
+            background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; color: #ffffff;
             font-size: 11px; font-weight: bold; padding: 4px 9px; border-radius: 5px;
-            white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); text-align: center;
+            white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,0.45); text-align: center;
         }
 
         .risk-badge-red { background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; padding: 4px 8px; font-size: 10.5px; font-weight: bold; border-radius: 5px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
@@ -125,7 +126,7 @@
             <table class="risk-table" style="margin-top: 4px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
                 <tr><td>北海道東部</td><td><b style="color:#b91c1c;">西〜北西8cm/年</b></td><td>沈降・歪み蓄積</td></tr>
-                <tr><td>東北沖</td><td><b style="color:#0369a1;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
+                <tr><td>東北沖</td><td><b style="color:#b91c1c;">東へ45cm/年</b></td><td>沈降→反発</td></tr>
                 <tr><td>首都直下</td><td><b style="color:#b91c1c;">南東15cm/年</b></td><td>微小沈降</td></tr>
                 <tr><td>南海トラフ</td><td><b style="color:#b91c1c;">北西25cm/年</b></td><td>沈降傾向</td></tr>
                 <tr><td>新潟・北陸</td><td><b style="color:#6d28d9;">歪み集中(年間)</b></td><td>隆起・横ずれ</td></tr>
@@ -146,7 +147,7 @@
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量・ベクトル矢印</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量・赤色ベクトル矢印</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（網掛け）</label>
                 <label><input type="checkbox" id="chkEqChain" onchange="safeFetchEq()"> 🔗 発生順の連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #94a3b8; margin:6px 0;">
@@ -261,7 +262,7 @@
                     let itoShizuLine = L.polyline([
                         [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], 
                         [35.15, 138.65], [35.1, 138.5]
-                    ], { color: '#0284c7', weight: 4, opacity: 0.95 }).addTo(plateLayersGroup);
+                    ], { color: '#dc2626', weight: 4.5, opacity: 0.95 }).addTo(plateLayersGroup);
                     itoShizuLine.bindPopup('<b>🔥 陸プレート境界（糸静線〜駿河湾）</b><br>東西の陸プレートが密着して押し合う境界線。');
                 }
 
@@ -284,26 +285,29 @@
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
 
+                        // 開始点のピンを赤色ベースに変更
                         L.circleMarker(startPoint, {
-                            radius: 5.5, color: '#ffffff', fillColor: '#0284c7', fillOpacity: 1, weight: 2
+                            radius: 6, color: '#ffffff', fillColor: '#dc2626', fillOpacity: 1, weight: 2.5
                         }).addTo(plateLayersGroup);
 
-                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#0284c7', weight: 4.5, opacity: 0.95 }).addTo(plateLayersGroup);
+                        // ベクトル線を「赤色(#dc2626)・太め」に変更
+                        let vectorLine = L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 5, opacity: 0.95 }).addTo(plateLayersGroup);
 
                         let dx = v.dLon;
                         let dy = v.dLat;
                         let angle = Math.atan2(dy, dx);
-                        let h1 = [endPoint[0] - 0.035 * Math.sin(angle - 0.5), endPoint[1] - 0.035 * Math.cos(angle - 0.5)];
-                        let h2 = [endPoint[0] - 0.035 * Math.sin(angle + 0.5), endPoint[1] - 0.035 * Math.cos(angle + 0.5)];
+                        let h1 = [endPoint[0] - 0.04 * Math.sin(angle - 0.5), endPoint[1] - 0.04 * Math.cos(angle - 0.5)];
+                        let h2 = [endPoint[0] - 0.04 * Math.sin(angle + 0.5), endPoint[1] - 0.04 * Math.cos(angle + 0.5)];
 
-                        L.polyline([h1, endPoint, h2], { color: '#0369a1', weight: 5.5, opacity: 1 }).addTo(plateLayersGroup);
+                        // 矢印の先端も目立つ赤色(#b91c1c)に強化
+                        L.polyline([h1, endPoint, h2], { color: '#b91c1c', weight: 6, opacity: 1 }).addTo(plateLayersGroup);
 
-                        let labelPos = [endPoint[0] + (dy >= 0 ? 0.035 : -0.035), endPoint[1]];
+                        let labelPos = [endPoint[0] + (dy >= 0 ? 0.038 : -0.038), endPoint[1]];
                         let tipLabel = L.marker(labelPos, {
                             icon: L.divIcon({
                                 className: '',
-                                html: `<div class="vector-tip-label">↗️ ${v.value}<br><span style="font-size:9px; font-weight:normal; color:#e0f2fe;">${v.vertical} (直近1年)</span></div>`,
-                                iconSize: [150, 38], iconAnchor: [75, 19]
+                                html: `<div class="vector-tip-label">🚀 ${v.value}<br><span style="font-size:9.5px; font-weight:bold; color:#fef2f2;">${v.vertical} (直近1年)</span></div>`,
+                                iconSize: [160, 40], iconAnchor: [80, 20]
                             })
                         }).addTo(plateLayersGroup);
 
@@ -414,7 +418,7 @@
 
                     html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
                                 <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#0284c7; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
+                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
                                 <span>${displayName} (M${mag})</span>
                              </div>`;
                     
@@ -431,13 +435,13 @@
                                 if(!eqLayer) return;
                                 var mainMarker = L.circleMarker([l, lo], { 
                                     radius: Math.max(6, m * 1.8), 
-                                    color: index === 0 ? '#991b1b' : '#0369a1',
-                                    fillColor: index === 0 ? '#ef4444' : '#0284c7',
+                                    color: index === 0 ? '#7f1d1d' : '#991b1b',
+                                    fillColor: index === 0 ? '#dc2626' : '#ef4444',
                                     fillOpacity: 0.85,
                                     weight: 2
                                 }).addTo(eqLayer);
 
-                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔵 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
+                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔴 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
                                 mainMarker.bindPopup(popupContent);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {
@@ -454,7 +458,7 @@
                 let showChain = document.getElementById('chkEqChain')?.checked ?? false;
                 if (showChain && chainPoints.length > 1) {
                     let chainLine = L.polyline(chainPoints, {
-                        color: '#0284c7', weight: 3.5, opacity: 0.75, dashArray: '6, 6'
+                        color: '#dc2626', weight: 3.5, opacity: 0.75, dashArray: '6, 6'
                     }).addTo(eqLayer);
                     chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
                 }
@@ -470,26 +474,4 @@
 
         function highlightAndOpenPopup(id) {
             try {
-                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-                document.getElementById(id)?.classList.add('highlighted');
-                if (markerMap[id] && map) {
-                    let m = markerMap[id];
-                    map.setView([m.lat, m.lon], 8);
-                    m.marker.openPopup();
-                }
-            } catch(e) {
-                console.warn("ハイライト処理エラー:", e);
-            }
-        }
-
-        safeFetchEq();
-        setInterval(() => {
-            try {
-                safeFetchEq();
-            } catch(e) {
-                console.warn("定期更新エラー:", e);
-            }
-        }, 15000);
-    </script>
-</body>
-</html>
+                document.querySelectorAll('.eq-item').forEach(el =>
