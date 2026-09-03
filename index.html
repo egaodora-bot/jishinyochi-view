@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>地殻変動・歪み集中・リアルタイムマップ（ベクトル矢印改善版）</title>
+    <title>地殻変動・歪み集中・リアルタイム防災マップ（最終統合版）</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -16,7 +16,7 @@
         
         .risk-table-box {
             position: absolute; top: 8px; left: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); font-size: 10px; width: 290px;
             pointer-events: auto; max-height: 45vh; overflow-y: auto;
         }
@@ -26,7 +26,7 @@
 
         .info-box {
             position: absolute; top: 8px; right: 8px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 5px 6px; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95); padding: 6px 8px; border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3); width: 230px; font-size: 10px;
             pointer-events: auto; max-height: 45vh; display: flex; flex-direction: column;
         }
@@ -41,8 +41,8 @@
         .eq-dot.latest { background: #dc2626; width: 10px; height: 10px; }
         
         .filter-toggle-btn {
-            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 4px; border-radius: 4px;
-            font-size: 8px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
+            background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 3px 6px; border-radius: 4px;
+            font-size: 8.5px; font-weight: bold; cursor: pointer; margin-top: 3px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px; margin-top: 2px; font-size: 8.5px;
@@ -50,8 +50,8 @@
         }
         .filter-panel label { display: block; margin-bottom: 2px; cursor: pointer; }
         
-        .wave-alert { margin-top: 3px; background: #e0f2fe; padding: 2px 4px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 7.5px; border-left: 3px solid #0284c7; }
-        .noise-filter-status { margin-top: 2px; background: #f1f5f9; padding: 2px 4px; border-radius: 4px; color: #334155; font-size: 7.5px; font-weight: bold; }
+        .wave-alert { margin-top: 3px; background: #e0f2fe; padding: 3px 6px; border-radius: 4px; color: #0369a1; font-weight: bold; font-size: 8px; border-left: 3px solid #0284c7; }
+        .noise-filter-status { margin-top: 2px; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; color: #334155; font-size: 8px; font-weight: bold; }
 
         .risk-explain-box {
             position: absolute; bottom: 15px; right: 8px; z-index: 1000;
@@ -67,7 +67,7 @@
 
         .vector-tip-label {
             background: rgba(2, 132, 199, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
-            font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 4px;
+            font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px;
             white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); text-align: center;
         }
 
@@ -123,23 +123,23 @@
     </div>
 
     <div class="risk-explain-box">
-        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (期間・基準)</span><span>▼</span></div>
+        <div class="risk-explain-title" onclick="toggleBox('riskExplainContent')"><span>🗺️ エリア解説 (二重丸・基準)</span><span>▼</span></div>
         <div id="riskExplainContent" style="margin-top: 2px;">
-            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性が指摘されています。')">
+            <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴い、十勝沖・根室沖を中心に巨大地震の切迫性が指摘されています。二重丸の外側は連動型地震の最大想定範囲です。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 北海道東部 (千島海溝)【最高リスク】</span>
-                <span>水平:西〜北西8cm/年 / 垂直:沈降 (直近1年)</span>
+                <span>二重丸: 最大震源域 / 水平:西〜北西8cm/年</span>
             </div>
-            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。')">
+            <div class="explain-item" onclick="focusArea(33.5, 134.5, 7, '南海トラフ (沈降と歪み)', '海側プレートに引きずられて陸側が沈降し、歪みが蓄積しています。広域の想定範囲を示します。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 南海トラフ (沈降・歪み)【最高リスク】</span>
-                <span>水平:北西25cm/年 / 垂直:沈降 (直近1年)</span>
+                <span>二重丸: 巨大地震想定域 / 水平:北西25cm/年</span>
             </div>
             <div class="explain-item" onclick="focusArea(35.68, 139.69, 9, '首都直下 (3層構造・圧縮)', '上空電磁波異常やプレート境界の強い圧縮・微小沈降が観測されています。')">
                 <span style="color:#dc2626; font-weight:bold;">■ 首都直下 (圧縮・沈降)【最高リスク】</span>
-                <span>水平:南東15cm/年 / 垂直:微小沈降 (直近1年)</span>
+                <span>水平:南東15cm/年 / 垂直:微小沈降</span>
             </div>
             <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
                 <span style="color:#7c3aed; font-weight:bold;">■ 新潟・北陸 歪み集中帯【要警戒】</span>
-                <span>急激な歪み・年間変動 隆起横ずれ</span>
+                <span>局所歪み・年間変動 隆起横ずれ</span>
             </div>
             <div class="explain-item" onclick="focusArea(35.8, 136.2, 8, '福井・若狭 歪み帯', '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。')">
                 <span style="color:#7c3aed; font-weight:bold;">■ 福井・若狭 歪み帯【要警戒】</span>
@@ -147,7 +147,7 @@
             </div>
             <div class="explain-item" onclick="focusArea(39.5, 143.0, 7, '東北沖 (余効変動・巨大反発)', '2011年震災後からの継続的な余効変動（直近1年間の年間変化速度）です。')">
                 <span style="color:#0284c7; font-weight:bold;">■ 東北沖 (余効変動・反発)</span>
-                <span>水平:東45cm/年 / 垂直:変動継続 (直近1年)</span>
+                <span>水平:東45cm/年 / 垂直:変動継続</span>
             </div>
         </div>
     </div>
@@ -255,7 +255,7 @@
 
                         L.polyline([h1, endPoint, h2], { color: '#0369a1', weight: 5, opacity: 1 }).addTo(plateLayersGroup);
 
-                        // ★改善：矢印の先端とテキストが重ならないよう、少し離した位置（オフセット）にラベルを配置
+                        // 矢印の先端を隠さないよう、オフセットした位置にラベルを配置
                         let labelPos = [endPoint[0] + (dy >= 0 ? 0.035 : -0.035), endPoint[1]];
                         let tipLabel = L.marker(labelPos, {
                             icon: L.divIcon({
@@ -277,24 +277,34 @@
 
         safeRenderLayers();
 
+        // 警戒エリアと二重丸（内側・外側）
         var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.5, name: '北海道東部(千島)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等で切迫性が指摘されている巨大地震の想定震源域です。', radius: 130000, color: '#dc2626' },
-            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, color: '#dc2626' },
-            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, color: '#dc2626' },
-            { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 80000, color: '#7c3aed' },
-            { lat: 35.8, lon: 136.2, name: '福井・若狭帯', prob: '活断層密集', strain: '微小変動蓄積', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。', radius: 70000, color: '#7c3aed' },
-            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, color: '#0284c7' }
+            { lat: 42.8, lon: 144.5, name: '北海道東部(千島)', prob: '70-80%級', strain: '沈降・歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。二重丸の外側は連動型地震等の最大広域想定範囲です。', radius: 130000, outerRadius: 210000, color: '#dc2626' },
+            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み集中', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海のプレートに引きずられて陸側が沈降し、歪みが蓄積しています。', radius: 120000, outerRadius: 190000, color: '#dc2626' },
+            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮・微小沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '3層構造。上空電磁波異常や強い圧縮・沈降シグナルが観測されています。', radius: 90000, outerRadius: 140000, color: '#dc2626' },
+            { lat: 37.2, lon: 138.8, name: '新潟・北陸歪み帯', prob: '活断層・急変動', strain: '年間急激歪み', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '日本列島の内陸で最も地殻変動が速く、急激な歪みと隆起・横ずれが進行中。', radius: 70000, outerRadius: 110000, color: '#7c3aed' },
+            { lat: 35.8, lon: 136.2, name: '福井・若狭帯', prob: '活断層密集', strain: '微小変動蓄積', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集し、過去に大きな地震を引き起こしてきた歪みゾーンです。', radius: 65000, outerRadius: 100000, color: '#7c3aed' },
+            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動・反発', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '震災後も東向きの年間引き延ばしと垂直方向の変動調整が継続しています。', radius: 130000, outerRadius: 200000, color: '#0284c7' }
         ];
 
         if(persistentRiskGroup) {
             persistentRiskAreas.forEach(function(a) {
                 try {
+                    // 内側の円
                     if (a.radius) {
-                        var circle = L.circle([a.lat, a.lon], {
+                        var innerCircle = L.circle([a.lat, a.lon], {
                             radius: a.radius, color: a.color, weight: 1.5, fillColor: a.color, fillOpacity: 0.1, dashArray: '4, 4'
                         }).addTo(persistentRiskGroup);
-                        circle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
+                        innerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
                     }
+                    // 外側の円（二重丸の構成）
+                    if (a.outerRadius) {
+                        var outerCircle = L.circle([a.lat, a.lon], {
+                            radius: a.outerRadius, color: a.color, weight: 1, fillColor: 'transparent', fillOpacity: 0, dashArray: '6, 6'
+                        }).addTo(persistentRiskGroup);
+                        outerCircle.on('click', function() { focusArea(a.lat, a.lon, 7, a.title, a.desc); });
+                    }
+
                     var marker = L.marker([a.lat, a.lon], {
                         icon: L.divIcon({
                             className: '',
