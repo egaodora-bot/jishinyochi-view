@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>地殻変動・歪み集中・リアルタイム防災マップ</title>
     
     <!-- Leaflet CSS -->
@@ -12,6 +12,7 @@
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: #e2e8f0;
+            -webkit-tap-highlight-color: transparent;
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
@@ -90,11 +91,19 @@
             background: rgba(220, 38, 38, 0.96); border: 1.5px solid #ffffff; color: #ffffff;
             font-size: 11px; font-weight: bold; padding: 5px 8px; border-radius: 5px;
             white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.4); text-align: center;
+            pointer-events: auto;
         }
 
-        .risk-badge-red { background: rgba(220, 38, 38, 0.96); border: 1.5px solid #ffffff; padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 5px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-purple { background: rgba(124, 58, 237, 0.96); border: 1.5px solid #ffffff; padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 5px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-blue { background: rgba(2, 132, 199, 0.96); border: 1.5px solid #ffffff; padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 5px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; pointer-events: auto; z-index: 500; }
+        /* スマホタップ最適化：pointer-events と タッチ無効化の回避 */
+        .risk-badge-red, .risk-badge-purple, .risk-badge-blue {
+            padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 5px; 
+            text-align: center; color: #ffffff; white-space: nowrap; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer; 
+            pointer-events: auto !important; z-index: 500; border: 1.5px solid #ffffff;
+        }
+        .risk-badge-red { background: rgba(220, 38, 38, 0.96); }
+        .risk-badge-purple { background: rgba(124, 58, 237, 0.96); }
+        .risk-badge-blue { background: rgba(2, 132, 199, 0.96); }
         
         .fault-subtext { font-size: 10px; color: #fdf2f2; font-weight: bold; display: block; }
         .strain-value { font-size: 10px; color: #ffffff; font-weight: bold; display: block; background: rgba(0, 0, 0, 0.25); padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
@@ -368,15 +377,23 @@
                             className: '',
                             html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
                             iconSize: [130, 42], iconAnchor: [65, 21]
-                        })
+                        }),
+                        interactive: true,
+                        riseOnHover: true
                     });
 
-                    // 確実にクリックイベントをバインド
-                    marker.on('click', (function(lat, lon, title, desc) {
-                        return function() {
+                    // タップやクリック、タッチイベント両方に対応する処理
+                    var actionHandler = (function(lat, lon, title, desc) {
+                        return function(e) {
+                            if (e && e.originalEvent) {
+                                e.originalEvent.stopPropagation();
+                            }
                             focusArea(lat, lon, 7, title, desc);
                         };
-                    })(a.lat, a.lon, a.title, a.desc));
+                    })(a.lat, a.lon, a.title, a.desc);
+
+                    marker.on('click', actionHandler);
+                    marker.on('touchend', actionHandler);
 
                     marker.addTo(persistentRiskGroup);
                 } catch(e) {
