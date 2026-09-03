@@ -345,12 +345,12 @@
         safeRenderLayers();
 
         var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.5, name: '北海道東部', prob: '70-80%', strain: '歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。', radius: 90000, midRadius: 140000, outerRadius: 190000, color: '#dc2626' },
-            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海側プレートによる沈降と歪み。', radius: 90000, midRadius: 130000, outerRadius: 170000, color: '#dc2626' },
-            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '強い圧縮・微小沈降シグナル。', radius: 70000, midRadius: 100000, outerRadius: 130000, color: '#dc2626' },
-            { lat: 37.2, lon: 138.8, name: '新潟・北陸', prob: '活断層', strain: '年間急変', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '急激な歪みと隆起・横ずれ。', radius: 55000, midRadius: 80000, outerRadius: 110000, color: '#7c3aed' },
-            { lat: 35.8, lon: 136.2, name: '福井・若狭', prob: '活断層', strain: '微小変動', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集する歪みゾーン。', radius: 50000, midRadius: 75000, outerRadius: 100000, color: '#7c3aed' },
-            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '東向きの年間引き延ばし。', radius: 90000, midRadius: 130000, outerRadius: 180000, color: '#0284c7' }
+            { lat: 42.8, lon: 144.5, name: '北海道東部', prob: '70-80%', strain: '歪み蓄積', badgeClass: 'risk-badge-red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。<br>年間変動: 西〜北西へ約8cm/年<br>垂直移動: 沈降・歪み蓄積', radius: 90000, midRadius: 140000, outerRadius: 190000, color: '#dc2626' },
+            { lat: 33.5, lon: 134.5, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み', badgeClass: 'risk-badge-red', title: '南海トラフ巨大地震想定', desc: '海側プレートによる沈降と歪み。<br>年間変動: 北西へ約25cm/年<br>垂直移動: 沈降傾向', radius: 90000, midRadius: 130000, outerRadius: 170000, color: '#dc2626' },
+            { lat: 35.68, lon: 139.69, name: '首都直下', prob: '約70%', strain: '圧縮沈降', badgeClass: 'risk-badge-red', title: '首都直下地震想定', desc: '強い圧縮・微小沈降シグナル。<br>年間変動: 南東へ約15cm/年<br>垂直移動: 微小沈降', radius: 70000, midRadius: 100000, outerRadius: 130000, color: '#dc2626' },
+            { lat: 37.2, lon: 138.8, name: '新潟・北陸', prob: '活断層', strain: '年間急変', badgeClass: 'risk-badge-purple', title: '新潟・北陸 歪み集中帯', desc: '急激な歪みと隆起・横ずれ。<br>年間変動: 歪み集中（年間急変）<br>垂直移動: 隆起・横ずれ', radius: 55000, midRadius: 80000, outerRadius: 110000, color: '#7c3aed' },
+            { lat: 35.8, lon: 136.2, name: '福井・若狭', prob: '活断層', strain: '微小変動', badgeClass: 'risk-badge-purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集する歪みゾーン。<br>年間変動: 歪み・活断層帯<br>垂直移動: 微小変動蓄積', radius: 50000, midRadius: 75000, outerRadius: 100000, color: '#7c3aed' },
+            { lat: 39.5, lon: 143.0, name: '東北沖', prob: '継続中', strain: '余効変動', badgeClass: 'risk-badge-blue', title: '東北地方太平洋沖（余効変動）', desc: '東向きの年間引き延ばし。<br>年間変動: 東へ約45cm/年<br>垂直移動: 沈降→反発継続', radius: 90000, midRadius: 130000, outerRadius: 180000, color: '#0284c7' }
         ];
 
         if(persistentRiskGroup) {
@@ -362,13 +362,22 @@
                     if (a.midRadius) {
                         L.circle([a.lat, a.lon], { radius: a.midRadius, color: a.color, weight: 2, opacity: 0.7, fillColor: a.color, fillOpacity: 0.05, dashArray: '5, 5' }).addTo(persistentRiskGroup);
                     }
+                    
                     var marker = L.marker([a.lat, a.lon], {
                         icon: L.divIcon({
                             className: '',
-                            html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
+                            html: `<div class="${a.badgeClass}">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
                             iconSize: [130, 42], iconAnchor: [65, 21]
                         })
                     });
+
+                    // 確実にクリックイベントをバインド
+                    marker.on('click', (function(lat, lon, title, desc) {
+                        return function() {
+                            focusArea(lat, lon, 7, title, desc);
+                        };
+                    })(a.lat, a.lon, a.title, a.desc));
+
                     marker.addTo(persistentRiskGroup);
                 } catch(e) {
                     console.warn("リスクエリアエラー:", e);
