@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地殻変動・歪み集中・リアルタイム防災マップ</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         html, body {
@@ -14,7 +15,7 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* ▼ すべてのパネル・文字サイズを一括で大型化 ▼ */
+        /* すべてのパネル・文字サイズを一括で大型化 */
         .risk-table-box {
             position: absolute; top: 14px; left: 14px; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 14px 16px; border-radius: 8px;
@@ -99,7 +100,6 @@
         .risk-explain-box.expanded .explain-item b { font-size: 17px; }
         .explain-item span { color: #334155; font-size: 13px; display: block; margin-top: 3px; }
         .risk-explain-box.expanded .explain-item span { font-size: 15px; }
-        /* ▲ 拡大調整ここまで ▲ */
 
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; color: #ffffff;
@@ -178,7 +178,7 @@
                 <span style="color:#b91c1c; font-weight:bold;">■ 首都直下 (圧縮・沈降)【最高リスク】</span>
                 <span>水平:南東15cm/年 / 垂直:微小沈降</span>
             </div>
-            <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激に地殻が歪み、地震活動が活発化している帯状エリアです。')">
+            <div class="explain-item" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '日本列島の内陸で最も急激地殻が歪み、地震活動が活発化している帯状エリアです。')">
                 <span style="color:#6d28d9; font-weight:bold;">■ 新潟・北陸 歪み集中帯【要警戒】</span>
                 <span>局所歪み・年間変動 隆起横ずれ</span>
             </div>
@@ -195,6 +195,7 @@
 
     <div id="map"></div>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map;
@@ -205,12 +206,14 @@
                 wheelPxPerZoomLevel: 240
             }).setView([38.0, 137.0], 5);
             
-            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
+            // 国土地理院タイルを基本とし、エラー時はOpenStreetMapにフォールバック
+            var gsiLayer = L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+                attribution: '&copy; 国土地理院',
                 maxZoom: 18,
                 minZoom: 4,
-                errorTileUrl: ''
-            }).addTo(map);
+                errorTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            });
+            gsiLayer.addTo(map);
 
             setTimeout(function() {
                 if(map) map.invalidateSize();
@@ -402,4 +405,104 @@
             } catch(e) {
                 console.warn("外部API取得失敗。デモデータに切り替えます。", e);
                 filteredData = [
-                    { earthquake: { hypocenter: { name: "根室沖
+                    { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
+                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } }
+                ];
+            }
+
+            let html = "";
+            let chainPoints = [];
+
+            for(let i=0; i<filteredData.length; i++) {
+                try {
+                    let item = filteredData[i];
+                    let eq = item.earthquake;
+                    if(!eq) continue;
+                    let hypocenter = eq.hypocenter || {};
+                    let displayName = hypocenter.name || "震源情報";
+                    let mag = parseFloat(hypocenter.magnitude || "0");
+                    let eqTime = item.time || "";
+                    let uniqueId = "eq_" + i;
+
+                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
+                                <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
+                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
+                                <span>${displayName} (M${mag})</span>
+                           </div>`;
+                    
+                    let lat = hypocenter.latitude;
+                    let lon = hypocenter.longitude;
+                    
+                    if (!lat || lat === -200 || lat === 0 || isNaN(lat) || isNaN(lon)) continue;
+
+                    chainPoints.push([lat, lon]);
+
+                    (function(index, l, lo, m, name, time) {
+                        setTimeout(function() {
+                            try {
+                                if(!eqLayer) return;
+                                var mainMarker = L.circleMarker([l, lo], { 
+                                    radius: Math.max(7, m * 2.0), 
+                                    color: index === 0 ? '#7f1d1d' : '#991b1b',
+                                    fillColor: index === 0 ? '#dc2626' : '#ef4444',
+                                    fillOpacity: 0.85,
+                                    weight: 2
+                                }).addTo(eqLayer);
+
+                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔴 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
+                                mainMarker.bindPopup(popupContent);
+                                markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
+                            } catch(err) {
+                                console.warn("個別マーカー描画エラー:", err);
+                            }
+                        }, index * 100);
+                    })(i, lat, lon, mag, displayName, eqTime);
+                } catch(innerErr) {
+                    console.warn("地震データループ内エラー:", innerErr);
+                }
+            }
+
+            try {
+                let showChain = document.getElementById('chkEqChain')?.checked ?? false;
+                if (showChain && chainPoints.length > 1) {
+                    let chainLine = L.polyline(chainPoints, {
+                        color: '#dc2626', weight: 3.5, opacity: 0.75, dashArray: '6, 6'
+                    }).addTo(eqLayer);
+                    chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
+                }
+            } catch(chainErr) {
+                console.warn("連鎖ルート描画エラー:", chainErr);
+            }
+
+            const eqDataEl = document.getElementById('earthquake-data');
+            const updateTimeEl = document.getElementById('update-time');
+            if(eqDataEl) eqDataEl.innerHTML = html;
+            if(updateTimeEl) updateTimeEl.innerText = "更新: " + new Date().toLocaleTimeString();
+        }
+
+        function highlightAndOpenPopup(id) {
+            try {
+                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
+                document.getElementById(id)?.classList.add('highlighted');
+                if (markerMap[id] && map) {
+                    let m = markerMap[id];
+                    map.setView([m.lat, m.lon], 8);
+                    m.marker.openPopup();
+                }
+            } catch(e) {
+                console.warn("ハイライト処理エラー:", e);
+            }
+        }
+
+        safeFetchEq();
+        setInterval(() => {
+            try {
+                safeFetchEq();
+            } catch(e) {
+                console.warn("定期更新エラー:", e);
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
