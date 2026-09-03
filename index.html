@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地殻変動・歪み集中・リアルタイム防災マップ</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         html, body {
@@ -15,106 +14,108 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* ▼ 全体的な文字サイズを大きく調整 ▼ */
+        /* ▼ すべてのパネル・文字サイズを一括で大型化 ▼ */
         .risk-table-box {
             position: absolute; top: 14px; left: 14px; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 14px 16px; border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35); font-size: 15px; width: 380px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35); font-size: 16px; width: 390px;
             pointer-events: auto; max-height: 55vh; overflow-y: auto;
             border: 1px solid #cbd5e1; transition: all 0.25s ease;
         }
         .risk-table-box.expanded {
-            width: 80vw; max-width: 650px; max-height: 85vh; top: 20px; left: 20px; z-index: 2000; font-size: 17px;
+            width: 80vw; max-width: 650px; max-height: 85vh; top: 20px; left: 20px; z-index: 2000; font-size: 18px;
         }
 
-        .risk-table-title { font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; font-size: 16px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .risk-table-box.expanded .risk-table-title { font-size: 19px; }
+        .risk-table-title { font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; font-size: 17px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .risk-table-box.expanded .risk-table-title { font-size: 20px; }
         .risk-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .risk-table th, .risk-table td { text-align: left; padding: 7px 5px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; }
-        .risk-table-box.expanded .risk-table th, .risk-table-box.expanded .risk-table td { font-size: 16px; padding: 10px; }
+        .risk-table th, .risk-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; }
+        .risk-table-box.expanded .risk-table th, .risk-table-box.expanded .risk-table td { font-size: 17px; padding: 10px; }
         .risk-table th { font-weight: bold; color: #0f172a; }
 
         .circle-legend-note {
-            margin-top: 10px; background: #f1f5f9; border: 1px solid #94a3b8; padding: 10px; border-radius: 6px; font-size: 13px; color: #0f172a; line-height: 1.45; font-weight: 500;
+            margin-top: 10px; background: #f1f5f9; border: 1px solid #94a3b8; padding: 10px; border-radius: 6px; font-size: 14px; color: #0f172a; line-height: 1.45; font-weight: 500;
         }
-        .risk-table-box.expanded .circle-legend-note { font-size: 15px; padding: 14px; }
-        .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 4px; font-size: 13.5px; }
-        .risk-table-box.expanded .circle-legend-note b { font-size: 16px; }
+        .risk-table-box.expanded .circle-legend-note { font-size: 16px; padding: 14px; }
+        .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 4px; font-size: 14.5px; }
+        .risk-table-box.expanded .circle-legend-note b { font-size: 17px; }
 
+        /* 右上：地震速報パネル */
         .info-box {
             position: absolute; top: 14px; right: 14px; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 14px 16px; border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35); width: 320px; font-size: 15px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35); width: 340px; font-size: 16px;
             pointer-events: auto; max-height: 52vh; display: flex; flex-direction: column;
             border: 1px solid #cbd5e1; transition: all 0.25s ease;
         }
         .info-box.expanded {
-            width: 420px; max-width: 90vw; max-height: 80vh; top: 20px; right: 20px; z-index: 2000; font-size: 16px;
+            width: 440px; max-width: 90vw; max-height: 80vh; top: 20px; right: 20px; z-index: 2000; font-size: 17px;
         }
-        .info-box h3 { margin: 0 0 8px 0; font-size: 16px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: pointer; }
-        .info-box.expanded h3 { font-size: 18px; }
-        .update-time { font-size: 13.5px; color: #334155; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; font-weight: bold; }
-        .info-box.expanded .update-time { font-size: 15px; }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 17px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: pointer; }
+        .info-box.expanded h3 { font-size: 19px; }
+        .update-time { font-size: 14.5px; color: #334155; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; font-weight: bold; }
+        .info-box.expanded .update-time { font-size: 16px; }
         
-        #earthquake-data { max-height: 150px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .info-box.expanded #earthquake-data { max-height: 320px; }
+        #earthquake-data { max-height: 160px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
+        .info-box.expanded #earthquake-data { max-height: 340px; }
         
-        .eq-item { border-bottom: 1px solid #e2e8f0; padding: 8px 6px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #0f172a; font-weight: 500; }
-        .info-box.expanded .eq-item { font-size: 15.5px; padding: 10px 8px; }
+        .eq-item { border-bottom: 1px solid #e2e8f0; padding: 9px 6px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px; font-size: 15px; color: #0f172a; font-weight: 500; }
+        .info-box.expanded .eq-item { font-size: 16.5px; padding: 11px 8px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 6px; }
         .eq-dot { display: inline-block; background: #dc2626; width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
         .eq-dot.latest { background: #991b1b; width: 13px; height: 13px; }
         
         .filter-toggle-btn {
-            background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 6px;
-            font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
+            background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 9px 12px; border-radius: 6px;
+            font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; display: inline-block; width: 100%; text-align: center; box-sizing: border-box;
         }
         .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #94a3b8; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 13.5px;
+            display: none; background: #f8fafc; border: 1px solid #94a3b8; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 14.5px;
             max-height: 160px; overflow-y: auto; color: #0f172a; font-weight: 500;
         }
         .filter-panel label { display: block; margin-bottom: 6px; cursor: pointer; }
         
-        .wave-alert { margin-top: 8px; background: #fee2e2; padding: 8px 12px; border-radius: 6px; color: #991b1b; font-weight: bold; font-size: 13px; border-left: 3px solid #dc2626; }
-        .noise-filter-status { margin-top: 6px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #334155; font-size: 13px; font-weight: bold; border: 1px solid #cbd5e1; }
+        .wave-alert { margin-top: 8px; background: #fee2e2; padding: 9px 12px; border-radius: 6px; color: #991b1b; font-weight: bold; font-size: 14px; border-left: 3px solid #dc2626; }
+        .noise-filter-status { margin-top: 6px; background: #f1f5f9; padding: 9px 12px; border-radius: 6px; color: #334155; font-size: 14px; font-weight: bold; border: 1px solid #cbd5e1; }
 
+        /* 右下：エリア解説パネル */
         .risk-explain-box {
             position: absolute; bottom: 15px; right: 14px; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 14px 16px; border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35); font-size: 14px; width: 310px;
-            pointer-events: auto; max-height: 45vh; overflow-y: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35); font-size: 15px; width: 330px;
+            pointer-events: auto; max-height: 48vh; overflow-y: auto;
             border: 1px solid #cbd5e1; transition: all 0.25s ease;
         }
         .risk-explain-box.expanded {
-            width: 80vw; max-width: 600px; max-height: 80vh; bottom: 20px; right: 20px; z-index: 2000; font-size: 16px;
+            width: 80vw; max-width: 620px; max-height: 80vh; bottom: 20px; right: 20px; z-index: 2000; font-size: 17px;
         }
-        .risk-explain-title { font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; font-size: 15.5px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .risk-explain-box.expanded .risk-explain-title { font-size: 18px; }
-        .explain-item { margin-bottom: 8px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; border: 1px solid #e2e8f0; background: #f8fafc; }
-        .risk-explain-box.expanded .explain-item { padding: 12px; margin-bottom: 10px; }
+        .risk-explain-title { font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; font-size: 16.5px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .risk-explain-box.expanded .risk-explain-title { font-size: 19px; }
+        .explain-item { margin-bottom: 8px; padding: 9px; border-radius: 6px; cursor: pointer; transition: background 0.2s; border: 1px solid #e2e8f0; background: #f8fafc; }
+        .risk-explain-box.expanded .explain-item { padding: 13px; margin-bottom: 10px; }
         .explain-item:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .explain-item b { display: block; color: #0f172a; font-size: 13.5px; }
-        .risk-explain-box.expanded .explain-item b { font-size: 16px; }
-        .explain-item span { color: #334155; font-size: 12px; display: block; margin-top: 3px; }
-        .risk-explain-box.expanded .explain-item span { font-size: 14px; }
-        /* ▲ここまで拡大調整 ▲ */
+        .explain-item b { display: block; color: #0f172a; font-size: 14.5px; }
+        .risk-explain-box.expanded .explain-item b { font-size: 17px; }
+        .explain-item span { color: #334155; font-size: 13px; display: block; margin-top: 3px; }
+        .risk-explain-box.expanded .explain-item span { font-size: 15px; }
+        /* ▲ 拡大調整ここまで ▲ */
 
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; color: #ffffff;
-            font-size: 12.5px; font-weight: bold; padding: 6px 11px; border-radius: 6px;
+            font-size: 13.5px; font-weight: bold; padding: 7px 12px; border-radius: 6px;
             white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,0.45); text-align: center;
         }
 
-        .risk-badge-red { background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-purple { background: rgba(124, 58, 237, 0.98); border: 1.5px solid #ffffff; padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
-        .risk-badge-blue { background: rgba(2, 132, 199, 0.98); border: 1.5px solid #ffffff; padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-red { background: rgba(220, 38, 38, 0.98); border: 1.5px solid #ffffff; padding: 7px 11px; font-size: 13px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-purple { background: rgba(124, 58, 237, 0.98); border: 1.5px solid #ffffff; padding: 7px 11px; font-size: 13px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
+        .risk-badge-blue { background: rgba(2, 132, 199, 0.98); border: 1.5px solid #ffffff; padding: 7px 11px; font-size: 13px; font-weight: bold; border-radius: 6px; text-align: center; color: #ffffff; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4); cursor: pointer; pointer-events: auto; z-index: 500; }
         
-        .fault-subtext { font-size: 10.5px; color: #fdf2f2; font-weight: bold; display: block; }
-        .strain-value { font-size: 10.5px; color: #ffffff; font-weight: bold; display: block; background: rgba(0, 0, 0, 0.25); padding: 1px 4px; border-radius: 3px; margin-top: 3px; }
+        .fault-subtext { font-size: 11.5px; color: #fdf2f2; font-weight: bold; display: block; }
+        .strain-value { font-size: 11.5px; color: #ffffff; font-weight: bold; display: block; background: rgba(0, 0, 0, 0.25); padding: 1px 5px; border-radius: 3px; margin-top: 3px; }
 
         @media screen and (max-width: 600px) {
-            .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 10px; padding: 6px; }
+            .risk-table-box { top: auto; bottom: 8px; left: 6px; width: 46%; max-height: 25vh; font-size: 11px; padding: 6px; }
             .info-box { top: 8px; right: 6px; width: 48%; max-height: 35vh; padding: 6px; }
             .risk-explain-box { display: none; }
             #earthquake-data { max-height: 70px; }
@@ -124,7 +125,7 @@
 <body>
 
     <div class="risk-table-box" id="tableBox" onclick="toggleExpand('tableBox', event)">
-        <div class="risk-table-title"><span>📊 地殻変動・歪み (年間変化)</span><span style="font-size:12px; color:#555;">[クリックで拡大/戻す]</span></div>
+        <div class="risk-table-title"><span>📊 地殻変動・歪み (年間変化)</span><span style="font-size:13px; color:#555;">[クリックで拡大/戻す]</span></div>
         <div id="riskTableContent" onclick="event.stopPropagation()">
             <table class="risk-table" style="margin-top: 4px;">
                 <tr><th>エリア</th><th>年間変動・歪み</th><th>垂直移動</th></tr>
@@ -144,7 +145,7 @@
     </div>
 
     <div class="info-box" id="infoBox" onclick="toggleExpand('infoBox', event)">
-        <h3 onclick="toggleExpand('infoBox', event)"><span>🚨 地震速報</span><span style="font-size:12px; color:#555; font-weight:normal;">[クリックで拡大/戻す]</span></h3>
+        <h3 onclick="toggleExpand('infoBox', event)"><span>🚨 地震速報</span><span style="font-size:13px; color:#555; font-weight:normal;">[クリックで拡大/戻す]</span></h3>
         <div id="infoBoxContent" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
@@ -163,7 +164,7 @@
     </div>
 
     <div class="risk-explain-box" id="explainBox" onclick="toggleExpand('explainBox', event)">
-        <div class="risk-explain-title"><span>🗺️ エリア解説 (二重・三重丸基準)</span><span style="font-size:12px; color:#555;">[クリックで拡大/戻す]</span></div>
+        <div class="risk-explain-title"><span>🗺️ エリア解説 (二重・三重丸基準)</span><span style="font-size:13px; color:#555;">[クリックで拡大/戻す]</span></div>
         <div id="riskExplainContent" style="margin-top: 4px;" onclick="event.stopPropagation()">
             <div class="explain-item" onclick="focusArea(42.8, 144.5, 7, '北海道太平洋側 (千島海溝)', '太平洋プレートの沈み込みに伴う巨大地震想定。内側＝中核震源域、外側＝連動型・最大波及範囲を示します。')">
                 <span style="color:#b91c1c; font-weight:bold;">■ 北海道東部 (千島海溝)【最高リスク】</span>
@@ -194,7 +195,6 @@
 
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map;
@@ -312,8 +312,8 @@
                         let tipLabel = L.marker(labelPos, {
                             icon: L.divIcon({
                                 className: '',
-                                html: `<div class="vector-tip-label">🚀 ${v.value}<br><span style="font-size:11px; font-weight:bold; color:#fef2f2;">${v.vertical} (直近1年)</span></div>`,
-                                iconSize: [180, 45], iconAnchor: [90, 22]
+                                html: `<div class="vector-tip-label">🚀 ${v.value}<br><span style="font-size:12px; font-weight:bold; color:#fef2f2;">${v.vertical} (直近1年)</span></div>`,
+                                iconSize: [190, 48], iconAnchor: [95, 24]
                             })
                         }).addTo(plateLayersGroup);
 
@@ -364,7 +364,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="${a.badgeClass}" onclick="focusArea(${a.lat}, ${a.lon}, 7, '${a.title}', '${a.desc}')">${a.name}<span class="fault-subtext">${a.prob}</span><span class="strain-value">${a.strain}</span></div>`,
-                            iconSize: [165, 46], iconAnchor: [82, 23]
+                            iconSize: [175, 50], iconAnchor: [87, 25]
                         })
                     });
                     marker.addTo(persistentRiskGroup);
@@ -402,104 +402,4 @@
             } catch(e) {
                 console.warn("外部API取得失敗。デモデータに切り替えます。", e);
                 filteredData = [
-                    { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } }
-                ];
-            }
-
-            let html = "";
-            let chainPoints = [];
-
-            for(let i=0; i<filteredData.length; i++) {
-                try {
-                    let item = filteredData[i];
-                    let eq = item.earthquake;
-                    if(!eq) continue;
-                    let hypocenter = eq.hypocenter || {};
-                    let displayName = hypocenter.name || "震源情報";
-                    let mag = parseFloat(hypocenter.magnitude || "0");
-                    let eqTime = item.time || "";
-                    let uniqueId = "eq_" + i;
-
-                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                                <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
-                                <span>${displayName} (M${mag})</span>
-                           </div>`;
-                    
-                    let lat = hypocenter.latitude;
-                    let lon = hypocenter.longitude;
-                    
-                    if (!lat || lat === -200 || lat === 0 || isNaN(lat) || isNaN(lon)) continue;
-
-                    chainPoints.push([lat, lon]);
-
-                    (function(index, l, lo, m, name, time) {
-                        setTimeout(function() {
-                            try {
-                                if(!eqLayer) return;
-                                var mainMarker = L.circleMarker([l, lo], { 
-                                    radius: Math.max(7, m * 2.0), 
-                                    color: index === 0 ? '#7f1d1d' : '#991b1b',
-                                    fillColor: index === 0 ? '#dc2626' : '#ef4444',
-                                    fillOpacity: 0.85,
-                                    weight: 2
-                                }).addTo(eqLayer);
-
-                                let popupContent = `<b>${index === 0 ? '🔴 最新の地震発生地点' : '🔴 過去の地震地点'}</b><br>規模: M${m}<br>${name}<br>${String(time).replace('T', ' ').substring(0, 16)}`;
-                                mainMarker.bindPopup(popupContent);
-                                markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                            } catch(err) {
-                                console.warn("個別マーカー描画エラー:", err);
-                            }
-                        }, index * 100);
-                    })(i, lat, lon, mag, displayName, eqTime);
-                } catch(innerErr) {
-                    console.warn("地震データループ内エラー:", innerErr);
-                }
-            }
-
-            try {
-                let showChain = document.getElementById('chkEqChain')?.checked ?? false;
-                if (showChain && chainPoints.length > 1) {
-                    let chainLine = L.polyline(chainPoints, {
-                        color: '#dc2626', weight: 3.5, opacity: 0.75, dashArray: '6, 6'
-                    }).addTo(eqLayer);
-                    chainLine.bindPopup('<b>🔗 地震の連鎖・伝播ルート</b><br>過去の地震発生地点から最新の地震地点へのエネルギーの移動・繋がりを示しています。');
-                }
-            } catch(chainErr) {
-                console.warn("連鎖ルート描画エラー:", chainErr);
-            }
-
-            const eqDataEl = document.getElementById('earthquake-data');
-            const updateTimeEl = document.getElementById('update-time');
-            if(eqDataEl) eqDataEl.innerHTML = html;
-            if(updateTimeEl) updateTimeEl.innerText = "更新: " + new Date().toLocaleTimeString();
-        }
-
-        function highlightAndOpenPopup(id) {
-            try {
-                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-                document.getElementById(id)?.classList.add('highlighted');
-                if (markerMap[id] && map) {
-                    let m = markerMap[id];
-                    map.setView([m.lat, m.lon], 8);
-                    m.marker.openPopup();
-                }
-            } catch(e) {
-                console.warn("ハイライト処理エラー:", e);
-            }
-        }
-
-        safeFetchEq();
-        setInterval(() => {
-            try {
-                safeFetchEq();
-            } catch(e) {
-                console.warn("定期更新エラー:", e);
-            }
-        }, 15000);
-    </script>
-</body>
-</html>
+                    { earthquake: { hypocenter: { name: "根室沖
