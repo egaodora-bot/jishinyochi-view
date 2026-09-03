@@ -39,6 +39,7 @@
         .circle-legend-note b { color: #1e3a8a; display: block; margin-bottom: 3px; font-size: 12px; }
         .risk-table-box.expanded .circle-legend-note b { font-size: 14px; }
 
+        /* ▼ 右上の地震速報ボックス（過剰に広がらないよう調整） ▼ */
         .info-box {
             position: absolute; top: 14px; right: 14px; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 12px 14px; border-radius: 8px;
@@ -47,17 +48,19 @@
             border: 1px solid #cbd5e1; transition: all 0.25s ease;
         }
         .info-box.expanded {
-            width: 80vw; max-width: 550px; max-height: 85vh; top: 20px; right: 20px; z-index: 2000; font-size: 15px;
+            width: 380px; max-width: 90vw; max-height: 80vh; top: 20px; right: 20px; z-index: 2000; font-size: 14px;
         }
         .info-box h3 { margin: 0 0 6px 0; font-size: 14px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: pointer; }
-        .info-box.expanded h3 { font-size: 17px; }
+        .info-box.expanded h3 { font-size: 16px; }
         .update-time { font-size: 12px; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; font-weight: bold; }
-        .info-box.expanded .update-time { font-size: 14px; }
+        .info-box.expanded .update-time { font-size: 13.5px; }
         
         #earthquake-data { max-height: 130px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .info-box.expanded #earthquake-data { max-height: 350px; }
+        .info-box.expanded #earthquake-data { max-height: 280px; }
+        /* ▲ここまで ▲ */
+
         .eq-item { border-bottom: 1px solid #e2e8f0; padding: 6px 4px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #0f172a; font-weight: 500; }
-        .info-box.expanded .eq-item { font-size: 14px; padding: 10px 6px; }
+        .info-box.expanded .eq-item { font-size: 13.5px; padding: 8px 6px; }
         .eq-item:hover { background: #f1f5f9; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; padding-left: 6px; }
         .eq-dot { display: inline-block; background: #dc2626; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
@@ -277,7 +280,6 @@
                         { center: [35.8, 136.2], radius: 65000, name: '福井・若狭 歪み集中帯', color: '#7c3aed' }
                     ];
                     strainZones.forEach(sz => {
-                        // 歪み集中帯の網掛け・枠線をくっきり調整
                         let zoneCircle = L.circle(sz.center, {
                             radius: sz.radius, color: sz.color, weight: 3, opacity: 0.8, fillColor: sz.color, fillOpacity: 0.22, dashArray: '4, 4'
                         }).addTo(plateLayersGroup);
@@ -337,7 +339,6 @@
         if(persistentRiskGroup) {
             persistentRiskAreas.forEach(function(a) {
                 try {
-                    // 同心円（多重円）の線を太くし、不透明度を上げてくっきり表示
                     if (a.radius) {
                         var innerCircle = L.circle([a.lat, a.lon], {
                             radius: a.radius, color: a.color, weight: 3, opacity: 0.9, fillColor: a.color, fillOpacity: 0.18, dashArray: '4, 4'
@@ -397,7 +398,7 @@
                     return true;
                 });
             } catch(e) {
-                console.warn("外部API取得失敗またはブロック。安全なデモデータに切り替えます。", e);
+                console.warn("外部API取得失敗。デモデータに切り替えます。", e);
                 filteredData = [
                     { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
                     { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
