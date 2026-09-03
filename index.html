@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地殻変動・歪み集中・リアルタイム防災マップ</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         html, body {
@@ -190,22 +191,32 @@
 
     <div id="map"></div>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var map;
         try {
+            // マップ初期化
             map = L.map('map', { 
                 zoomControl: true,
                 zoomSnap: 0.1,
                 wheelPxPerZoomLevel: 240
             }).setView([38.0, 137.0], 5);
             
+            // 国土地理院タイルレイヤー追加
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
                 maxZoom: 18,
                 minZoom: 4,
                 errorTileUrl: ''
             }).addTo(map);
+
+            // ウィンドウサイズ変動やレイアウト確定後に地図サイズを再計算させる（白画面対策）
+            setTimeout(function() {
+                if(map) {
+                    map.invalidateSize();
+                }
+            }, 250);
 
         } catch (e) {
             console.error("マップ初期化エラー:", e);
@@ -215,6 +226,7 @@
             var box = document.getElementById(id);
             if (box) {
                 box.classList.toggle('expanded');
+                setTimeout(function() { if(map) map.invalidateSize(); }, 300);
             }
         }
 
@@ -481,3 +493,15 @@
                 console.warn("ハイライト処理エラー:", e);
             }
         }
+
+        safeFetchEq();
+        setInterval(() => {
+            try {
+                safeFetchEq();
+            } catch(e) {
+                console.warn("定期更新エラー:", e);
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
