@@ -2,124 +2,436 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地殻変動・電磁波モニタリング防災システム</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>日本列島・首都圏 地殻変動モニタリング</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <style>
-        body, html {
+        :root {
+            --primary-color: #1a365d;
+            --accent-color: #2b6cb0;
+            --warn-color: #c53030;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --border-radius: 12px;
+        }
+
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #0b0f19;
-            color: #e2e8f0;
-        }
-        #app {
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-        }
-        /* 左側：インデントとカメラ部分を考慮したエリア */
-        .sidebar {
-            width: 380px;
-            background: rgba(15, 23, 42, 0.9);
-            border-right: 1px solid #1e293b;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
-            z-index: 10;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-            /* スマホのパンチホール・ノッチ等を考慮したパディング例 */
-            padding-left: env(safe-area-inset-left, 0px);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
         }
-        .header {
-            padding: 20px;
-            border-bottom: 1px solid #1e293b;
-        }
-        .header h1 {
-            font-size: 1.1rem;
-            margin: 0 0 5px 0;
-            color: #38bdf8;
-            letter-spacing: 0.05em;
-        }
-        .header p {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin: 0;
-        }
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        /* 右側：固定エリア（マップや詳細ビジュアル） */
-        .main-display {
-            flex: 1;
-            position: relative;
-            background: #020617;
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        header button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        header button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* 地図上の四角い枠（日本全体のプレート位置を常時示すフローティングカード） */
+        .plate-floating-box {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            background: rgba(26, 32, 44, 0.9);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            z-index: 999;
+            max-width: 280px;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid #4a5568;
+        }
+
+        .plate-floating-box h4 {
+            margin: 0 0 6px 0;
+            font-size: 0.8rem;
+            color: #63b3ed;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-        .placeholder-box {
-            text-align: center;
-            color: #64748b;
+
+        .plate-floating-box ul {
+            margin: 0;
+            padding-left: 14px;
+            line-height: 1.4;
         }
-        .card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
+
+        .plate-floating-box li {
+            margin-bottom: 3px;
         }
-        .card h3 {
-            margin-top: 0;
-            font-size: 0.95rem;
-            color: #f8fafc;
+
+        /* 下部パネル：モニタリング情報 ＆ 解説 */
+        .bottom-panel {
+            background: var(--card-bg);
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            padding: 12px 14px;
+            max-height: 40vh;
+            overflow-y: auto;
+            z-index: 1000;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .panel-title {
+            font-size: 0.88rem;
             font-weight: bold;
-            background: #065f46;
-            color: #34d399;
+            color: var(--primary-color);
+        }
+
+        .alert-badge {
+            background-color: #fff5f5;
+            color: var(--warn-color);
+            border: 1px solid #feb2b2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .monitor-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .monitor-card .label {
+            color: #718096;
+            font-size: 0.7rem;
+        }
+
+        .monitor-card .value {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 0.78rem;
+            margin-top: 2px;
+        }
+
+        .summary-box {
+            background: #ebf8ff;
+            border-left: 4px solid var(--accent-color);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.76rem;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .summary-box p {
+            margin: 0;
+        }
+
+        .detail-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .detail-btn:hover {
+            background-color: #2c5282;
+        }
+
+        /* モーダルウィンドウ（初期非表示） */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .modal-body p {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 0 0 10px 0;
+        }
+
+        .plate-map-visual {
+            background: #1a202c;
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .plate-map-visual h4 {
+            margin: 0 0 6px 0;
+            font-size: 0.8rem;
+            color: #63b3ed;
+        }
+
+        .plate-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 0.75rem;
+        }
+
+        .plate-box {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .plate-box strong {
+            color: #90cdf4;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .plate-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .plate-list li {
+            background: #f7fafc;
+            margin-bottom: 6px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid #e2e8f0;
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- 左側コントロール・情報パネル -->
-        <div class="sidebar">
-            <div class="header">
-                <h1>地殻変動・電磁波モニタリング</h1>
-                <p>Realtime Crustal & EM System</p>
+
+    <header>
+        <span style="font-size: 0.95rem;">日本列島・首都圏 地殻変動モニター</span>
+        <button onclick="openModal(true)">🗺️ 4つのプレート構造</button>
+    </header>
+
+    <!-- 地図エリア -->
+    <div id="map">
+        <!-- 地図上に常時表示される四角いプレート位置のミニ解説枠 -->
+        <div class="plate-floating-box">
+            <h4>🗺️ 日本を取り巻く4つのプレート</h4>
+            <ul>
+                <li><strong>東：</strong>太平洋プレート（西へ沈み込み）</li>
+                <li><strong>南：</strong>フィリピン海プレート（北西へ圧縮）</li>
+                <li><strong>北/西：</strong>北アメリカ・ユーラシア（陸側）</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 下部パネル：リアルタイムモニタリング ＆ バランス解説 -->
+    <div class="bottom-panel">
+        <div class="panel-header">
+            <span class="panel-title">📊 首都圏・茨城南部 モニタリング</span>
+            <span class="alert-badge">⚠️ 警戒継続</span>
+        </div>
+
+        <div class="monitor-grid">
+            <div class="monitor-card">
+                <span class="label">茨城県南部 活性度</span>
+                <div class="value">やや活発 (M3〜4)</div>
             </div>
-            <div class="content-area">
-                <div class="card">
-                    <h3>システムステータス</h3>
-                    <span class="status-badge">正常稼働中</span>
-                    <p style="font-size: 0.85rem; margin-top: 10px; color: #cbd5e1;">
-                        P2P地震情報および各観測拠点のデータをリアルタイムで解析・同期しています。
-                    </p>
-                </div>
-                <div class="card">
-                    <h3>直近の観測トピックス</h3>
-                    <p style="font-size: 0.85rem; color: #94a3b8;">
-                        現在、特異変動の監視を継続中です。詳細なデータは右側のビューに反映されます。
-                    </p>
-                </div>
+            <div class="monitor-card">
+                <span class="label">首都直下 応力状態</span>
+                <div class="value">東西から強い圧縮</div>
             </div>
         </div>
 
-        <!-- 右側メインディスプレイ（固定ビュー） -->
-        <div class="main-display">
-            <div class="placeholder-box">
-                <h2>ビジュアル・マップレンダリングエリア</h2>
-                <p>ここにリアルタイムの変動マップやグラフが表示されます。</p>
+        <div class="summary-box">
+            <p><strong>【関係性の要約】</strong> 首都直下と茨城南部は地下の巨大プレート歪みで繋がっています。力のバランス変化により、一方が他方の連動サインとなるため一体で警戒が必要です。</p>
+        </div>
+
+        <button class="detail-btn" onclick="openModal(true)">4つのプレート配置と仕組みを詳しく見る</button>
+    </div>
+
+    <!-- プレート構造・解説モーダル -->
+    <div class="modal-overlay" id="infoModal" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🗺️ 日本の4つのプレートと地震の仕組み</h3>
+                <button class="close-modal" onclick="openModal(false)">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>日本列島が世界でも有数の地震大国である理由は、足元で<strong>4つのプレートが押し合っているため</strong>です。それぞれの位置関係と関東への影響をイメージ図で確認できます。</p>
+                
+                <div class="plate-map-visual">
+                    <h4>【日本列島周辺のプレート配置イメージ】</h4>
+                    <div class="plate-grid-layout">
+                        <div class="plate-box">
+                            <strong>東：太平洋プレート</strong>
+                            日本海溝から関東・東北の地下深くへ西向きに沈み込む
+                        </div>
+                        <div class="plate-box">
+                            <strong>南：フィリピン海プレート</strong>
+                            相模トラフ・南海トラフから北西向きに強い圧縮力をかける
+                        </div>
+                        <div class="plate-box">
+                            <strong>北：北アメリカプレート</strong>
+                            東日本を支える陸のプレート（上から押す）
+                        </div>
+                        <div class="plate-box">
+                            <strong>西：ユーラシアプレート</strong>
+                            西日本を支える陸のプレート（ぶつかり合う）
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="plate-list">
+                    <li><strong>① 太平洋プレート：</strong> 関東の地下深くでフィリピン海プレートの下にも潜り込み、茨城県南部などの深発地震を引き起こす主要因となります。</li>
+                    <li><strong>② フィリピン海プレート：</strong> 首都直下地震（南関東のM7クラス）の発生源となるプレート境界や内部の歪みを蓄積させます。</li>
+                    <li><strong>③④ 陸のプレート（北アメリカ・ユーラシア）：</strong> 上から蓋をするように押し返しており、境界や内部の歪みが限界に達すると大地震が発生します。</li>
+                </ul>
+
+                <p><strong>防災上のポイント：</strong><br>
+                これらのプレートが織りなす「力の押し合いのバランス」が変化することで、茨城県南部でのまとまった地震活動や首都圏の地殻変動として現れます。</p>
             </div>
         </div>
     </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // 地図の初期化（中心：関東・首都圏）
+        const map = L.map('map', { zoomControl: false }).setView([35.8, 139.8], 9);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // 地理院タイル
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
+        }).addTo(map);
+
+        // 茨城県南部モニタリングマーカー
+        L.circleMarker([36.1, 140.1], {
+            radius: 10,
+            color: '#c53030',
+            fillColor: '#fc8181',
+            fillOpacity: 0.7
+        }).addTo(map).bindPopup('<b>茨城県南部 震源モニタリングエリア</b><br>プレート境界・スラブ内の活動監視点');
+
+        // 首都直下想定エリアマーカー
+        L.circleMarker([35.6895, 139.6917], {
+            radius: 12,
+            color: '#2b6cb0',
+            fillColor: '#63b3ed',
+            fillOpacity: 0.6
+        }).addTo(map).bindPopup('<b>首都直下地震 想定・監視エリア</b><br>プレート境界・活断層の歪み集中帯');
+
+        // モーダルの開閉制御
+        function openModal(show = true) {
+            const modal = document.getElementById('infoModal');
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function closeModalOutside(event) {
+            const modal = document.getElementById('infoModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
