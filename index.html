@@ -90,13 +90,14 @@
             0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
         }
 
-        /* セーフティ判断バナー（黄色背景） */
+        /* セーフティ判断バナー（赤太文字を強調） */
         .safety-banner {
             background: #fef08a; border: 1.5px solid #eab308; border-left: 4px solid #ca8a04;
             color: #713f12; font-size: 9.5px; font-weight: bold; padding: 5px 7px; border-radius: 4px;
             margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
+        .highlight-red { color: #dc2626; font-weight: 900; }
 
         /* 変動と予測を一体化したカードグリッド */
         .strain-grid {
@@ -121,7 +122,8 @@
         .strain-card-desc { font-size: 8px; color: #475569; margin-top: 3px; line-height: 1.3; border-top: 1px dashed #cbd5e1; padding-top: 3px; }
 
         .update-time { font-size: 9.5px; color: #334155; font-weight: bold; margin-bottom: 2px; }
-        .data-condition { font-size: 9px; color: #1e3a8a; background: #eff6ff; padding: 3px 6px; border-radius: 4px; margin-bottom: 4px; font-weight: 600; border: 1px solid #bfdbfe; }
+        .data-condition { font-size: 9px; color: #1e3a8a; background: #eff6ff; padding: 3px 6px; border-radius: 4px; margin-bottom: 2px; font-weight: 600; border: 1px solid #bfdbfe; }
+        .condition-hint { font-size: 8px; color: #64748b; margin-bottom: 4px; padding-left: 2px; }
         
         #earthquake-data { max-height: 50px; overflow-y: auto; scroll-behavior: smooth; }
         .eq-item { border-bottom: 1px solid #f1f5f9; padding: 3px 2px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #0f172a; font-weight: 500; }
@@ -166,7 +168,6 @@
         .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 6px; margin-bottom: 2px; font-size: 9.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
         .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; cursor: pointer; color: #334155; }
         
-        /* スマホ追加手順の案内スタイル */
         .pwa-guide-box {
             background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 6px; margin-top: 4px; font-size: 9px; color: #1e3a8a; line-height: 1.4;
         }
@@ -188,24 +189,23 @@
         .risk-badge-row.purple { background: rgba(124, 58, 237, 0.96); }
         .badge-sub { font-size: 7.5px; background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 6px; font-weight: normal; }
 
-        /* アイコンプレビュー＆QR案内モーダル */
+        /* アイコンプレビュー＆QR案内モーダル（左寄せ） */
         #iconModal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 2000;
             display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px);
         }
         .modal-card {
             background: #ffffff; width: 88%; max-width: 320px; padding: 16px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; font-size: 11px; color: #0f172a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; font-size: 11px; color: #0f172a;
         }
-        /* 視認性の高い赤ベース＆緑の日本地図アイコンプレビュー */
         .app-icon-preview {
-            width: 68px; height: 68px; background: linear-gradient(135deg, #dc2626, #991b1b);
-            border: 2.5px solid #fca5a5; border-radius: 16px; margin: 10px auto; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: #fff; box-shadow: 0 6px 16px rgba(220,38,38,0.5);
+            width: 58px; height: 58px; background: linear-gradient(135deg, #dc2626, #991b1b);
+            border: 2px solid #fca5a5; border-radius: 14px; margin: 8px 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.4);
         }
         .modal-close-btn {
             background: #0f172a; color: #fff; border: none; padding: 6px 16px; border-radius: 6px;
-            font-size: 10.5px; font-weight: bold; cursor: pointer; margin-top: 12px;
+            font-size: 10.5px; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center;
         }
 
         @media screen and (min-width: 769px) {
@@ -230,25 +230,35 @@
         </div>
     </div>
 
-    <!-- スマホホーム追加・手順案内モーダル -->
+    <!-- スマホホーム追加・システム説明モーダル（左寄せ） -->
     <div id="iconModal" onclick="closeIconModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
-            <div style="font-weight: bold; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;">🇯🇵 防災モニタリングをホームへ追加</div>
-            <div style="font-size: 9.5px; color: #64748b;">みんなの防災意識を高めるために、スマホのホーム画面にアイコンとして常駐させられます。</div>
+            <div style="font-weight: bold; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px;">📖 アプリ概要とホーム追加手順</div>
             
-            <!-- 視認性の高い赤ベース＆緑の日本地図アイコンイメージ -->
-            <div class="app-icon-preview">
-                <span style="font-size: 22px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));">🗾</span>
-                <span style="font-size: 8px; font-weight: bold; margin-top: 2px; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
+            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; margin-bottom: 10px;">
+                <b>1. 地殻変動・電磁波モニタリングシステムとは？</b><br>
+                日本各地のプレートの歪みや年間変動、科学的論文に基づく電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートするための専用ツールです。
             </div>
-            <div style="font-size: 9px; font-weight: bold; color: #334155;">ホーム画面アイコン（イメージ）</div>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; margin-top: 10px; text-align: left; font-size: 9.5px; line-height: 1.4;">
-                <b>📌 スマホへの追加手順（操作場所の解説）:</b><br>
-                ・<b>iPhone (Safariの場合):</b><br>
-                  スマホ画面の<span style="color:#dc2626; font-weight:bold;">最下部（メニューバー）</span>にある共有ボタン [ ↗ (四角から矢印が出るマーク) ] をタップし、出てきたメニューの中にある<b>「ホーム画面に追加」</b>を選びます。<br><br>
-                ・<b>Android (Chromeの場合):</b><br>
-                  スマホ画面の<span style="color:#dc2626; font-weight:bold;">右上（アドレスバーの横）</span>にあるメニューボタン [ ︙ (縦に並んだ3つの点) ] をタップし、<b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を選びます。
+            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                <b>2. 防災モニタリングをホーム画面へ追加する</b><br>
+                スマホのホーム画面にアイコンとして常駐させ、いつでも素早くアクセスできます。
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin: 6px 0;">
+                <div class="app-icon-preview">
+                    <span style="font-size: 18px;">🗾</span>
+                    <span style="font-size: 7px; font-weight: bold; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
+                </div>
+                <div style="font-size: 8.5px; color: #64748b; line-height: 1.3;">
+                    <b>ホーム画面アイコン</b><br>赤ベースに緑の日本地図で高い視認性を確保しています。
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px; border-radius: 6px; font-size: 9px; line-height: 1.4;">
+                <b>📌 操作手順:</b><br>
+                ・<b>iPhone (Safari):</b> 画面<span class="highlight-red">最下部のメニューバー</span>にある共有ボタン [ ↗ ] をタップ ＞<b>「ホーム画面に追加」</b>を選択。<br>
+                ・<b>Android (Chrome):</b> 画面<span class="highlight-red">右上のメニュー [ ︙ ]</span> をタップ ＞<b>「ホーム画面に追加」</b>を選択。
             </div>
 
             <button class="modal-close-btn" onclick="closeIconModal()">閉じる</button>
@@ -277,7 +287,8 @@
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
-            <div class="data-condition" id="data-condition">📅 条件設定: 読み込み中...</div>
+            <div class="data-condition" id="data-condition">📅 現在の設定条件: 読み込み中...</div>
+            <div class="condition-hint">※表示切替は下のバーをクリックして変更できます</div>
             
             <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
                 <span>⚙ マップ表示・スマホ設定（地震速報フィルター・追加手順）</span>
@@ -292,7 +303,7 @@
 
                 <div class="settings-group-title">■ マップ上の表示項目</div>
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 地面のズレる方向と勢い（矢印）</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️️ 地面のズレる方向と勢い（矢印）</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
 
                 <div class="settings-group-title">■ スマホのホーム画面に追加して活用する</div>
@@ -313,9 +324,9 @@
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div class="safety-banner">
-                <span style="font-size:12px;">⚠️</span>
+                <span style="font-size:12px;">⚠️️</span>
                 <div>
-                    <b>命を守るセーフティ判断：</b> 観測される「年間変動」や電磁気学的変化の兆候から、常に「想定以上の強い揺れ」を前提に早めの安全行動を心がけてください。
+                    <b>命を守るセーフティ判断：</b> 観測される「年間変動」や電磁気学的変化の兆候から、常に<span class="highlight-red">「想定以上の強い揺れ」</span>を前提に<span class="highlight-red">早めの安全行動</span>を心がけてください。
                 </div>
             </div>
 
@@ -532,7 +543,7 @@
             if (magM4) conditionText = "M4.0以上表示";
             if (magM5) conditionText = "M5.0以上表示";
             if (document.getElementById('data-condition')) {
-                document.getElementById('data-condition').innerText = "📅 条件設定: " + conditionText;
+                document.getElementById('data-condition').innerText = "📅 現在の設定条件: " + conditionText;
             }
 
             try {
