@@ -56,7 +56,7 @@
         .update-time { font-size: 11px; color: #334155; margin-bottom: 4px; font-weight: bold; }
         .data-condition { font-size: 10px; color: #64748b; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; font-weight: 500; }
         
-        /* マーカーと赤点滅の基準を説明する凡例 */
+        /* マップ表示の凡例 */
         .eq-size-legend {
             font-size: 10.5px; background: #fffbeb; border: 1px solid #fcd34d; padding: 5px 7px; border-radius: 5px; margin-bottom: 6px; color: #92400e; font-weight: 500; line-height: 1.4;
         }
@@ -90,7 +90,7 @@
         }
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #94a3b8; padding: 8px; border-radius: 6px; margin-top: 6px; font-size: 11.5px;
-            max-height: 120px; overflow-y: auto; color: #0f172a; font-weight: 500;
+            max-height: 150px; overflow-y: auto; color: #0f172a; font-weight: 500;
         }
         .filter-panel label { display: block; margin-bottom: 4px; cursor: pointer; }
         
@@ -177,9 +177,8 @@
                 </tr>
             </table>
             <div class="circle-legend-note">
-                <b>💡 データと予測の手引き</b>
-                • 国土地理院の年間変動データ（水平・垂直）と、研究で指摘される電磁波・地殻電磁気学的シグナルの状況を整理。<br>
-                • 各自で数値や変動の大きさを比較し、予測・防災にお役立てください。
+                <b>💡 予測のための見方手引き</b>
+                • 矢印や歪み集中帯の近くで「直近3日以内」かつ「規模の大きい赤点」が連続している場所は、応力が集中している可能性を捉えやすくなります。
             </div>
             <div class="panel-action-bar">
                 <span style="font-size:10px; color:#64748b;">※行タップで詳細ポップアップ</span>
@@ -191,28 +190,35 @@
     <!-- 右上：地震速報パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>🚨 地震速報（1週間以内の発生）</span>
+            <span>🚨 地震速報（直近3日以内）</span>
             <span style="font-size:10.5px; color:#555; font-weight:normal;">[± 閉じる]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
-            <div class="data-condition" id="data-condition">条件: 直近の発生履歴（最大30件）</div>
+            <div class="data-condition" id="data-condition">条件: 直近3日以内の注目地震</div>
             
-            <!-- 赤点滅と大きさのわかりやすい解説 -->
+            <!-- 凡例と予測用アドバイス -->
             <div class="eq-size-legend">
-                <b>📌 マップ表示の凡例:</b>
-                • 🔴 <b>赤点滅</b>：1週間以内の地震発生状況<br>
-                • ⭕ <b>大きさ</b>：地震の規模（M）が大きいほど丸が大きくなります
+                <b>📌 予測・判断のポイント:</b>
+                • 🔴 <b>赤点滅</b>：直近3日以内に発生<br>
+                • ⭕ <b>大きさ</b>：M（規模）が大きいほど円が大きく表示されます
             </div>
 
-            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
+            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー・規模・期間切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量ベクトル</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（網掛け）</label>
                 <label><input type="checkbox" id="chkEqChain" onchange="safeFetchEq()"> 🔗 連鎖ルート線</label>
                 <hr style="border:0; border-top:1px solid #94a3b8; margin:4px 0;">
-                <label><input type="checkbox" id="chkM4" onchange="safeFetchEq()"> M4.0以上のみ</label>
+                <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">■ 地震の規模フィルター</div>
+                <label><input type="radio" name="magFilter" id="magAll" onchange="safeFetchEq()"> すべて表示（小規模含む）</label>
+                <label><input type="radio" name="magFilter" id="magM4" checked onchange="safeFetchEq()"> M4.0以上（標準・推奨）</label>
+                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> M5.0以上（大地震のみ）</label>
+                <hr style="border:0; border-top:1px solid #94a3b8; margin:4px 0;">
+                <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">■ 期間フィルター</div>
+                <label><input type="radio" name="daysFilter" id="days3" checked onchange="safeFetchEq()"> 直近3日以内（推奨）</label>
+                <label><input type="radio" name="daysFilter" id="days5" onchange="safeFetchEq()"> 直近5日以内</label>
             </div>
             <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
             <div class="wave-alert" id="wave-status">🌊 P/S波: 待機中</div>
@@ -390,7 +396,6 @@
 
         safeRenderLayers();
 
-        /* マップ上の各エリアバッジ */
         var persistentRiskAreas = [
             { lat: 42.8, lon: 144.5, radius: 45000, labelLat: 44.2, labelLon: 146.5, name: '北海道東部', typeText: '水平:西8cm', subText: '沈降・電磁波監視', badgeClass: 'red', title: '千島海溝沿い (北海道東部)', desc: '水平変動: 西〜北西へ約8cm/年<br>垂直変動: 沈降・歪み蓄積<br>電磁波・地殻状況: プレート沈み込み部のモニタリング' },
             { lat: 33.5, lon: 134.5, radius: 55000, labelLat: 30.5, labelLon: 132.0, name: '南海トラフ', typeText: '水平:北西25cm', subText: '沈降・電磁波監視', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '水平変動: 北西へ約25cm/年<br>垂直変動: 沈降傾向<br>電磁波・地殻状況: プレート境界固着・VLF電磁波アノマリー監視' },
@@ -472,17 +477,36 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30', { signal: controller.signal });
+                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=50', { signal: controller.signal });
                 clearTimeout(timeoutId);
                 
                 if (!res.ok) throw new Error('Network error');
                 let data = await res.json();
                 
-                let filterM4 = document.getElementById('chkM4')?.checked ?? false;
+                // 規模フィルターの判定
+                let magAll = document.getElementById('magAll')?.checked ?? false;
+                let magM5 = document.getElementById('magM5')?.checked ?? false;
+
+                // 期間フィルターの判定
+                let isDays5 = document.getElementById('days5')?.checked ?? false;
+                let dayLimit = isDays5 ? 5 : 3; 
+                let nowTime = new Date().getTime();
+                let limitMs = dayLimit * 24 * 60 * 60 * 1000;
+
                 filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
+                    
+                    if (item.time) {
+                        let eqTime = new Date(item.time).getTime();
+                        if (nowTime - eqTime > limitMs) return false;
+                    }
+
                     let mag = parseFloat(item.earthquake.magnitude || "0");
-                    if (filterM4 && mag < 4.0) return false;
+                    if (!magAll) {
+                        if (magM5 && mag < 5.0) return false;
+                        if (!magM5 && mag < 4.0) return false; // デフォルトM4.0以上
+                    }
+
                     return true;
                 });
 
@@ -493,11 +517,10 @@
             } catch(e) {
                 filteredData = [
                     { earthquake: { hypocenter: { name: "根室沖 (デモ)", magnitude: "4.5", latitude: 43.2, longitude: 145.5 }, time: new Date().toISOString() } },
-                    { earthquake: { hypocenter: { name: "福井県嶺北 (デモ)", magnitude: "3.8", latitude: 36.0, longitude: 136.2 }, time: new Date().toISOString() } },
                     { earthquake: { hypocenter: { name: "福島県沖 (デモ)", magnitude: "5.2", latitude: 37.4, longitude: 141.5 }, time: new Date().toISOString() } }
                 ];
                 newestTimeStr = "直近";
-                oldestTimeStr = "数日前";
+                oldestTimeStr = "指定期間内";
             }
 
             let html = "";
@@ -540,12 +563,16 @@
 
                                 var mainMarker = L.marker([l, lo], { icon: pulsingIcon }).addTo(eqLayer);
 
-                                mainMarker.bindPopup(`<b>${index === 0 ? '🔴 最新の地震' : '🔴 発生履歴'}</b><br>M${m} - ${name}<br><span style="font-size:10.5px; color:#555;">発生時刻: ${time.replace('T', ' ')}</span>`);
+                                mainMarker.bindPopup(`<b>${index === 0 ? '🔴 最新の注目地震' : '🔴 発生履歴'}</b><br>M${m} - ${name}<br><span style="font-size:10.5px; color:#555;">発生時刻: ${time.replace('T', ' ')}</span>`);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {}
                         }, index * 40);
                     })(i, lat, lon, mag, displayName, eqTime);
                 } catch(innerErr) {}
+            }
+
+            if (filteredData.length === 0) {
+                html = `<div style="padding: 8px; color: #64748b; font-size: 11.5px; text-align: center;">条件に一致する地震はありません</div>`;
             }
 
             try {
@@ -559,10 +586,11 @@
             const updateTimeEl = document.getElementById('update-time');
             const dataConditionEl = document.getElementById('data-condition');
 
+            let activeDaysText = document.getElementById('days5')?.checked ? '直近5日' : '直近3日';
             if(eqDataEl) eqDataEl.innerHTML = html;
             if(updateTimeEl) updateTimeEl.innerText = "データ更新: " + new Date().toLocaleTimeString();
-            if(dataConditionEl && newestTimeStr && oldestTimeStr) {
-                dataConditionEl.innerText = `📅 期間: ${oldestTimeStr} 〜 ${newestTimeStr}（最大30件）`;
+            if(dataConditionEl) {
+                dataConditionEl.innerText = `📅 期間: ${activeDaysText}`;
             }
         }
 
