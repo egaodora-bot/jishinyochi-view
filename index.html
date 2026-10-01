@@ -27,14 +27,14 @@
         #infoBox { top: 10px; right: 10px; width: 280px; }
         #explainBox { bottom: 10px; right: 10px; width: 310px; }
 
-        .panel-box .panel-content { display: block; max-height: 30vh; overflow-y: auto; margin-top: 6px; }
+        .panel-box .panel-content { display: block; max-height: 25vh; overflow-y: auto; margin-top: 6px; }
         .panel-box.collapsed .panel-content { display: none !important; }
-        .panel-box.collapsed { width: 160px; padding-bottom: 8px; }
+        .panel-box.collapsed { width: 140px !important; padding-bottom: 8px; }
 
         .panel-box.expanded {
             width: 92vw !important; max-width: 700px !important; z-index: 2000; font-size: 15px;
         }
-        .panel-box.expanded .panel-content { max-height: 70vh !important; display: block !important; }
+        .panel-box.expanded .panel-content { max-height: 60vh !important; display: block !important; }
 
         .panel-title { font-weight: bold; font-size: 13px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px; user-select: none; }
         .panel-box.expanded .panel-title { font-size: 17px; }
@@ -60,8 +60,8 @@
         }
         .eq-size-legend b { color: #b45309; display: block; margin-bottom: 1px; }
 
-        #earthquake-data { max-height: 85px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .panel-box.expanded #earthquake-data { max-height: 230px; }
+        #earthquake-data { max-height: 75px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
+        .panel-box.expanded #earthquake-data { max-height: 200px; }
         
         .eq-item { border-bottom: 1px solid #e2e8f0; padding: 6px 3px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #0f172a; font-weight: 500; }
         .eq-item:hover { background: #f1f5f9; }
@@ -85,7 +85,7 @@
         }
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #94a3b8; padding: 8px; border-radius: 6px; margin-top: 6px; font-size: 11.5px;
-            max-height: 150px; overflow-y: auto; color: #0f172a; font-weight: 500;
+            max-height: 130px; overflow-y: auto; color: #0f172a; font-weight: 500;
         }
         .filter-panel label { display: block; margin-bottom: 4px; cursor: pointer; }
         
@@ -116,7 +116,7 @@
         .badge-sub { font-size: 10px; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 10px; font-weight: normal; }
         .panel-action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
 
-        /* スマホ専用レイアウト調整（画面が狭い場合） */
+        /* スマホ専用レイアウト調整（強制適用） */
         @media screen and (max-width: 768px) {
             .panel-box {
                 width: 92vw !important;
@@ -125,14 +125,14 @@
                 right: auto !important;
             }
             #tableBox { top: 10px; }
-            #infoBox { top: 165px; } /* 重ならないよう位置を下にずらす */
-            #explainBox { display: none; } /* スマホでは画面を広くするため解説パネルを非表示（メニュー等で切替可能） */
+            #infoBox { top: auto !important; bottom: 10px !important; } /* 地震速報を画面下部に配置 */
+            #explainBox { display: none !important; } /* スマホでは解説パネルを非表示にして地図を広く確保 */
         }
     </style>
 </head>
 <body>
 
-    <!-- 左上：地殻変動・垂直水平・電磁波モニタリング表 -->
+    <!-- 変動・電磁波モニタリング一覧 -->
     <div class="panel-box" id="tableBox">
         <div class="panel-title" onclick="toggleCollapse('tableBox', event)">
             <span>📊 変動・電磁波モニタリング一覧</span>
@@ -194,7 +194,7 @@
         </div>
     </div>
 
-    <!-- 右上：地震速報パネル -->
+    <!-- 地震速報パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
             <span>🚨 地震速報（直近3日以内）</span>
@@ -210,7 +210,7 @@
                 • ⭕ <b>大きさ</b>：M（規模）が大きいほど円が大きくなります
             </div>
 
-            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️️ レイヤー・規模・期間切替</div>
+            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙ レイヤー・規模・期間切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 年間変位量ベクトル</label>
@@ -235,7 +235,7 @@
         </div>
     </div>
 
-    <!-- 右下：エリア解説パネル（PC用） -->
+    <!-- エリア解説パネル（PC用・スマホでは非表示） -->
     <div class="panel-box" id="explainBox">
         <div class="panel-title" onclick="toggleCollapse('explainBox', event)">
             <span>🗺️ 変動・電磁波解説</span>
