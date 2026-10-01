@@ -91,14 +91,27 @@
         .eq-dot { display: inline-block; background: #dc2626; width: 4.5px; height: 4.5px; border-radius: 50%; flex-shrink: 0; }
         .eq-dot.latest { background: #991b1b; width: 6px; height: 6px; }
         
-        @keyframes simultaneousPulse {
-            0% { transform: scale(0.9); opacity: 0.85; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-            70% { transform: scale(1.35); opacity: 0.3; box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-            100% { transform: scale(0.9); opacity: 0.85; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        /* 強力な赤点滅・波紋パルスアニメーションの修正定義 */
+        @keyframes eqPulseAnim {
+            0% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.85);
+            }
+            70% {
+                transform: scale(1.4);
+                box-shadow: 0 0 0 14px rgba(220, 38, 38, 0);
+            }
+            100% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
         }
         .eq-pulsing-marker {
-            background-color: #dc2626; border: 2px solid #ffffff; border-radius: 50%;
-            animation: simultaneousPulse 1.8s infinite ease-in-out;
+            background-color: #dc2626; 
+            border: 2px solid #ffffff; 
+            border-radius: 50%;
+            animation: eqPulseAnim 1.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
         }
 
         .filter-toggle-btn {
