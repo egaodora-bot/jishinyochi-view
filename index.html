@@ -16,40 +16,33 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* 共通パネルスタイル */
+        /* 共通パネルスタイル：スマホでは左を大きくあけ、右側（カメラを避ける位置）に寄せる設計 */
         .panel-box {
             position: absolute; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 8px 10px; border-radius: 10px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.3); font-size: 11px; 
             border: 1.5px solid #cbd5e1; transition: all 0.25s ease;
             backdrop-filter: blur(6px);
+            /* スマホ用デフォルト：左にインデント（カメラ回避）、右端を固定 */
+            left: 36px; right: 8px; width: auto; max-width: none;
         }
 
-        /* システムタイトルヘッダー（アイコン誘導ボタン付き） */
-        #sysTitleBar {
-            top: 6px; left: 6px; right: 6px; width: auto; max-width: none;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            color: #ffffff;
-            border: 1px solid #3b82f6;
-            padding: 6px 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.5);
-        }
-        .sys-title-text { font-weight: bold; font-size: 11.5px; display: flex; align-items: center; gap: 6px; }
+        /* システムタイトルヘッダー */
+        #sysTitleBar { top: 6px; }
+        .sys-title-text { font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; }
         .sys-badge { background: #dc2626; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: bold; }
 
-        /* スマホ追加ボタン（ヘッダー内） */
         .app-icon-btn {
             background: #dc2626; border: 1px solid #f87171;
             color: #fff; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: bold;
             cursor: pointer; display: flex; align-items: center; gap: 3px;
-            box-shadow: 0 2px 6px rgba(220,38,38,0.4);
+            box-shadow: 0 2px 6px rgba(220,38,38,0.4); flex-shrink: 0;
         }
         .app-icon-btn:hover { background: #b91c1c; }
 
-        /* 最上部：常駐テロップ・警戒ステータス枠 */
+        /* 最上部：常駐テロップ枠 */
         #telopBox {
-            top: 48px; left: 6px; right: 6px; width: auto; max-width: none;
+            top: 46px;
             background: linear-gradient(135deg, #7f1d1d, #991b1b);
             color: #ffffff;
             border: 1px solid #f87171;
@@ -58,78 +51,67 @@
         #telopBox .panel-title { color: #ffffff; border-bottom-color: rgba(255,255,255,0.3); }
 
         /* 地震速報・表示設定パネル */
-        #infoBox { 
-            top: 110px; left: 6px; right: 6px; width: auto; max-width: none;
-        }
+        #infoBox { top: 104px; }
 
-        /* 下部：ひずみ・変動モニタリング解説・予測検証 */
+        /* 下部：ひずみ・変動モニタリング解説 */
         #tableBox { 
-            bottom: 6px; left: 6px; right: 6px; width: auto; max-width: none;
-            max-height: 44vh;
+            bottom: 6px; 
+            max-height: 38vh;
         }
 
-        .panel-content { display: block; max-height: 22vh; overflow-y: auto; margin-top: 5px; }
+        .panel-content { display: block; max-height: 18vh; overflow-y: auto; margin-top: 4px; }
         .panel-box.collapsed .panel-content { display: none !important; }
-        .panel-box.collapsed { padding-bottom: 8px !important; }
+        .panel-box.collapsed { padding-bottom: 6px !important; }
 
         .panel-title { 
-            font-weight: bold; font-size: 11.5px; color: #0f172a; 
+            font-weight: bold; font-size: 11px; color: #0f172a; 
             display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; 
+            cursor: pointer; border-bottom: 2px solid #e2e8f0; padding-bottom: 3px; 
             user-select: none;
         }
 
         .telop-content {
-            font-size: 10.5px; font-weight: bold; line-height: 1.4; color: #fef2f2; margin-top: 3px;
-            display: flex; align-items: flex-start; gap: 6px;
+            font-size: 10px; font-weight: bold; line-height: 1.35; color: #fef2f2; margin-top: 2px;
+            display: flex; align-items: flex-start; gap: 5px;
         }
         .telop-badge {
-            background: #dc2626; color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 4px; animation: pulseBadge 1.5s infinite; flex-shrink: 0;
-        }
-        @keyframes pulseBadge {
-            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
+            background: #dc2626; color: #fff; font-size: 8.5px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0;
         }
 
-        /* セーフティ判断バナー（赤太文字を強調） */
         .safety-banner {
             background: #fef08a; border: 1.5px solid #eab308; border-left: 4px solid #ca8a04;
-            color: #713f12; font-size: 9.5px; font-weight: bold; padding: 5px 7px; border-radius: 4px;
-            margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            color: #713f12; font-size: 9px; font-weight: bold; padding: 4px 6px; border-radius: 4px;
+            margin-bottom: 4px; line-height: 1.35; display: flex; align-items: flex-start; gap: 4px;
         }
         .highlight-red { color: #dc2626; font-weight: 900; }
 
-        /* 変動と予測を一体化したカードグリッド */
         .strain-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            margin-top: 4px;
+            grid-template-columns: 1fr;
+            gap: 4px;
+            margin-top: 3px;
         }
         .strain-card {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
             border-left: 4px solid #7c3aed;
-            border-radius: 6px;
-            padding: 6px 7px;
+            border-radius: 5px;
+            padding: 5px 6px;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .strain-card.red { border-left-color: #dc2626; background: #fff5f5; }
-        .strain-card:active { background: #e2e8f0; }
-        .strain-card-title { font-weight: bold; color: #1e293b; font-size: 9.5px; display: flex; justify-content: space-between; align-items: center; }
-        .strain-card-sub { font-size: 8.5px; color: #b91c1c; font-weight: bold; margin-top: 2px; }
-        .strain-card-desc { font-size: 8px; color: #475569; margin-top: 3px; line-height: 1.3; border-top: 1px dashed #cbd5e1; padding-top: 3px; }
+        .strain-card-title { font-weight: bold; color: #1e293b; font-size: 9px; display: flex; justify-content: space-between; align-items: center; }
+        .strain-card-sub { font-size: 8px; color: #b91c1c; font-weight: bold; margin-top: 1px; }
+        .strain-card-desc { font-size: 7.5px; color: #475569; margin-top: 2px; line-height: 1.25; border-top: 1px dashed #cbd5e1; padding-top: 2px; }
 
-        .update-time { font-size: 9.5px; color: #334155; font-weight: bold; margin-bottom: 2px; }
-        .data-condition { font-size: 9px; color: #1e3a8a; background: #eff6ff; padding: 3px 6px; border-radius: 4px; margin-bottom: 2px; font-weight: 600; border: 1px solid #bfdbfe; }
-        .condition-hint { font-size: 8px; color: #64748b; margin-bottom: 4px; padding-left: 2px; }
+        .update-time { font-size: 9px; color: #334155; font-weight: bold; margin-bottom: 1px; }
+        .data-condition { font-size: 8.5px; color: #1e3a8a; background: #eff6ff; padding: 2px 5px; border-radius: 3px; margin-bottom: 2px; font-weight: 600; border: 1px solid #bfdbfe; }
         
-        #earthquake-data { max-height: 50px; overflow-y: auto; scroll-behavior: smooth; }
-        .eq-item { border-bottom: 1px solid #f1f5f9; padding: 3px 2px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #0f172a; font-weight: 500; }
+        #earthquake-data { max-height: 44px; overflow-y: auto; scroll-behavior: smooth; }
+        .eq-item { border-bottom: 1px solid #f1f5f9; padding: 2px 2px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 9px; color: #0f172a; font-weight: 500; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; }
-        .eq-dot { display: inline-block; background: #dc2626; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #991b1b; width: 7px; height: 7px; }
+        .eq-dot { display: inline-block; background: #dc2626; width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+        .eq-dot.latest { background: #991b1b; width: 6px; height: 6px; }
 
         @keyframes eqPulse {
             0% { transform: scale(0.9); opacity: 0.9; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
@@ -151,69 +133,65 @@
             animation: strainPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
         }
 
-        /* 設定アコーディオンボタン */
         .settings-toggle-btn {
             background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #0f172a; border: 1px solid #cbd5e1; 
-            padding: 4px 8px; border-radius: 6px; font-size: 9.5px; font-weight: bold; cursor: pointer; 
-            margin-top: 4px; text-align: center; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 3px 6px; border-radius: 5px; font-size: 9px; font-weight: bold; cursor: pointer; 
+            margin-top: 3px; text-align: center; display: flex; justify-content: space-between; align-items: center;
         }
-        .settings-toggle-btn:hover { background: #e2e8f0; }
 
         .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; 
-            margin-top: 4px; font-size: 9.5px; max-height: 160px; overflow-y: auto; color: #0f172a;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 6px; border-radius: 5px; 
+            margin-top: 3px; font-size: 9px; max-height: 140px; overflow-y: auto; color: #0f172a;
         }
-        .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 6px; margin-bottom: 2px; font-size: 9.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
-        .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; cursor: pointer; color: #334155; }
+        .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 5px; margin-bottom: 2px; font-size: 9px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
+        .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; cursor: pointer; color: #334155; }
         
         .pwa-guide-box {
-            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 6px; margin-top: 4px; font-size: 9px; color: #1e3a8a; line-height: 1.4;
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px; padding: 5px; margin-top: 3px; font-size: 8.5px; color: #1e3a8a; line-height: 1.35;
         }
-        .pwa-guide-box b { color: #1d4ed8; }
 
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
-            font-size: 8.5px; font-weight: bold; padding: 2px 4px; border-radius: 4px;
+            font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 4px;
             white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); text-align: center;
         }
 
         .risk-badge-row {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 3px 6px; font-size: 9px; font-weight: bold; border-radius: 16px; 
-            color: #ffffff; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 5px; font-size: 8.5px; font-weight: bold; border-radius: 14px; 
+            color: #ffffff; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); 
             cursor: pointer; border: 1.5px solid #ffffff;
         }
         .risk-badge-row.red { background: rgba(220, 38, 38, 0.96); }
         .risk-badge-row.purple { background: rgba(124, 58, 237, 0.96); }
-        .badge-sub { font-size: 7.5px; background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 6px; font-weight: normal; }
+        .badge-sub { font-size: 7px; background: rgba(0,0,0,0.25); padding: 1px 3px; border-radius: 5px; font-weight: normal; }
 
-        /* アイコンプレビュー＆QR案内モーダル（左寄せ） */
         #iconModal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 2000;
             display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px);
         }
         .modal-card {
-            background: #ffffff; width: 88%; max-width: 320px; padding: 16px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; font-size: 11px; color: #0f172a;
+            background: #ffffff; width: 88%; max-width: 320px; padding: 14px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; font-size: 10.5px; color: #0f172a;
         }
         .app-icon-preview {
-            width: 58px; height: 58px; background: linear-gradient(135deg, #dc2626, #991b1b);
-            border: 2px solid #fca5a5; border-radius: 14px; margin: 8px 0; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.4);
+            width: 52px; height: 52px; background: linear-gradient(135deg, #dc2626, #991b1b);
+            border: 2px solid #fca5a5; border-radius: 12px; margin: 6px 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #fff;
         }
         .modal-close-btn {
-            background: #0f172a; color: #fff; border: none; padding: 6px 16px; border-radius: 6px;
-            font-size: 10.5px; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center;
+            background: #0f172a; color: #fff; border: none; padding: 5px 14px; border-radius: 5px;
+            font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; text-align: center;
         }
 
+        /* PC等で幅が広い場合のレイアウト（左側に固定幅で配置） */
         @media screen and (min-width: 769px) {
-            #sysTitleBar { width: 440px; left: 6px; right: auto; }
-            #telopBox { width: 440px; left: 6px; right: auto; }
-            #infoBox { width: 440px; left: 6px; right: auto; top: 170px; }
-            #tableBox { width: 440px; left: 6px; right: auto; bottom: 6px; max-height: 58vh; }
-            .strain-grid { grid-template-columns: 1fr; }
+            .panel-box { width: 440px; left: 6px; right: auto; }
+            #sysTitleBar { top: 6px; }
+            #telopBox { top: 52px; }
+            #infoBox { top: 168px; }
+            #tableBox { bottom: 6px; max-height: 55vh; }
+            .strain-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -221,44 +199,44 @@
 
     <!-- システムタイトルバー -->
     <div class="panel-box" id="sysTitleBar">
-        <div class="sys-title-text">
-            <span>🛡️ 地殻変動・電磁波モニタリング</span>
-        </div>
-        <div style="display:flex; gap:4px; align-items:center;">
-            <span class="sys-badge">公開用</span>
-            <button class="app-icon-btn" onclick="openIconModal()">📱 ホーム登録・手順</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div class="sys-title-text">
+                <span>🛡️ 地殻変動・電磁波モニタリング</span>
+            </div>
+            <div style="display:flex; gap:4px; align-items:center;">
+                <span class="sys-badge">公開用</span>
+                <button class="app-icon-btn" onclick="openIconModal()">📱 ホーム登録</button>
+            </div>
         </div>
     </div>
 
-    <!-- スマホホーム追加・システム説明モーダル（左寄せ） -->
+    <!-- スマホホーム追加・システム説明モーダル -->
     <div id="iconModal" onclick="closeIconModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
-            <div style="font-weight: bold; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px;">📖 アプリ概要とホーム追加手順</div>
+            <div style="font-weight: bold; font-size: 11.5px; color: #1e3a8a; margin-bottom: 5px;">📖 アプリ概要とホーム追加手順</div>
             
-            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; margin-bottom: 10px;">
-                <b>1. 地殻変動・電磁波モニタリングシステムとは？</b><br>
-                日本各地の地殻プレートの歪みや年間変動、科学的論文に基づく電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートするための専用ツールとして開発しました。ｂｙ銅鑼衛門
+            <div style="font-size: 9px; color: #334155; line-height: 1.35; margin-bottom: 8px;">
+                <b>1. アプリ概要:</b><br>
+                日本各地の地殻プレートの歪みや年間変動、科学的論文に基づく電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートするための専用ツールです。ｂｙ銅鑼衛門
             </div>
 
-            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 8px;">
-                <b>2. 防災モニタリングをホーム画面へ追加する</b><br>
-                スマホのホーム画面にアイコンとして常駐させ、いつでも素早くアクセスできます。
+            <div style="font-size: 9px; color: #334155; line-height: 1.35; border-top: 1px solid #e2e8f0; padding-top: 6px;">
+                <b>2. ホーム画面への追加手順:</b>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px; margin: 6px 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
                 <div class="app-icon-preview">
-                    <span style="font-size: 18px;">🗾</span>
-                    <span style="font-size: 7px; font-weight: bold; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
+                    <span style="font-size: 16px;">🗾</span>
+                    <span style="font-size: 6.5px; font-weight: bold; color:#dcfce7;">JP SEISMIC</span>
                 </div>
-                <div style="font-size: 8.5px; color: #64748b; line-height: 1.3;">
+                <div style="font-size: 8px; color: #64748b; line-height: 1.25;">
                     <b>ホーム画面アイコン</b><br>赤ベースに緑の日本地図で高い視認性を確保しています。
                 </div>
             </div>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px; border-radius: 6px; font-size: 9px; line-height: 1.4;">
-                <b>📌 操作手順:</b><br>
-                ・<b>iPhone (Safari):</b> 画面<span class="highlight-red">最下部のメニューバー</span>にある共有ボタン [ ↗ ] をタップ ＞<b>「ホーム画面に追加」</b>を選択。<br>
-                ・<b>Android (Chrome):</b> 画面<span class="highlight-red">右上のメニュー [ ︙ ]</span> をタップ ＞<b>「ホーム画面に追加」</b>を選択。
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 5px; font-size: 8.5px; line-height: 1.35;">
+                ・<b>iPhone (Safari):</b> 画面下の共有ボタン [ ↗ ] ＞<b>「ホーム画面に追加」</b><br>
+                ・<b>Android (Chrome):</b> 右上メニュー [ ︙ ] ＞<b>「ホーム画面に追加」</b>
             </div>
 
             <button class="modal-close-btn" onclick="closeIconModal()">閉じる</button>
@@ -269,12 +247,12 @@
     <div class="panel-box" id="telopBox">
         <div class="panel-title" onclick="toggleCollapse('telopBox', event)">
             <span>🚨 リアルタイム危機ステータス・テロップ</span>
-            <span style="font-size:9px; color:#f87171;">[±開閉]</span>
+            <span style="font-size:8.5px; color:#f87171;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div class="telop-content">
-                <span class="telop-badge">命を守る警戒</span>
-                <span>関東平野・新潟北陸の歪み集中帯において地殻変動を観測中。科学的論文に基づく電磁気学的前兆・微小破壊リスクを考慮し、<b>常に最悪（セーフティ）を想定した事前対策</b>を共有・推奨。</span>
+                <span class="telop-badge">警戒</span>
+                <span>関東平野・新潟北陸の歪み集中帯で地殻変動を観測中。電磁気学的予測・微小破壊リスクを考慮し、<b>常に最悪を想定した事前対策</b>を推奨。</span>
             </div>
         </div>
     </div>
@@ -282,37 +260,40 @@
     <!-- 中部：地震速報・表示設定パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>📊 地震速報・マップ表示設定</span>
-            <span style="font-size:9px; color:#555;">[±開閉]</span>
+            <span>📊 地震速報（今日〜3日前）＆ 設定</span>
+            <span style="font-size:8.5px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
-            <div class="data-condition" id="data-condition">📅 現在の設定条件: 読み込み中...</div>
-            <div class="condition-hint">※表示切替は下のバーをクリックして変更できます</div>
+            <div class="data-condition" id="data-condition">📅 期間: 今日〜3日前 / 条件: 読み込み中...</div>
             
             <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
-                <span>⚙ マップ表示・スマホ設定（地震速報フィルター・追加手順）</span>
-                <span id="settingsToggleIcon" style="font-size:9.5px; color:#64748b;">▼</span>
+                <span>⚙ 表示フィルター・期間設定・追加手順</span>
+                <span id="settingsToggleIcon" style="font-size:9px; color:#64748b;">▼</span>
             </div>
 
             <div class="filter-panel" id="filterPanel">
-                <div class="settings-group-title" style="margin-top:0;">■ 地震速報の表示切り替え（優先）</div>
-                <label><input type="radio" name="magFilter" id="magAll" checked onchange="safeFetchEq()"> すべての地震を表示する（小さな地震も含む）</label>
-                <label><input type="radio" name="magFilter" id="magM4" onchange="safeFetchEq()"> マグニチュード4.0以上のみ（実用的な防災用）</label>
-                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> マグニチュード5.0以上のみ（強い揺れに絞る）</label>
+                <div class="settings-group-title" style="margin-top:0;">■ 表示期間の絞り込み</div>
+                <label><input type="radio" name="dateFilter" id="date3Days" checked onchange="safeFetchEq()"> 今日から3日前まで（直近の動向）</label>
+                <label><input type="radio" name="dateFilter" id="dateAll" onchange="safeFetchEq()"> 制限なし（すべての取得履歴）</label>
+
+                <div class="settings-group-title">■ マグニチュードフィルター</div>
+                <label><input type="radio" name="magFilter" id="magAll" checked onchange="safeFetchEq()"> すべての地震を表示</label>
+                <label><input type="radio" name="magFilter" id="magM4" onchange="safeFetchEq()"> M4.0以上のみ</label>
+                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> M5.0以上のみ</label>
 
                 <div class="settings-group-title">■ マップ上の表示項目</div>
-                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗ 地面のズレる方向と勢い（矢印）</label>
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗ 地面のズレる方向（矢印）</label>
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 注意エリア（光る円）</label>
 
-                <div class="settings-group-title">■ スマホのホーム画面に追加して活用する</div>
+                <div class="settings-group-title">■ スマホのホーム画面に追加</div>
                 <div class="pwa-guide-box">
-                    みんなで防災意識を共有するため、このページをスマホのホーム画面にアイコンとして登録できます。上の<b>「📱 ホーム登録・手順」</b>ボタンから詳細な位置を確認できます。
+                    上の<b>「📱 ホーム登録」</b>ボタン、またはブラウザのメニューからホーム画面に追加して常駐させることができます。
                 </div>
             </div>
             
-            <div id="earthquake-data" style="margin-top: 6px;">読込中...</div>
+            <div id="earthquake-data" style="margin-top: 5px;">読込中...</div>
         </div>
     </div>
 
@@ -320,18 +301,14 @@
     <div class="panel-box" id="tableBox">
         <div class="panel-title" onclick="toggleCollapse('tableBox', event)">
             <span>🗺️ 変動解説 ＆ 論文に基づく予測検証</span>
-            <span style="font-size:9px; color:#555;">[±開閉]</span>
+            <span style="font-size:8.5px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div class="safety-banner">
-                <span style="font-size:12px;">⚠</span>
+                <span style="font-size:11px;">⚠</span>
                 <div>
-                    <b>命を守るセーフティ判断：</b> 観測される「年間変動」や電磁気学的変化の兆候から、常に<span class="highlight-red">「想定以上の強い揺れ」</span>を前提に<span class="highlight-red">早めの安全行動</span>を心がけてください。
+                    <b>セーフティ判断：</b> 年間変動や電磁気学的変化の兆候から、常に<span class="highlight-red">「想定以上の強い揺れ」</span>を前提に<span class="highlight-red">早めの安全行動</span>を心がけてください。
                 </div>
-            </div>
-
-            <div style="font-size:8.5px; color:#475569; margin-bottom:5px; line-height:1.3;">
-                ※各地域の<b>「年間変動（事実）」</b>と、それに対する<b>「電磁気学的予測（論文知見）」</b>を紐づけて表示しています。カードをタッチすると地図がフォーカスします。
             </div>
 
             <div class="strain-grid">
@@ -426,7 +403,7 @@
                     map.setView([lat, lon], zoom);
                     L.popup()
                         .setLatLng([lat, lon])
-                        .setContent(`<b style="font-size:11.5px; color:#0f172a;">【${title}】</b><hr style="margin:3px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:10px; line-height:1.4; display:block;">${desc}</span>`)
+                        .setContent(`<b style="font-size:11px; color:#0f172a;">【${title}】</b><hr style="margin:2px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:9.5px; line-height:1.35; display:block;">${desc}</span>`)
                         .openOn(map);
                 }
             } catch(e) {}
@@ -454,7 +431,7 @@
                 if (showZones) {
                     L.polyline([
                         [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], [35.15, 138.65]
-                    ], { color: '#dc2626', weight: 3.5, opacity: 0.9 }).addTo(plateLayersGroup);
+                    ], { color: '#dc2626', weight: 3, opacity: 0.9 }).addTo(plateLayersGroup);
                 }
 
                 if (showStrain) {
@@ -464,10 +441,10 @@
                     ];
                     strainZones.forEach(sz => {
                         L.circle(sz.center, {
-                            radius: sz.radius, color: sz.color, weight: 3, opacity: 0.9, fillColor: sz.color, fillOpacity: 0.28, dashArray: '6, 6'
+                            radius: sz.radius, color: sz.color, weight: 2.5, opacity: 0.9, fillColor: sz.color, fillOpacity: 0.25, dashArray: '5, 5'
                         }).addTo(plateLayersGroup);
 
-                        let size = 20;
+                        let size = 18;
                         var pulsingIcon = L.divIcon({
                             className: '',
                             html: `<div class="strain-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
@@ -481,13 +458,13 @@
                     crustalVectors.forEach(v => {
                         let startPoint = [v.lat, v.lon];
                         let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
-                        L.circleMarker(startPoint, { radius: 4, color: '#fff', fillColor: '#dc2626', fillOpacity: 1, weight: 2 }).addTo(plateLayersGroup);
-                        L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 3, opacity: 0.85 }).addTo(plateLayersGroup);
+                        L.circleMarker(startPoint, { radius: 3.5, color: '#fff', fillColor: '#dc2626', fillOpacity: 1, weight: 2 }).addTo(plateLayersGroup);
+                        L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 2.5, opacity: 0.85 }).addTo(plateLayersGroup);
                         L.marker([endPoint[0] + 0.025, endPoint[1]], {
                             icon: L.divIcon({
                                 className: '',
                                 html: `<div class="vector-tip-label">${v.value}</div>`,
-                                iconSize: [85, 20], iconAnchor: [42, 10]
+                                iconSize: [80, 18], iconAnchor: [40, 9]
                             })
                         }).addTo(plateLayersGroup);
                     });
@@ -509,14 +486,14 @@
                     let labelPoint = [a.labelLat, a.labelLon];
                     let circleColor = (a.badgeClass === 'red') ? '#dc2626' : '#7c3aed';
 
-                    L.circle(pinPoint, { radius: a.radius, color: circleColor, weight: 2.5, opacity: 0.85, fillColor: circleColor, fillOpacity: 0.2, dashArray: '5, 5' }).addTo(persistentRiskGroup);
-                    L.polyline([pinPoint, labelPoint], { color: '#334155', weight: 2.5, opacity: 0.8, dashArray: '3, 3' }).addTo(persistentRiskGroup);
+                    L.circle(pinPoint, { radius: a.radius, color: circleColor, weight: 2, opacity: 0.8, fillColor: circleColor, fillOpacity: 0.18, dashArray: '4, 4' }).addTo(persistentRiskGroup);
+                    L.polyline([pinPoint, labelPoint], { color: '#334155', weight: 2, opacity: 0.7, dashArray: '3, 3' }).addTo(persistentRiskGroup);
 
                     var marker = L.marker(labelPoint, {
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="risk-badge-row ${a.badgeClass}"><span>📍 ${a.name}</span><span class="badge-sub">${a.typeText}</span></div>`,
-                            iconSize: [170, 26], iconAnchor: [85, 13]
+                            iconSize: [160, 24], iconAnchor: [80, 12]
                         }),
                         interactive: true
                     });
@@ -535,15 +512,18 @@
             markerMap = {};
             let filteredData = [];
 
+            let date3Days = document.getElementById('date3Days')?.checked ?? true;
             let magAll = document.getElementById('magAll')?.checked ?? true;
             let magM4 = document.getElementById('magM4')?.checked ?? false;
             let magM5 = document.getElementById('magM5')?.checked ?? false;
 
-            let conditionText = "すべての地震を表示中";
-            if (magM4) conditionText = "M4.0以上表示";
-            if (magM5) conditionText = "M5.0以上表示";
+            let conditionText = date3Days ? "今日〜3日前" : "制限なし";
+            if (magM4) conditionText += " / M4以上";
+            else if (magM5) conditionText += " / M5以上";
+            else conditionText += " / すべてのM";
+
             if (document.getElementById('data-condition')) {
-                document.getElementById('data-condition').innerText = "📅 現在の設定条件: " + conditionText;
+                document.getElementById('data-condition').innerText = "📅 期間・条件: " + conditionText;
             }
 
             try {
@@ -553,6 +533,9 @@
                 clearTimeout(timeoutId);
                 if (!res.ok) throw new Error('Network error');
                 let data = await res.json();
+
+                let nowTime = new Date().getTime();
+                let threeDaysAgo = nowTime - (3 * 24 * 60 * 60 * 1000);
 
                 filteredData = data.filter(item => {
                     if (!item.earthquake) return false;
@@ -564,6 +547,13 @@
                     
                     if (magM5 && mag < 5.0) return false;
                     if (magM4 && mag < 4.0) return false;
+
+                    if (date3Days && item.time) {
+                        let itemTime = new Date(item.time).getTime();
+                        if (!isNaN(itemTime) && itemTime < threeDaysAgo) {
+                            return false;
+                        }
+                    }
                     return true;
                 });
             } catch(e) {
@@ -596,25 +586,25 @@
                         setTimeout(function() {
                             try {
                                 if(!eqLayer) return;
-                                let size = Math.max(12, parseFloat(m) * 3.5);
+                                let size = Math.max(10, parseFloat(m) * 3);
                                 var pulsingIcon = L.divIcon({
                                     className: '',
                                     html: `<div class="eq-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
                                     iconSize: [size, size], iconAnchor: [size/2, size/2]
                                 });
                                 var mainMarker = L.marker([l, lo], { icon: pulsingIcon }).addTo(eqLayer);
-                                mainMarker.bindPopup(`<b>${index === 0 ? '🔴 地震情報' : '🔴 履歴'}</b><br>M${m} - ${name}<br><span style="font-size:10px; color:#555;">時刻: ${time.replace('T', ' ')}</span>`);
+                                mainMarker.bindPopup(`<b>${index === 0 ? '🔴 地震情報' : '🔴 履歴'}</b><br>M${m} - ${name}<br><span style="font-size:9.5px; color:#555;">時刻: ${time.replace('T', ' ')}</span>`);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {}
-                        }, index * 30);
+                        }, index * 25);
                     })(i, lat, lon, mag, displayName, eqTime);
                 } catch(innerErr) {}
             }
 
             if (filteredData.length === 0) {
-                html = `<div style="padding: 6px; background:#f8fafc; color: #475569; font-size: 9.5px; text-align: center; border-radius: 4px; border: 1px dashed #cbd5e1; font-weight: bold;">
-                            ✅ 現在、指定条件に一致する地震速報はありません。<br>
-                            <span style="font-size:8.5px; color:#64748b; font-weight:normal;">（平常監視中：電磁気学的前兆・異常連鎖は検知されていません）</span>
+                html = `<div style="padding: 5px; background:#f8fafc; color: #475569; font-size: 8.5px; text-align: center; border-radius: 4px; border: 1px dashed #cbd5e1; font-weight: bold;">
+                            ✅ 指定期間（今日〜3日前）に該当する地震速報はありません。<br>
+                            <span style="font-size:7.5px; color:#64748b; font-weight:normal;">（平常監視中：電磁気学的前兆・異常連鎖は検知されていません）</span>
                         </div>`;
             }
 
