@@ -40,11 +40,12 @@
 
         /* スマホ追加ボタン（ヘッダー内） */
         .app-icon-btn {
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4);
-            color: #fff; padding: 2px 6px; border-radius: 5px; font-size: 9px; font-weight: bold;
+            background: #dc2626; border: 1px solid #f87171;
+            color: #fff; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: bold;
             cursor: pointer; display: flex; align-items: center; gap: 3px;
+            box-shadow: 0 2px 6px rgba(220,38,38,0.4);
         }
-        .app-icon-btn:hover { background: rgba(255,255,255,0.25); }
+        .app-icon-btn:hover { background: #b91c1c; }
 
         /* 最上部：常駐テロップ・警戒ステータス枠 */
         #telopBox {
@@ -164,8 +165,7 @@
         }
         .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 6px; margin-bottom: 2px; font-size: 9.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
         .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; cursor: pointer; color: #334155; }
-        .setting-desc { font-size: 8px; color: #64748b; margin-left: 18px; margin-bottom: 3px; line-height: 1.2; }
-
+        
         /* スマホ追加手順の案内スタイル */
         .pwa-guide-box {
             background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 6px; margin-top: 4px; font-size: 9px; color: #1e3a8a; line-height: 1.4;
@@ -197,10 +197,11 @@
             background: #ffffff; width: 88%; max-width: 320px; padding: 16px; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; font-size: 11px; color: #0f172a;
         }
+        /* 視認性の高い赤ベース＆緑の日本地図アイコンプレビュー */
         .app-icon-preview {
-            width: 64px; height: 64px; background: linear-gradient(135deg, #1e3a8a, #0f172a);
-            border: 2px solid #3b82f6; border-radius: 14px; margin: 10px auto; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: #fff; box-shadow: 0 4px 12px rgba(30,58,138,0.4);
+            width: 68px; height: 68px; background: linear-gradient(135deg, #dc2626, #991b1b);
+            border: 2.5px solid #fca5a5; border-radius: 16px; margin: 10px auto; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #fff; box-shadow: 0 6px 16px rgba(220,38,38,0.5);
         }
         .modal-close-btn {
             background: #0f172a; color: #fff; border: none; padding: 6px 16px; border-radius: 6px;
@@ -225,26 +226,29 @@
         </div>
         <div style="display:flex; gap:4px; align-items:center;">
             <span class="sys-badge">公開用</span>
-            <button class="app-icon-btn" onclick="openIconModal()">📱 アイコン・共有</button>
+            <button class="app-icon-btn" onclick="openIconModal()">📱 ホーム登録・手順</button>
         </div>
     </div>
 
-    <!-- スマホホーム追加・QR案内モーダル -->
+    <!-- スマホホーム追加・手順案内モーダル -->
     <div id="iconModal" onclick="closeIconModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
-            <div style="font-weight: bold; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;">🇯🇵 防災モニタリングを共有</div>
-            <div style="font-size: 9.5px; color: #64748b;">みんなの防災意識を高めるために、スマホのホーム画面にアイコンを追加して常駐できます。</div>
+            <div style="font-weight: bold; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;">🇯🇵 防災モニタリングをホームへ追加</div>
+            <div style="font-size: 9.5px; color: #64748b;">みんなの防災意識を高めるために、スマホのホーム画面にアイコンとして常駐させられます。</div>
             
+            <!-- 視認性の高い赤ベース＆緑の日本地図アイコンイメージ -->
             <div class="app-icon-preview">
-                <span style="font-size: 20px;">🗾</span>
-                <span style="font-size: 8.5px; font-weight: bold; margin-top: 2px; color:#93c5fd;">EARTHQUAKE</span>
+                <span style="font-size: 22px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));">🗾</span>
+                <span style="font-size: 8px; font-weight: bold; margin-top: 2px; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
             </div>
-            <div style="font-size: 9px; font-weight: bold; color: #334155;">ホーム画面アイコンイメージ</div>
+            <div style="font-size: 9px; font-weight: bold; color: #334155;">ホーム画面アイコン（イメージ）</div>
 
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; margin-top: 10px; text-align: left; font-size: 9.5px; line-height: 1.4;">
-                <b>📌 スマホへの追加手順:</b><br>
-                ・<b>iPhone (Safari):</b> 画面下部の共有ボタン [ ↗ ] を押し、<b>「ホーム画面に追加」</b>を選択。<br>
-                ・<b>Android (Chrome):</b> 右上のメニュー [ ︙ ] を押し、<b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を選択。
+                <b>📌 スマホへの追加手順（操作場所の解説）:</b><br>
+                ・<b>iPhone (Safariの場合):</b><br>
+                  スマホ画面の<span style="color:#dc2626; font-weight:bold;">最下部（メニューバー）</span>にある共有ボタン [ ↗ (四角から矢印が出るマーク) ] をタップし、出てきたメニューの中にある<b>「ホーム画面に追加」</b>を選びます。<br><br>
+                ・<b>Android (Chromeの場合):</b><br>
+                  スマホ画面の<span style="color:#dc2626; font-weight:bold;">右上（アドレスバーの横）</span>にあるメニューボタン [ ︙ (縦に並んだ3つの点) ] をタップし、<b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を選びます。
             </div>
 
             <button class="modal-close-btn" onclick="closeIconModal()">閉じる</button>
@@ -293,7 +297,7 @@
 
                 <div class="settings-group-title">■ スマホのホーム画面に追加して活用する</div>
                 <div class="pwa-guide-box">
-                    みんなで防災意識を共有するため、このページをスマホのホーム画面にアイコンとして登録できます。右上の<b>「📱 アイコン・共有」</b>ボタンから手順を確認してください。
+                    みんなで防災意識を共有するため、このページをスマホのホーム画面にアイコンとして登録できます。上の<b>「📱 ホーム登録・手順」</b>ボタンから詳細な位置を確認できます。
                 </div>
             </div>
             
@@ -362,24 +366,14 @@
             
             L.control.zoom({ position: 'topright' }).addTo(map);
 
-            // 国土地理院タイル
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
                 attribution: '&copy; 国土地理院',
                 maxZoom: 18,
                 minZoom: 4
             }).addTo(map);
 
-            // 確実に地図を表示させるためのサイズ再計算トリガー
-            setTimeout(function() {
-                if(map) {
-                    map.invalidateSize();
-                }
-            }, 100);
-            setTimeout(function() {
-                if(map) {
-                    map.invalidateSize();
-                }
-            }, 500);
+            setTimeout(function() { if(map) map.invalidateSize(); }, 100);
+            setTimeout(function() { if(map) map.invalidateSize(); }, 500);
         } catch (e) {
             console.error("マップ初期化エラー:", e);
         }
