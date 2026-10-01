@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>地殻変動・電磁波モニタリング防災マップ（本格検証版）</title>
+    <title>地殻変動・電磁波モニタリング防災マップ（洗練設定版）</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -25,7 +25,7 @@
             backdrop-filter: blur(6px);
         }
 
-        /* 最上部：明確なテロップ・ステータス表示枠 */
+        /* 最上部：常駐テロップ・警戒ステータス枠 */
         #telopBox {
             top: 6px; left: 6px; right: 6px; width: auto; max-width: none;
             background: linear-gradient(135deg, #7f1d1d, #991b1b);
@@ -46,7 +46,7 @@
             max-height: 35vh;
         }
 
-        .panel-content { display: block; max-height: 22vh; overflow-y: auto; margin-top: 5px; }
+        .panel-content { display: block; max-height: 20vh; overflow-y: auto; margin-top: 5px; }
         .panel-box.collapsed .panel-content { display: none !important; }
         .panel-box.collapsed { padding-bottom: 8px !important; }
 
@@ -93,7 +93,7 @@
         .update-time { font-size: 9.5px; color: #334155; font-weight: bold; margin-bottom: 2px; }
         .data-condition { font-size: 9.5px; color: #1e3a8a; background: #eff6ff; padding: 3px 6px; border-radius: 4px; margin-bottom: 4px; font-weight: 600; border: 1px solid #bfdbfe; }
         
-        #earthquake-data { max-height: 60px; overflow-y: auto; scroll-behavior: smooth; }
+        #earthquake-data { max-height: 55px; overflow-y: auto; scroll-behavior: smooth; }
         .eq-item { border-bottom: 1px solid #f1f5f9; padding: 3px 2px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 10px; color: #0f172a; font-weight: 500; }
         .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; }
         .eq-dot { display: inline-block; background: #dc2626; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
@@ -110,15 +110,24 @@
             animation: strainPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
         }
 
-        .filter-toggle-btn {
-            background: #f1f5f9; color: #0f172a; border: 1px solid #94a3b8; padding: 4px 8px; border-radius: 4px;
-            font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 3px; text-align: center;
+        /* 洗練された設定アコーディオンボタン */
+        .settings-toggle-btn {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #0f172a; border: 1px solid #cbd5e1; 
+            padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; 
+            margin-top: 4px; text-align: center; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
+        .settings-toggle-btn:hover { background: #e2e8f0; }
+
+        /* 折りたたみ設定パネル（デフォルト非表示で画面を占有しない） */
         .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #94a3b8; padding: 6px; border-radius: 6px; margin-top: 4px; font-size: 10px;
-            max-height: 120px; overflow-y: auto; color: #0f172a;
+            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; 
+            margin-top: 4px; font-size: 10px; max-height: 140px; overflow-y: auto; color: #0f172a;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
         }
-        .filter-panel label { display: block; margin-bottom: 3px; cursor: pointer; }
+        .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 4px; margin-bottom: 2px; font-size: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
+        .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; cursor: pointer; color: #334155; }
+        .setting-desc { font-size: 8.5px; color: #64748b; margin-left: 18px; margin-bottom: 3px; line-height: 1.2; }
 
         .vector-tip-label {
             background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
@@ -161,29 +170,41 @@
         </div>
     </div>
 
-    <!-- 中部：地震速報・条件フィルターパネル -->
+    <!-- 中部：地震速報・折りたたみ設定パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>📊 地震速報・表示フィルター設定</span>
+            <span>📊 地震速報・表示コントロール</span>
             <span style="font-size:9px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
             <div class="data-condition" id="data-condition">📅 条件設定: M4.0以上 / 直近3日表示</div>
             
-            <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙ 条件・レイヤー切り替え（M4以上フィルタ中）</div>
+            <!-- デフォルトでは折りたたまれており、画面を占有しない設定ボタン -->
+            <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
+                <span>⚙ 表示・フィルター詳細設定を開く</span>
+                <span id="settingsToggleIcon" style="font-size:10px; color:#64748b;">▼</span>
+            </div>
+
+            <!-- 折りたたまれた設定本体（個別解説付き） -->
             <div class="filter-panel" id="filterPanel">
-                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 変位量ベクトル</label>
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ ひずみ集中帯（網掛け・パルス）</label>
-                <hr style="border:0; border-top:1px solid #cbd5e1; margin:3px 0;">
-                <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">■ 地震規模フィルタ</div>
-                <label><input type="radio" name="magFilter" id="magAll" onchange="safeFetchEq()"> すべて表示</label>
-                <label><input type="radio" name="magFilter" id="magM4" checked onchange="safeFetchEq()"> M4.0以上（推奨）</label>
-                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> M5.0以上</label>
+                <div class="settings-group-title">■ マップ表示物の切り替え</div>
+                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
+                <div class="setting-desc">日本の主要なプレート境界や大断層の位置を表示します。</div>
+
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 地殻変位ベクトルを表示</label>
+                <div class="setting-desc">各地域の年間変動方向と移動量を矢印で分かりやすく示します。</div>
+
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（パルスエリア）を表示</label>
+                <div class="setting-desc">エネルギーが蓄積されやすい要注意エリアをグラデーションとアニメーションで強調します。</div>
+
+                <div class="settings-group-title">■ 地震速報の規模フィルター</div>
+                <label><input type="radio" name="magFilter" id="magAll" onchange="safeFetchEq()"> すべての地震を表示する</label>
+                <label><input type="radio" name="magFilter" id="magM4" checked onchange="safeFetchEq()"> M4.0以上のみ（防災上の実用推奨）</label>
+                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> M5.0以上のみ（強い揺れを伴うもの限定）</label>
             </div>
             
-            <div id="earthquake-data" style="margin-top: 4px;">読込中...</div>
+            <div id="earthquake-data" style="margin-top: 6px;">読込中...</div>
         </div>
     </div>
 
@@ -255,7 +276,17 @@
 
         function toggleFilterPanel() {
             var panel = document.getElementById('filterPanel');
-            if(panel) panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+            var icon = document.getElementById('settingsToggleIcon');
+            if(panel) {
+                if (panel.style.display === 'block') {
+                    panel.style.display = 'none';
+                    if(icon) icon.innerText = '▼';
+                } else {
+                    panel.style.display = 'block';
+                    if(icon) icon.innerText = '▲';
+                }
+                setTimeout(function() { if(map) map.invalidateSize(); }, 300);
+            }
         }
 
         function focusArea(lat, lon, zoom, title, desc) {
@@ -301,7 +332,6 @@
                         { center: [35.68, 139.69], radius: 28000, color: '#dc2626', label: '首都直下 圧縮領域' }
                     ];
                     strainZones.forEach(sz => {
-                        // ひずみの大きさを直感させる多重リングとパルス表現
                         L.circle(sz.center, {
                             radius: sz.radius, color: sz.color, weight: 3, opacity: 0.9, fillColor: sz.color, fillOpacity: 0.28, dashArray: '6, 6'
                         }).addTo(plateLayersGroup);
@@ -398,7 +428,6 @@
                     return true;
                 });
             } catch(e) {
-                // 通信エラー時やデモ時
                 filteredData = [];
             }
 
@@ -443,7 +472,6 @@
                 } catch(innerErr) {}
             }
 
-            // 【データなし・平常時の明確な表示対応】
             if (filteredData.length === 0) {
                 html = `<div style="padding: 6px; background:#f8fafc; color: #475569; font-size: 10px; text-align: center; border-radius: 4px; border: 1px dashed #cbd5e1; font-weight: bold;">
                             ✅ 現在、指定条件（M4.0以上・直近3日）に一致する地震速報はありません。<br>
