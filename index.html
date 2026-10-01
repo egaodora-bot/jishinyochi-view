@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>地殻変動・電磁波モニタリング防災マップ（洗練設定版）</title>
+    <title>地殻変動・電磁波モニタリング防災マップ（完成版）</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -99,7 +99,18 @@
         .eq-dot { display: inline-block; background: #dc2626; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
         .eq-dot.latest { background: #991b1b; width: 7px; height: 7px; }
 
-        /* ひずみ・異常を示すアニメーションパルス */
+        /* 地震ピンのパルスアニメーション */
+        @keyframes eqPulse {
+            0% { transform: scale(0.9); opacity: 0.9; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { transform: scale(1.3); opacity: 0.4; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { transform: scale(0.9); opacity: 0.9; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        .eq-pulsing-marker {
+            background-color: #dc2626; border: 2px solid #ffffff; border-radius: 50%;
+            animation: eqPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        /* 歪みエリアのパルスアニメーション */
         @keyframes strainPulse {
             0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
             70% { transform: scale(1.1); opacity: 0.4; box-shadow: 0 0 0 16px rgba(124, 58, 237, 0); }
@@ -110,7 +121,7 @@
             animation: strainPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
         }
 
-        /* 洗練された設定アコーディオンボタン */
+        /* 設定アコーディオンボタン */
         .settings-toggle-btn {
             background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #0f172a; border: 1px solid #cbd5e1; 
             padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; 
@@ -119,7 +130,7 @@
         }
         .settings-toggle-btn:hover { background: #e2e8f0; }
 
-        /* 折りたたみ設定パネル（デフォルト非表示で画面を占有しない） */
+        /* 折りたたみ設定パネル */
         .filter-panel {
             display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; 
             margin-top: 4px; font-size: 10px; max-height: 140px; overflow-y: auto; color: #0f172a;
@@ -170,70 +181,70 @@
         </div>
     </div>
 
-    <!-- 中部：地震速報・折りたたみ設定パネル -->
+    <!-- 中部：地震速報・表示設定パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>📊 地震速報・表示コントロール</span>
+            <span>📊 地震速報・表示設定</span>
             <span style="font-size:9px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
-            <div class="data-condition" id="data-condition">📅 条件設定: M4.0以上 / 直近3日表示</div>
+            <div class="data-condition" id="data-condition">📅 条件設定: 読み込み中...</div>
             
-            <!-- デフォルトでは折りたたまれており、画面を占有しない設定ボタン -->
+            <!-- 表示設定ボタン -->
             <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
-                <span>⚙ 表示・フィルター詳細設定を開く</span>
+                <span>⚙ マップ表示の詳細設定を開く</span>
                 <span id="settingsToggleIcon" style="font-size:10px; color:#64748b;">▼</span>
             </div>
 
-            <!-- 折りたたまれた設定本体（個別解説付き） -->
+            <!-- 折りたたまれた設定本体 -->
             <div class="filter-panel" id="filterPanel">
-                <div class="settings-group-title">■ マップ表示物の切り替え</div>
+                <div class="settings-group-title">■ マップ上の表示項目</div>
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
-                <div class="setting-desc">日本の主要なプレート境界や大断層の位置を表示します。</div>
+                <div class="setting-desc">日本列島の主要なプレートの境目や大きな断層の位置を表示します。</div>
 
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 地殻変位ベクトルを表示</label>
-                <div class="setting-desc">各地域の年間変動方向と移動量を矢印で分かりやすく示します。</div>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️ 地面のズレる方向と勢い（矢印）</label>
+                <div class="setting-desc">各地域が1年間でどちら向きにどれだけ動いているかを矢印で示します。</div>
 
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 歪み集中帯（パルスエリア）を表示</label>
-                <div class="setting-desc">エネルギーが蓄積されやすい要注意エリアをグラデーションとアニメーションで強調します。</div>
+                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
+                <div class="setting-desc">強い力がかかり続けている要注意エリアをアニメーションで強調します。</div>
 
-                <div class="settings-group-title">■ 地震速報の規模フィルター</div>
-                <label><input type="radio" name="magFilter" id="magAll" onchange="safeFetchEq()"> すべての地震を表示する</label>
-                <label><input type="radio" name="magFilter" id="magM4" checked onchange="safeFetchEq()"> M4.0以上のみ（防災上の実用推奨）</label>
-                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> M5.0以上のみ（強い揺れを伴うもの限定）</label>
+                <div class="settings-group-title">■ 地震速報の表示切り替え</div>
+                <label><input type="radio" name="magFilter" id="magAll" checked onchange="safeFetchEq()"> すべての地震を表示する（小さな地震も含む）</label>
+                <label><input type="radio" name="magFilter" id="magM4" onchange="safeFetchEq()"> マグニチュード4.0以上のみ（実用的な防災用）</label>
+                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> マグニチュード5.0以上のみ（強い揺れに絞る）</label>
             </div>
             
             <div id="earthquake-data" style="margin-top: 6px;">読込中...</div>
         </div>
     </div>
 
-    <!-- 下部：ひずみ・変動モニタリング解説・密集地サマリー -->
+    <!-- 下部：ひずみ・変動モニタリング解説・サマリー -->
     <div class="panel-box" id="tableBox">
         <div class="panel-title" onclick="toggleCollapse('tableBox', event)">
-            <span>🗺️ ひずみ・異常兆候モニタリング（詳細解説）</span>
+            <span>🗺️ 日本の地殻の異変チェック（やさしい解説）</span>
             <span style="font-size:9px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div style="font-size:9.5px; color:#475569; margin-bottom:4px; line-height:1.3;">
-                <b>【判断支援ガイド】</b> 地図上の紫および赤のエリアは、現在エネルギー蓄積やひずみの急変が確認されている主要帯です。カードタップで該当地域へ即座にフォーカスします。
+                <b>【見方ガイド】</b> 下のカードをタッチすると、地図上の詳しい場所へ一瞬で移動します。専門用語を使わず、今の状態をわかりやすく記載しています。
             </div>
             <div class="strain-grid">
-                <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【ひずみ状況】南東へ約15cm/年の水平変動と強い圧縮応力。<br>【判断材料】3層構造による歪み蓄積が顕著であり、微小地震の発生傾向に注意が必要なエリアです。')">
-                    <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">圧縮・南東15cm</span></div>
-                    <div class="strain-card-desc">関東平野の強い圧縮歪み</div>
+                <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【今の状態】地面がググッと強い力で押され、南東へ年間約15cmずつ動いています。<br>【注意点】関東平野特有の厚い地層に力が溜まりやすい場所です。')">
+                    <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">力が押し合う状態・15cm動く</span></div>
+                    <div class="strain-card-desc">関東平野の強い圧縮・ひずみ</div>
                 </div>
-                <div class="strain-card red" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '【ひずみ状況】北西へ約25cm/年の継続的変動。<br>【判断材料】プレート境界の固着域におけるスロースリップおよび電磁気アノマリーの継続監視対象。')">
-                    <div class="strain-card-title"><span>📍 南海トラフ</span><span style="color:#dc2626;">北西25cm蓄積</span></div>
-                    <div class="strain-card-desc">プレート境界固着・沈降</div>
+                <div class="strain-card red" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '【今の状態】プレート同士がガッチリ引っかかり、北西へ年間約25cmの力が溜まっています。<br>【注意点】大きなエネルギーが蓄積し続けているため、長期的な警戒が必要です。')">
+                    <div class="strain-card-title"><span>📍 南海トラフ</span><span style="color:#dc2626;">プレートが引っかかる状態・25cm</span></div>
+                    <div class="strain-card-desc">境界が固着しエネルギー蓄積中</div>
                 </div>
-                <div class="strain-card" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸 歪み集中帯', '【ひずみ状況】西へ約12cm/年の歪み急変。<br>【判断材料】内陸活断層帯における応力の急変と地殻変動が集中しているエリア。')">
-                    <div class="strain-card-title"><span>📍 新潟・北陸</span><span style="color:#7c3aed;">歪み急変 12cm</span></div>
-                    <div class="strain-card-desc">活断層・ひずみ集中帯</div>
+                <div class="strain-card" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸エリア', '【今の状態】活断層のまわりで、地面の動きやひずみが急激に変化しています。<br>【注意点】内陸で細かな揺れや地殻の歪みが起こりやすいゾーンです。')">
+                    <div class="strain-card-title"><span>📍 新潟・北陸</span><span style="color:#7c3aed;">歪みの変化が急な場所・12cm</span></div>
+                    <div class="strain-card-desc">活断層のひずみが集中する帯</div>
                 </div>
-                <div class="strain-card" onclick="focusArea(39.0, 142.0, 7, '東北沖 (余効変動)', '【ひずみ状況】東へ約45cm/年の巨大余効変動。<br>【判断材料】震災後の長期的な応力緩和と反発挙動が継続している観測重点域。')">
-                    <div class="strain-card-title"><span>📍 東北沖</span><span style="color:#0369a1;">余効 東45cm</span></div>
-                    <div class="strain-card-desc">大規模余効変動・継続中</div>
+                <div class="strain-card" onclick="focusArea(39.0, 142.0, 7, '東北沖エリア', '【今の状態】過去の大地震のあとも、地面が東向き（年間約45cm）に戻ろうとする動きが続いています。<br>【注意点】広範囲でゆっくりと元の形に戻ろうとする現象が継続中です。')">
+                    <div class="strain-card-title"><span>📍 東北沖</span><span style="color:#0369a1;">地震のあとの名残（余効）・45cm</span></div>
+                    <div class="strain-card-desc">大地震後の長期的な地殻の揺り戻し</div>
                 </div>
             </div>
         </div>
@@ -366,9 +377,9 @@
         safeRenderLayers();
 
         var persistentRiskAreas = [
-            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.0, labelLon: 141.5, name: '首都直下', typeText: '南東15cm(圧縮)', badgeClass: 'red', title: '首都直下地震想定 (関東平野)', desc: '水平変動: 南東へ約15cm/年<br>垂直変動: 微小沈降・強い圧縮<br><b>【ひずみ状況】</b>関東平野特有の3層構造による歪み蓄積。' },
-            { lat: 33.5, lon: 134.5, radius: 50000, labelLat: 31.0, labelLon: 132.0, name: '南海トラフ', typeText: '北西25cm(固着)', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '水平変動: 北西へ約25cm/年<br>垂直変動: 沈降傾向<br><b>【ひずみ状況】</b>プレート境界の固着に伴うひずみ・VLF異常監視域。' },
-            { lat: 37.2, lon: 138.8, radius: 32000, labelLat: 39.2, labelLon: 136.2, name: '新潟・北陸', typeText: '西12cm(急変)', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '水平変動: 西へ約12cm/年 (急変)<br>垂直変動: 隆起・横ずれ<br><b>【ひずみ状況】</b>活断層帯における応力の急激な変化。' }
+            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.0, labelLon: 141.5, name: '首都直下', typeText: '力が押し合う状態(15cm)', badgeClass: 'red', title: '首都直下想定 (関東平野)', desc: '水平変動: 南東へ約15cm/年<br><b>【今の状態】</b>強い力が押し合い、ひずみが蓄積しているエリアです。' },
+            { lat: 33.5, lon: 134.5, radius: 50000, labelLat: 31.0, labelLon: 132.0, name: '南海トラフ', typeText: 'プレートが引っかかる状態(25cm)', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '水平変動: 北西へ約25cm/年<br><b>【今の状態】</b>プレート同士がガッチリ噛み合って力が溜まっている場所です。' },
+            { lat: 37.2, lon: 138.8, radius: 32000, labelLat: 39.2, labelLon: 136.2, name: '新潟・北陸', typeText: '歪みが急変する帯(12cm)', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '水平変動: 西へ約12cm/年<br><b>【今の状態】</b>活断層周辺で地殻の動きが急激に変化しているエリアです。' }
         ];
 
         if(persistentRiskGroup) {
@@ -385,7 +396,7 @@
                         icon: L.divIcon({
                             className: '',
                             html: `<div class="risk-badge-row ${a.badgeClass}"><span>📍 ${a.name}</span><span class="badge-sub">${a.typeText}</span></div>`,
-                            iconSize: [160, 28], iconAnchor: [80, 14]
+                            iconSize: [190, 28], iconAnchor: [95, 14]
                         }),
                         interactive: true
                     });
@@ -404,16 +415,25 @@
             markerMap = {};
             let filteredData = [];
 
+            let magAll = document.getElementById('magAll')?.checked ?? true;
+            let magM4 = document.getElementById('magM4')?.checked ?? false;
+            let magM5 = document.getElementById('magM5')?.checked ?? false;
+
+            let conditionText = "すべての地震を表示中";
+            if (magM4) conditionText = "M4.0以上 / 直近3日表示";
+            if (magM5) conditionText = "M5.0以上 / 直近3日表示";
+            if (document.getElementById('data-condition')) {
+                document.getElementById('data-condition').innerText = "📅 条件設定: " + conditionText;
+            }
+
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 4000);
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=30', { signal: controller.signal });
+                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=40', { signal: controller.signal });
                 clearTimeout(timeoutId);
                 if (!res.ok) throw new Error('Network error');
                 let data = await res.json();
                 
-                let magAll = document.getElementById('magAll')?.checked ?? false;
-                let magM5 = document.getElementById('magM5')?.checked ?? false;
                 let nowTime = new Date().getTime();
                 let limitMs = 3 * 24 * 60 * 60 * 1000;
 
@@ -421,9 +441,10 @@
                     if (!item.earthquake) return false;
                     if (item.time && (nowTime - new Date(item.time).getTime() > limitMs)) return false;
                     let mag = parseFloat(item.earthquake.magnitude || "0");
+                    
                     if (!magAll) {
                         if (magM5 && mag < 5.0) return false;
-                        if (!magM5 && mag < 4.0) return false;
+                        if (magM4 && mag < 4.0) return false;
                     }
                     return true;
                 });
@@ -467,15 +488,15 @@
                                 mainMarker.bindPopup(`<b>${index === 0 ? '🔴 最新地震' : '🔴 履歴'}</b><br>M${m} - ${name}<br><span style="font-size:10px; color:#555;">時刻: ${time.replace('T', ' ')}</span>`);
                                 markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
                             } catch(err) {}
-                        }, index * 40);
+                        }, index * 30);
                     })(i, lat, lon, mag, displayName, eqTime);
                 } catch(innerErr) {}
             }
 
             if (filteredData.length === 0) {
                 html = `<div style="padding: 6px; background:#f8fafc; color: #475569; font-size: 10px; text-align: center; border-radius: 4px; border: 1px dashed #cbd5e1; font-weight: bold;">
-                            ✅ 現在、指定条件（M4.0以上・直近3日）に一致する地震速報はありません。<br>
-                            <span style="font-size:9px; color:#64748b; font-weight:normal;">（平常監視中：異変や特異な連鎖は検知されていません）</span>
+                            ✅ 現在、指定条件に一致する地震速報はありません。<br>
+                            <span style="font-size:9px; color:#64748b; font-weight:normal;">（平常監視中：異常や特異な連鎖は検知されていません）</span>
                         </div>`;
             }
 
