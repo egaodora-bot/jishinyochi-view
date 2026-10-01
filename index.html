@@ -142,7 +142,7 @@
             <div class="circle-legend-note">
                 <b>💡 マップの見方</b>
                 • <b>エリア円:</b> 範囲をくっきりした色で表示<br>
-                • <b>矢印バッジ:</b> ピンから引き出した横1行情報
+                • <b>矢印バッジ:</b> ピンから大きく離してすっきり配置
             </div>
             <div class="panel-action-bar">
                 <span style="font-size:10px; color:#64748b;">※行タップで詳細表示</span>
@@ -352,14 +352,14 @@
 
         safeRenderLayers();
 
-        /* 各リスクエリア：くっきりした太線と濃い塗りの円 ＋ 引き出し線 ＋ 横1行バッジ */
+        /* 各リスクエリア：引き出し先の位置（labelLat, labelLon）をさらに外側に広く離して配置 */
         var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.5, radius: 45000, labelLat: 43.5, labelLon: 145.5, name: '北海道東部', prob: '70-80%', strain: '歪み蓄積', badgeClass: 'red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。<br>年間変動: 西〜北西へ約8cm/年<br>垂直移動: 沈降・歪み蓄積' },
-            { lat: 33.5, lon: 134.5, radius: 55000, labelLat: 32.5, labelLon: 132.8, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '海側プレートによる沈降と歪み。<br>年間変動: 北西へ約25cm/年<br>垂直移動: 沈降傾向' },
-            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.8, labelLon: 140.8, name: '首都直下', prob: '約70%', strain: '圧縮沈降', badgeClass: 'red', title: '首都直下地震想定', desc: '強い圧縮・微小沈降シグナル。<br>年間変動: 南東へ約15cm/年<br>垂直移動: 微小沈降' },
-            { lat: 37.2, lon: 138.8, radius: 35000, labelLat: 37.8, labelLon: 140.2, name: '新潟・北陸', prob: '活断層', strain: '年間急変', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '急激な歪みと隆起・横ずれ。<br>年間変動: 歪み集中（年間急変）<br>垂直移動: 隆起・横ずれ' },
-            { lat: 35.8, lon: 136.2, radius: 30000, labelLat: 35.0, labelLon: 134.8, name: '福井・若狭', prob: '活断層', strain: '微小変動', badgeClass: 'purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集する歪みゾーン。<br>年間変動: 歪み・活断層帯<br>垂直移動: 微小変動蓄積' },
-            { lat: 39.5, lon: 143.0, radius: 45000, labelLat: 40.2, labelLon: 144.5, name: '東北沖', prob: '継続中', strain: '余効変動', badgeClass: 'blue', title: '東北地方太平洋沖（余効変動）', desc: '東向きの年間引き延ばし。<br>年間変動: 東へ約45cm/年<br>垂直移動: 沈降→反発継続' }
+            { lat: 42.8, lon: 144.5, radius: 45000, labelLat: 44.2, labelLon: 146.5, name: '北海道東部', prob: '70-80%', strain: '歪み蓄積', badgeClass: 'red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。<br>年間変動: 西〜北西へ約8cm/年<br>垂直移動: 沈降・歪み蓄積' },
+            { lat: 33.5, lon: 134.5, radius: 55000, labelLat: 30.5, labelLon: 132.0, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '海側プレートによる沈降と歪み。<br>年間変動: 北西へ約25cm/年<br>垂直移動: 沈降傾向' },
+            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 33.8, labelLon: 142.2, name: '首都直下', prob: '約70%', strain: '圧縮沈降', badgeClass: 'red', title: '首都直下地震想定', desc: '強い圧縮・微小沈降シグナル。<br>年間変動: 南東へ約15cm/年<br>垂直移動: 微小沈降' },
+            { lat: 37.2, lon: 138.8, radius: 35000, labelLat: 39.5, labelLon: 136.2, name: '新潟・北陸', prob: '活断層', strain: '年間急変', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '急激な歪みと隆起・横ずれ。<br>年間変動: 歪み集中（年間急変）<br>垂直移動: 隆起・横ずれ' },
+            { lat: 35.8, lon: 136.2, radius: 30000, labelLat: 35.2, labelLon: 132.5, name: '福井・若狭', prob: '活断層', strain: '微小変動', badgeClass: 'purple', title: '福井・若狭 歪み集中帯', desc: '内陸活断層が密集する歪みゾーン。<br>年間変動: 歪み・活断層帯<br>垂直移動: 微小変動蓄積' },
+            { lat: 39.5, lon: 143.0, radius: 45000, labelLat: 41.5, labelLon: 146.0, name: '東北沖', prob: '継続中', strain: '余効変動', badgeClass: 'blue', title: '東北地方太平洋沖（余効変動）', desc: '東向きの年間引き延ばし。<br>年間変動: 東へ約45cm/年<br>垂直移動: 沈降→反発継続' }
         ];
 
         if(persistentRiskGroup) {
@@ -368,15 +368,15 @@
                     let pinPoint = [a.lat, a.lon];
                     let labelPoint = [a.labelLat, a.labelLon];
 
-                    // 1. 各エリアを示す【くっきり太線・濃い塗り】の円
+                    // 1. 各エリアを示す円
                     let circleColor = (a.badgeClass === 'red') ? '#dc2626' : (a.badgeClass === 'purple') ? '#7c3aed' : '#0284c7';
                     L.circle(pinPoint, {
                         radius: a.radius,
                         color: circleColor,
-                        weight: 2.5,    // 線を太く
-                        opacity: 0.9,   // 線の不透明度を高める
+                        weight: 2.5,
+                        opacity: 0.9,
                         fillColor: circleColor,
-                        fillOpacity: 0.22, // 塗りつぶしを少し濃くして目立たせる
+                        fillOpacity: 0.22,
                         dashArray: '5, 5'
                     }).addTo(persistentRiskGroup);
 
@@ -385,7 +385,7 @@
                         radius: 6, color: '#ffffff', fillColor: circleColor, fillOpacity: 1, weight: 2.5
                     }).addTo(persistentRiskGroup);
 
-                    // 3. 引き出し線（矢印代わりの点線）
+                    // 3. 引き出し線（中心から離れたラベルへ向かう点線）
                     L.polyline([pinPoint, labelPoint], {
                         color: '#334155', weight: 2.5, opacity: 0.9, dashArray: '3, 3'
                     }).addTo(persistentRiskGroup);
