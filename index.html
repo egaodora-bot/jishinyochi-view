@@ -11,7 +11,7 @@
         html, body {
             margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #090d16;
+            background: #e2e8f0;
             -webkit-tap-highlight-color: transparent;
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
@@ -20,7 +20,7 @@
         .panel-box {
             position: absolute; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 8px 10px; border-radius: 10px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.4); font-size: 11px; 
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3); font-size: 11px; 
             border: 1.5px solid #cbd5e1; transition: all 0.25s ease;
             backdrop-filter: blur(6px);
         }
@@ -235,7 +235,6 @@
             <div style="font-weight: bold; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;">🇯🇵 防災モニタリングを共有</div>
             <div style="font-size: 9.5px; color: #64748b;">みんなの防災意識を高めるために、スマホのホーム画面にアイコンを追加して常駐できます。</div>
             
-            <!-- 日本地図をモチーフにしたわかりやすい専用アイコンイメージ -->
             <div class="app-icon-preview">
                 <span style="font-size: 20px;">🗾</span>
                 <span style="font-size: 8.5px; font-weight: bold; margin-top: 2px; color:#93c5fd;">EARTHQUAKE</span>
@@ -276,13 +275,11 @@
             <div id="update-time" class="update-time">取得中...</div>
             <div class="data-condition" id="data-condition">📅 条件設定: 読み込み中...</div>
             
-            <!-- 表示設定ボタン -->
             <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
                 <span>⚙ マップ表示・スマホ設定（地震速報フィルター・追加手順）</span>
                 <span id="settingsToggleIcon" style="font-size:9.5px; color:#64748b;">▼</span>
             </div>
 
-            <!-- 折りたたまれた設定本体 -->
             <div class="filter-panel" id="filterPanel">
                 <div class="settings-group-title" style="margin-top:0;">■ 地震速報の表示切り替え（優先）</div>
                 <label><input type="radio" name="magFilter" id="magAll" checked onchange="safeFetchEq()"> すべての地震を表示する（小さな地震も含む）</label>
@@ -311,7 +308,6 @@
             <span style="font-size:9px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
-            <!-- 黄色背景のセーフティ・メッセージバナー -->
             <div class="safety-banner">
                 <span style="font-size:12px;">⚠️</span>
                 <div>
@@ -323,7 +319,6 @@
                 ※各地域の<b>「年間変動（事実）」</b>と、それに対する<b>「電磁気学的予測（論文知見）」</b>を紐づけて表示しています。カードをタッチすると地図がフォーカスします。
             </div>
 
-            <!-- 変動状態と予測検証を1つに統合したカードグリッド -->
             <div class="strain-grid">
                 <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【変動スピード】年間約15cm（南東方向へ圧縮）<br><b>【予測検証】</b>岩石圧縮に伴う電磁場変動（ピエゾ効果等）を想定。M5クラスの浅発地震や群発傾向を警戒。')">
                     <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">年間15cm圧縮</span></div>
@@ -367,13 +362,24 @@
             
             L.control.zoom({ position: 'topright' }).addTo(map);
 
+            // 国土地理院タイル
             L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
                 attribution: '&copy; 国土地理院',
                 maxZoom: 18,
                 minZoom: 4
             }).addTo(map);
 
-            setTimeout(function() { if(map) map.invalidateSize(); }, 250);
+            // 確実に地図を表示させるためのサイズ再計算トリガー
+            setTimeout(function() {
+                if(map) {
+                    map.invalidateSize();
+                }
+            }, 100);
+            setTimeout(function() {
+                if(map) {
+                    map.invalidateSize();
+                }
+            }, 500);
         } catch (e) {
             console.error("マップ初期化エラー:", e);
         }
@@ -499,7 +505,7 @@
                     let circleColor = (a.badgeClass === 'red') ? '#dc2626' : '#7c3aed';
 
                     L.circle(pinPoint, { radius: a.radius, color: circleColor, weight: 2.5, opacity: 0.85, fillColor: circleColor, fillOpacity: 0.2, dashArray: '5, 5' }).addTo(persistentRiskGroup);
-                    L.polyline([pinPoint, labelPoint], { color: '#334155`, weight: 2.5, opacity: 0.8, dashArray: '3, 3' }).addTo(persistentRiskGroup);
+                    L.polyline([pinPoint, labelPoint], { color: '#334155', weight: 2.5, opacity: 0.8, dashArray: '3, 3' }).addTo(persistentRiskGroup);
 
                     var marker = L.marker(labelPoint, {
                         icon: L.divIcon({
