@@ -24,7 +24,7 @@
             pointer-events: auto; border: 1px solid #cbd5e1; transition: all 0.25s ease;
         }
         #tableBox { top: 10px; left: 10px; width: 380px; max-width: 55vw; }
-        #infoBox { top: 10px; right: 10px; width: 240px; }
+        #infoBox { top: 10px; right: 10px; width: 250px; }
         #explainBox { bottom: 10px; right: 10px; width: 310px; }
 
         .panel-box .panel-content { display: block; max-height: 35vh; overflow-y: auto; margin-top: 6px; }
@@ -56,8 +56,14 @@
         .update-time { font-size: 11px; color: #334155; margin-bottom: 4px; font-weight: bold; }
         .data-condition { font-size: 10px; color: #64748b; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; font-weight: 500; }
         
-        #earthquake-data { max-height: 100px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
-        .panel-box.expanded #earthquake-data { max-height: 280px; }
+        /* マーカーサイズの凡例ボックス */
+        .eq-size-legend {
+            font-size: 10.5px; background: #fffbeb; border: 1px solid #fcd34d; padding: 5px 7px; border-radius: 5px; margin-bottom: 6px; color: #92400e; font-weight: 500; line-height: 1.35;
+        }
+        .eq-size-legend b { color: #b45309; display: block; margin-bottom: 1px; }
+
+        #earthquake-data { max-height: 90px; overflow-y: auto; scroll-behavior: smooth; padding-right: 2px; }
+        .panel-box.expanded #earthquake-data { max-height: 250px; }
         
         .eq-item { border-bottom: 1px solid #e2e8f0; padding: 6px 3px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #0f172a; font-weight: 500; }
         .eq-item:hover { background: #f1f5f9; }
@@ -133,7 +139,7 @@
                     <th style="width:25%;">垂直変動</th>
                     <th style="width:26%;">電磁波・地殻状況</th>
                 </tr>
-                <tr class="clickable-row" onclick="focusArea(39.0, 142.0, 7, '東北沖 (余効変動)', '水平: 東へ約45cm/年<br>垂直: 沈降→反発継続<br>電磁波状況: 震災後の継続적応力変動に伴う微小電磁波・地磁気ノイズ監視中')">
+                <tr class="clickable-row" onclick="focusArea(39.0, 142.0, 7, '東北沖 (余効変動)', '水平: 東へ約45cm/年<br>垂直: 沈降→反発継続<br>電磁波状況: 震災後の継続的応力変動に伴う微小電磁波・地磁気ノイズ監視中')">
                     <td><b>東北沖</b></td>
                     <td style="color:#0369a1;">東 45cm</td>
                     <td>沈降→反発</td>
@@ -185,12 +191,19 @@
     <!-- 右上：地震速報パネル -->
     <div class="panel-box" id="infoBox">
         <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>🚨 地震速報（点滅表示）</span>
+            <span>🚨 地震速報（同時点滅）</span>
             <span style="font-size:10.5px; color:#555; font-weight:normal;">[± 閉じる]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div id="update-time" class="update-time">取得中...</div>
             <div class="data-condition" id="data-condition">条件: 直近の発生履歴（最大30件）</div>
+            
+            <!-- マーカーの大きさの基準を説明する凡例 -->
+            <div class="eq-size-legend">
+                <b>📌 赤点の大きさの基準:</b>
+                地震の<b>「マグニチュード（規模: M）」</b>に比例しています（Mが大きいほど丸が大きくなります）。
+            </div>
+
             <div class="filter-toggle-btn" onclick="toggleFilterPanel()">⚙️ レイヤー切替</div>
             <div class="filter-panel" id="filterPanel">
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 境界・構造線</label>
@@ -516,7 +529,7 @@
                         setTimeout(function() {
                             try {
                                 if(!eqLayer) return;
-                                // 同時点滅用のパルスマーカーを作成
+                                // マグニチュードに応じたパルスマーカーのサイズ計算
                                 let size = Math.max(12, m * 3.5);
                                 var pulsingIcon = L.divIcon({
                                     className: '',
