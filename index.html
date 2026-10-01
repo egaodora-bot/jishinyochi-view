@@ -141,7 +141,7 @@
             </table>
             <div class="circle-legend-note">
                 <b>💡 マップの見方</b>
-                • <b>エリア円表示:</b> 危険・想定領域を丸で表示<br>
+                • <b>エリア円:</b> 範囲をくっきりした色で表示<br>
                 • <b>矢印バッジ:</b> ピンから引き出した横1行情報
             </div>
             <div class="panel-action-bar">
@@ -319,7 +319,7 @@
                     ];
                     strainZones.forEach(sz => {
                         L.circle(sz.center, {
-                            radius: sz.radius, color: sz.color, weight: 2, opacity: 0.7, fillColor: sz.color, fillOpacity: 0.15, dashArray: '4, 4'
+                            radius: sz.radius, color: sz.color, weight: 2.5, opacity: 0.85, fillColor: sz.color, fillOpacity: 0.22, dashArray: '4, 4'
                         }).addTo(plateLayersGroup);
                     });
                 }
@@ -352,7 +352,7 @@
 
         safeRenderLayers();
 
-        /* 各リスクエリア：薄い丸（同心円）＋ピン位置から矢印引き出し線＋横1行バッジ */
+        /* 各リスクエリア：くっきりした太線と濃い塗りの円 ＋ 引き出し線 ＋ 横1行バッジ */
         var persistentRiskAreas = [
             { lat: 42.8, lon: 144.5, radius: 45000, labelLat: 43.5, labelLon: 145.5, name: '北海道東部', prob: '70-80%', strain: '歪み蓄積', badgeClass: 'red', title: '千島海溝沿い巨大地震想定', desc: '十勝沖・根室沖等。<br>年間変動: 西〜北西へ約8cm/年<br>垂直移動: 沈降・歪み蓄積' },
             { lat: 33.5, lon: 134.5, radius: 55000, labelLat: 32.5, labelLon: 132.8, name: '南海トラフ', prob: '70-80%', strain: '沈降・歪み', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '海側プレートによる沈降と歪み。<br>年間変動: 北西へ約25cm/年<br>垂直移動: 沈降傾向' },
@@ -368,26 +368,26 @@
                     let pinPoint = [a.lat, a.lon];
                     let labelPoint = [a.labelLat, a.labelLon];
 
-                    // 1. 各エリアを示す薄い丸（同心円）
+                    // 1. 各エリアを示す【くっきり太線・濃い塗り】の円
                     let circleColor = (a.badgeClass === 'red') ? '#dc2626' : (a.badgeClass === 'purple') ? '#7c3aed' : '#0284c7';
                     L.circle(pinPoint, {
                         radius: a.radius,
                         color: circleColor,
-                        weight: 1.5,
-                        opacity: 0.6,
+                        weight: 2.5,    // 線を太く
+                        opacity: 0.9,   // 線の不透明度を高める
                         fillColor: circleColor,
-                        fillOpacity: 0.1,
-                        dashArray: '4, 4'
+                        fillOpacity: 0.22, // 塗りつぶしを少し濃くして目立たせる
+                        dashArray: '5, 5'
                     }).addTo(persistentRiskGroup);
 
                     // 2. 観測点（中心ピン）
                     L.circleMarker(pinPoint, {
-                        radius: 5, color: '#ffffff', fillColor: circleColor, fillOpacity: 1, weight: 2
+                        radius: 6, color: '#ffffff', fillColor: circleColor, fillOpacity: 1, weight: 2.5
                     }).addTo(persistentRiskGroup);
 
                     // 3. 引き出し線（矢印代わりの点線）
                     L.polyline([pinPoint, labelPoint], {
-                        color: '#475569', weight: 2, opacity: 0.8, dashArray: '3, 3'
+                        color: '#334155', weight: 2.5, opacity: 0.9, dashArray: '3, 3'
                     }).addTo(persistentRiskGroup);
 
                     // 4. 横1行のすっきりしたバッジ
