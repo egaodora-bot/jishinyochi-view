@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>首都圏・茨城南部 地殻変動モニタリング</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -27,14 +27,13 @@
             flex-direction: column;
             height: 100vh;
             height: 100dvh;
-            overflow: hidden;
         }
 
         header {
             background-color: var(--primary-color);
             color: white;
-            padding: 10px 14px;
-            font-size: 1rem;
+            padding: 12px 16px;
+            font-size: 1.1rem;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
@@ -47,12 +46,11 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             cursor: pointer;
             font-weight: bold;
-            flex-shrink: 0;
         }
 
         header button:hover {
@@ -71,8 +69,8 @@
             border-top-left-radius: var(--border-radius);
             border-top-right-radius: var(--border-radius);
             box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-            padding: 12px 14px;
-            max-height: 42vh;
+            padding: 14px 16px;
+            max-height: 40vh;
             overflow-y: auto;
             z-index: 1000;
         }
@@ -81,11 +79,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .panel-title {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: bold;
             color: var(--primary-color);
         }
@@ -94,37 +92,36 @@
             background-color: #fff5f5;
             color: var(--warn-color);
             border: 1px solid #feb2b2;
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
         }
 
         .monitor-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 6px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .monitor-card {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            padding: 6px 8px;
+            padding: 8px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
         }
 
         .monitor-card .label {
             color: #718096;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
 
         .monitor-card .value {
             font-weight: bold;
             color: var(--primary-color);
-            font-size: 0.8rem;
-            margin-top: 2px;
+            font-size: 0.9rem;
         }
 
         .summary-box {
@@ -132,9 +129,9 @@
             border-left: 4px solid var(--accent-color);
             padding: 8px 10px;
             border-radius: 4px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             line-height: 1.4;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .summary-box p {
@@ -147,7 +144,7 @@
             border: none;
             padding: 8px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             cursor: pointer;
             width: 100%;
             font-weight: bold;
@@ -170,17 +167,17 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            padding: 12px;
+            padding: 16px;
             box-sizing: border-box;
         }
 
         .modal-content {
             background: white;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             max-height: 85vh;
             border-radius: var(--border-radius);
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             box-sizing: border-box;
@@ -190,14 +187,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
         }
 
         .modal-header h3 {
             margin: 0;
-            font-size: 1rem;
+            font-size: 1.05rem;
             color: var(--primary-color);
         }
 
@@ -210,7 +207,7 @@
         }
 
         .modal-body p {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             line-height: 1.5;
             margin: 0 0 10px 0;
         }
@@ -220,28 +217,28 @@
             background: #1a202c;
             color: white;
             border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
             text-align: center;
         }
 
         .plate-map-visual h4 {
-            margin: 0 0 6px 0;
-            font-size: 0.8rem;
+            margin: 0 0 8px 0;
+            font-size: 0.85rem;
             color: #63b3ed;
         }
 
         .plate-grid-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            font-size: 0.75rem;
+            gap: 8px;
+            font-size: 0.8rem;
         }
 
         .plate-box {
             background: #2d3748;
             border: 1px solid #4a5568;
-            padding: 6px;
+            padding: 8px;
             border-radius: 6px;
             text-align: left;
         }
@@ -271,8 +268,8 @@
 <body>
 
     <header>
-        <span style="font-size: 0.95rem;">首都圏・茨城南部 変動モニター</span>
-        <button onclick="openModal(true)">🗺️ プレート構造</button>
+        <span>首都圏・茨城南部 地殻変動モニター</span>
+        <button onclick="openModal(true)">🗺️ 4つのプレート構造</button>
     </header>
 
     <!-- 地図エリア（モニタリング表示） -->
@@ -281,26 +278,26 @@
     <!-- 下部パネル：リアルタイムモニタリング ＆ バランス解説 -->
     <div class="bottom-panel">
         <div class="panel-header">
-            <span class="panel-title">📊 首都圏・茨城南部 モニタリング</span>
-            <span class="alert-badge">⚠️ 警戒継続</span>
+            <span class="panel-title">📊 首都圏・茨城南部 変動モニタリング</span>
+            <span class="alert-badge">⚠️ 警戒継続 (歪み蓄積中)</span>
         </div>
 
         <div class="monitor-grid">
             <div class="monitor-card">
                 <span class="label">茨城県南部 活性度</span>
-                <div class="value">やや活発 (M3〜4)</div>
+                <div class="value">やや活発 (M3〜4クラス頻発)</div>
             </div>
             <div class="monitor-card">
-                <span class="label">首都直下 応力状態</span>
-                <div class="value">東西から強い圧縮</div>
+                <span class="label">首都直下エリア 応力状態</span>
+                <div class="value">東西方向から強い圧縮</div>
             </div>
         </div>
 
         <div class="summary-box">
-            <p><strong>【関係性の要約】</strong> 首都直下と茨城南部は地下の巨大プレート歪みで繋がっています。力のバランス変化により、一方が他方の連動サインとなるため一体で警戒が必要です。</p>
+            <p><strong>【関係性の要約】</strong> 首都直下と茨城南部は同じ地下の巨大プレート歪みで繋がっています。力のバランス変化により、一方が他方の引き金や連動のサインとなるため一体で警戒が必要です。</p>
         </div>
 
-        <button class="detail-btn" onclick="openModal(true)">4つのプレート配置と仕組みを詳しく見る</button>
+        <button class="detail-btn" onclick="openModal(true)">4つのプレート配置とメカニズムを詳しく見る</button>
     </div>
 
     <!-- プレート構造・解説モーダル -->
@@ -337,7 +334,7 @@
                 </div>
 
                 <ul class="plate-list">
-                    <li><strong>① 太平洋プレート：</strong> 関東の地下深くでフィリピン海プレートの下にも潜り込み、茨城県南部などの深発地震を引き起こす主要因となります。</li>
+                    <li><strong>① 太平洋プレート：</strong> 関東の地下深くでフィリピン海プレートの下にも潜り込み、茨城県南部などの深発地震・スラブ内地震を引き起こす主要因となります。</li>
                     <li><strong>② フィリピン海プレート：</strong> 首都直下地震（南関東のM7クラス）の発生源となるプレート境界や内部の歪みを蓄積させます。</li>
                     <li><strong>③④ 陸のプレート（北アメリカ・ユーラシア）：</strong> 上から蓋をするように押し返しており、境界や内部の歪みが限界に達すると大地震が発生します。</li>
                 </ul>
@@ -352,8 +349,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         // 地図の初期化（中心：関東・首都圏）
-        const map = L.map('map', { zoomControl: false }).setView([35.8, 139.8], 9);
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        const map = L.map('map').setView([35.8, 139.8], 9);
 
         // 地理院タイル
         L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
