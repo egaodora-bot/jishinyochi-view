@@ -3,421 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本列島・プレート境界と地殻変動モニター</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <title>地殻変動・電磁波モニタリング防災システム</title>
     <style>
-        :root {
-            --primary-color: #1a365d;
-            --accent-color: #2b6cb0;
-            --warn-color: #c53030;
-            --bg-color: #f7fafc;
-            --card-bg: #ffffff;
-            --text-color: #2d3748;
-            --border-radius: 12px;
-        }
-
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
-
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 16px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        header button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        header button:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        #map {
-            flex: 1;
-            width: 100%;
-            z-index: 1;
-            position: relative;
-        }
-
-        /* 地図上の常時表示ミニ解説枠（全体表示用） */
-        .plate-floating-box {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(26, 32, 44, 0.88);
-            color: white;
-            padding: 10px 12px;
-            border-radius: 8px;
-            z-index: 999;
-            max-width: 260px;
-            font-size: 0.75rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border: 1px solid #4a5568;
-            pointer-events: auto;
-        }
-
-        .plate-floating-box h4 {
-            margin: 0 0 6px 0;
-            font-size: 0.8rem;
-            color: #63b3ed;
-        }
-
-        .plate-floating-box ul {
-            margin: 0;
-            padding-left: 14px;
-            line-height: 1.4;
-        }
-
-        .plate-floating-box li {
-            margin-bottom: 3px;
-        }
-
-        /* 下部パネル */
-        .bottom-panel {
-            background: var(--card-bg);
-            border-top-left-radius: var(--border-radius);
-            border-top-right-radius: var(--border-radius);
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
-            padding: 14px 16px;
-            max-height: 38vh;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .panel-title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .alert-badge {
-            background-color: #fff5f5;
-            color: var(--warn-color);
-            border: 1px solid #feb2b2;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .summary-box {
-            background: #ebf8ff;
-            border-left: 4px solid var(--accent-color);
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-
-        .summary-box p {
-            margin: 0;
-        }
-
-        .detail-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .detail-btn:hover {
-            background-color: #2c5282;
-        }
-
-        /* カスタムポップアップのスタイル調整 */
-        .leaflet-popup-content-wrapper {
-            border-radius: 8px;
-            padding: 4px;
-        }
-        .leaflet-popup-content {
-            font-size: 0.85rem;
-            line-height: 1.4;
-            color: var(--text-color);
-        }
-        .leaflet-popup-content h3 {
-            margin: 0 0 6px 0;
-            color: var(--primary-color);
-            font-size: 0.95rem;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 4px;
-        }
-
-        /* モーダルウィンドウ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+        }
+        #app {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+        /* 左側：インデントとカメラ部分を考慮したエリア */
+        .sidebar {
+            width: 380px;
+            background: rgba(15, 23, 42, 0.9);
+            border-right: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            /* スマホのパンチホール・ノッチ等を考慮したパディング例 */
+            padding-left: env(safe-area-inset-left, 0px);
+        }
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .header h1 {
+            font-size: 1.1rem;
+            margin: 0 0 5px 0;
+            color: #38bdf8;
+            letter-spacing: 0.05em;
+        }
+        .header p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        /* 右側：固定エリア（マップや詳細ビジュアル） */
+        .main-display {
+            flex: 1;
+            position: relative;
+            background: #020617;
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
-            padding: 16px;
-            box-sizing: border-box;
         }
-
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 520px;
-            max-height: 85vh;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            box-sizing: border-box;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 8px;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            font-size: 1.05rem;
-            color: var(--primary-color);
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #718096;
-        }
-
-        .modal-body p {
-            font-size: 0.85rem;
-            line-height: 1.5;
-            margin: 0 0 10px 0;
-        }
-
-        .plate-map-visual {
-            background: #1a202c;
-            color: white;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
+        .placeholder-box {
             text-align: center;
+            color: #64748b;
         }
-
-        .plate-map-visual h4 {
-            margin: 0 0 8px 0;
-            font-size: 0.85rem;
-            color: #63b3ed;
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-
-        .plate-grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 0.8rem;
+        .card h3 {
+            margin-top: 0;
+            font-size: 0.95rem;
+            color: #f8fafc;
         }
-
-        .plate-box {
-            background: #2d3748;
-            border: 1px solid #4a5568;
-            padding: 8px;
-            border-radius: 6px;
-            text-align: left;
-        }
-
-        .plate-box strong {
-            color: #90cdf4;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .plate-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .plate-list li {
-            background: #f7fafc;
-            margin-bottom: 6px;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            border: 1px solid #e2e8f0;
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #065f46;
+            color: #34d399;
         }
     </style>
 </head>
 <body>
-
-    <header>
-        <span>日本列島・プレート境界と地殻変動モニター</span>
-        <button onclick="openModal(true)">🗺️ 4つのプレート構造</button>
-    </header>
-
-    <!-- 地図エリア（日本全体表示） -->
-    <div id="map">
-        <div class="plate-floating-box">
-            <h4>🗺️ 日本周辺の4つのプレート</h4>
-            <ul>
-                <li><strong>東/北東：</strong>太平洋プレート</li>
-                <li><strong>南/南東：</strong>フィリピン海プレート</li>
-                <li><strong>陸側：</strong>北アメリカ・ユーラシア</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- 下部パネル -->
-    <div class="bottom-panel">
-        <div class="panel-header">
-            <span class="panel-title">📊 全国地殻変動・監視概要</span>
-            <span class="alert-badge">⚠️ 関東・東北で継続警戒</span>
-        </div>
-
-        <div class="summary-box">
-            <p><strong>【使い方】</strong> 地図上で<strong>「茨城県南部」</strong>や<strong>「首都直下」</strong>などのピンをクリックすると、それぞれのエリアにおけるプレートの沈み込み構造や地震メカニズムの詳細が表示されます。</p>
-        </div>
-
-        <button class="detail-btn" onclick="openModal(true)">日本全体のプレート配置とメカニズムを詳しく見る</button>
-    </div>
-
-    <!-- プレート構造・解説モーダル -->
-    <div class="modal-overlay" id="infoModal" onclick="closeModalOutside(event)">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🗺️ 日本の4つのプレートと地震の仕組み</h3>
-                <button class="close-modal" onclick="openModal(false)">✕</button>
+    <div id="app">
+        <!-- 左側コントロール・情報パネル -->
+        <div class="sidebar">
+            <div class="header">
+                <h1>地殻変動・電磁波モニタリング</h1>
+                <p>Realtime Crustal & EM System</p>
             </div>
-            <div class="modal-body">
-                <p>日本列島が世界でも有数の地震大国である理由は、足元で<strong>4つのプレートが押し合っているため</strong>です。</p>
-                
-                <div class="plate-map-visual">
-                    <h4>【日本列島周辺のプレート配置】</h4>
-                    <div class="plate-grid-layout">
-                        <div class="plate-box">
-                            <strong>東：太平洋プレート</strong>
-                            日本海溝から関東・東北の地下深くへ西向きに沈み込む
-                        </div>
-                        <div class="plate-box">
-                            <strong>南：フィリピン海プレート</strong>
-                            相模トラフ・南海トラフから北西向きに強い圧縮力をかける
-                        </div>
-                        <div class="plate-box">
-                            <strong>北：北アメリカプレート</strong>
-                            東日本を支える陸のプレート
-                        </div>
-                        <div class="plate-box">
-                            <strong>西：ユーラシアプレート</strong>
-                            西日本を支える陸のプレート
-                        </div>
-                    </div>
+            <div class="content-area">
+                <div class="card">
+                    <h3>システムステータス</h3>
+                    <span class="status-badge">正常稼働中</span>
+                    <p style="font-size: 0.85rem; margin-top: 10px; color: #cbd5e1;">
+                        P2P地震情報および各観測拠点のデータをリアルタイムで解析・同期しています。
+                    </p>
                 </div>
+                <div class="card">
+                    <h3>直近の観測トピックス</h3>
+                    <p style="font-size: 0.85rem; color: #94a3b8;">
+                        現在、特異変動の監視を継続中です。詳細なデータは右側のビューに反映されます。
+                    </p>
+                </div>
+            </div>
+        </div>
 
-                <ul class="plate-list">
-                    <li><strong>① 太平洋プレート：</strong> 関東の地下深くでフィリピン海プレートの下にも潜り込み、茨城県南部などの深発地震・スラブ内地震を引き起こす主要因となります。</li>
-                    <li><strong>② フィリピン海プレート：</strong> 首都直下地震（南関東のM7クラス）の発生源となる境界歪みを蓄積させます。</li>
-                </ul>
+        <!-- 右側メインディスプレイ（固定ビュー） -->
+        <div class="main-display">
+            <div class="placeholder-box">
+                <h2>ビジュアル・マップレンダリングエリア</h2>
+                <p>ここにリアルタイムの変動マップやグラフが表示されます。</p>
             </div>
         </div>
     </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        // 【変更点】初期表示を日本列島全体が収まる中心・ズームレベル（ズーム5）に設定
-        const map = L.map('map').setView([38.0, 137.0], 5);
-
-        // 地理院タイル
-        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
-        }).addTo(map);
-
-        // 1. 茨城県南部地震モニタリングマーカー（クリックで詳細表示）
-        const ibarakiPopupContent = `
-            <div>
-                <h3>📍 茨城県南部地震エリア</h3>
-                <p><strong>特徴：</strong> 太平洋プレートとフィリピン海プレートが重なり合って沈み込んでいる「地下深く（スラブ内）」で発生しやすいエリアです。</p>
-                <p><strong>傾向：</strong> M3〜M4クラスの地震が頻発しやすく、地下深くで発生するためマグニチュードの割に揺れが広範囲に伝わる特徴があります。</p>
-            </div>
-        `;
-        L.circleMarker([36.1, 140.1], {
-            radius: 9,
-            color: '#c53030',
-            fillColor: '#fc8181',
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(ibarakiPopupContent);
-
-        // 2. 首都直下想定エリアマーカー（クリックで詳細表示）
-        const tokyoPopupContent = `
-            <div>
-                <h3>📍 首都直下地震 想定・監視エリア</h3>
-                <p><strong>特徴：</strong> 陸のプレート（北アメリカプレート等）の下にフィリピン海プレートが入り込む境界付近です。</p>
-                <p><strong>傾向：</strong> プレートの歪みが長期間にわたり蓄積されやすい場所であり、南関東地域でM7クラスの地震発生が懸念されている重点監視エリアです。</p>
-            </div>
-        `;
-        L.circleMarker([35.6895, 139.6917], {
-            radius: 10,
-            color: '#2b6cb0',
-            fillColor: '#63b3ed',
-            fillOpacity: 0.8
-        }).addTo(map).bindPopup(tokyoPopupContent);
-
-        // モーダルの開閉制御
-        function openModal(show = true) {
-            const modal = document.getElementById('infoModal');
-            modal.style.display = show ? 'flex' : 'none';
-        }
-
-        function closeModalOutside(event) {
-            const modal = document.getElementById('infoModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>
