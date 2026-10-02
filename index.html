@@ -59,47 +59,53 @@
         #map {
             width: 100%;
             height: calc(100vh - 50px);
+            z-index: 1;
         }
-        /* 情報パネル */
+        /* 右上の情報パネル（すっきりと整理） */
         .info-panel {
             position: absolute;
             top: 65px;
             right: 15px;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.96);
-            padding: 15px;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 15px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             z-index: 1000;
             font-size: 13px;
         }
         .info-panel h3 {
-            margin-top: 0;
+            margin: 0 0 8px 0;
             font-size: 14px;
             color: #1e293b;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 5px;
+            padding-bottom: 4px;
+        }
+        .info-panel p {
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+            color: #475569;
         }
         /* セーフティ注意喚起（赤文字） */
         .safety-notice {
             color: red;
             font-weight: bold;
-            font-size: 12px;
-            margin-top: 10px;
-            line-height: 1.4;
+            font-size: 11px;
+            margin-top: 8px;
+            line-height: 1.3;
             border-top: 1px dashed #cbd5e1;
-            padding-top: 8px;
+            padding-top: 6px;
         }
         /* クレジット表記 */
         .footer-credit {
-            margin-top: 12px;
+            margin-top: 8px;
             font-size: 11px;
             color: #64748b;
             text-align: right;
             border-top: 1px solid #e2e8f0;
-            padding-top: 5px;
+            padding-top: 4px;
         }
-        /* 初回ウェルカム・ガイド用モーダル */
+        /* 初回ウェルカム・ガイド用モーダル（画面中央に綺麗に表示され、閉じれば消える） */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -110,12 +116,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 3000;
         }
         .modal-box {
             background: #fff;
             width: 90%;
-            max-width: 450px;
+            max-width: 420px;
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
@@ -136,6 +142,7 @@
             color: #475569;
             padding-left: 20px;
             line-height: 1.5;
+            margin-bottom: 20px;
         }
         .modal-close-btn {
             display: block;
@@ -148,7 +155,6 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
             text-align: center;
         }
         .modal-close-btn:hover {
@@ -174,14 +180,14 @@
 </head>
 <body>
 
-    <!-- 初回ウェルカムガイド（モーダル） -->
+    <!-- 初回ウェルカムガイド（モーダル：ボタンを押せば完全に消えて地図が広くなります） -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>地殻変動モニタリングへようこそ</h2>
-            <p>このシステムは、全国各地の地震や地殻変動の状況をわかりやすく確認するためのものです。はじめてご利用いただく方は、以下の手順をご確認ください。</p>
+            <p>このシステムは、全国各地の地震や地殻変動の状況をわかりやすく確認するためのものです。</p>
             <ul>
-                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」からお好みのエリアを選択してください。地図と連動してその地域の情報がすぐに表示されます。</li>
-                <li><strong>詳細を見る:</strong> マップ上に現れる赤丸（震源）をクリックすると、発生時刻やメカニズムの解説を確認できます。</li>
+                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」からお好みのエリアを選択すると、地図と解説が連動します。</li>
+                <li><strong>詳細を見る:</strong> マップ上の赤丸（震源）をクリックすると、発生メカニズムの解説を確認できます。</li>
             </ul>
             <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
         </div>
@@ -194,7 +200,7 @@
             <div>
                 <label for="targetArea" style="font-size: 11px; color: #94a3b8;">地域:</label>
                 <select id="targetArea" class="area-selector">
-                    <option value="kanto">関東（埼玉・東京・茨城・千葉等）</option>
+                    <option value="kanto">関東（埼玉・東京等）</option>
                     <option value="hokkaido">北海道</option>
                     <option value="tohoku">東北</option>
                     <option value="chubu">中部</option>
@@ -212,13 +218,13 @@
     <!-- メインマップ -->
     <div id="map"></div>
 
-    <!-- 連動型情報パネル -->
+    <!-- すっきりと整理された右上の情報パネル -->
     <div class="info-panel">
         <h3 id="panelTitle">関東エリアの状況</h3>
-        <p id="panelDescription">埼玉・東京・茨城・千葉などの首都圏の観測状況です。身近な地域で地震や地殻変動が起きた際の傾向を確認できます。</p>
+        <p id="panelDescription">首都圏の観測状況です。右上のメニューから地域を変更できます。</p>
         
         <div class="safety-notice">
-            ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを大切にしましょう。
+            ※変動解説に基づくセーフティ対策を心がけ、日頃からの備えを確認しましょう。
         </div>
 
         <div class="footer-credit">
@@ -266,77 +272,77 @@
             opacity: 0.6
         }).addTo(map).bindPopup("主要境界構造線");
 
-        // マーカーを管理するレイヤーグループ
+        // マーカー管理用レイヤー
         const markerLayer = L.layerGroup().addTo(map);
 
-        // 地域ごとのデータ設定（中心位置、ズーム、説明、およびその地域のサンプル震源）
+        // 地域データ定義
         const areaData = {
             kanto: {
                 name: "関東エリアの状況",
-                desc: "埼玉・東京・茨城・千葉などの首都圏の観測状況です。身近な地域で地震や地殻変動が起きた際の影響や備えを確認できます。",
+                desc: "埼玉・東京・茨城・千葉などの首都圏の観測状況です。",
                 center: [35.8, 139.5],
                 zoom: 8,
                 quakes: [
-                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震（サンプル）", mechanism: "プレート境界付近のひずみ解放に伴うもの。慎重な日常の備えが推奨されます。" }
+                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震", mechanism: "プレート境界付近のひずみ解放に伴うもの。" }
                 ]
             },
             hokkaido: {
                 name: "北海道エリアの状況",
-                desc: "千島海溝沿いや根室沖など、今後30年以内の発生確率が高いとされる海溝型地震の警戒エリアです。",
+                desc: "千島海溝沿いや根室沖など海溝型地震の警戒エリアです。",
                 center: [42.8, 143.5],
                 zoom: 7,
                 quakes: [
-                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動（サンプル）", mechanism: "太平洋プレートと陸側プレートの境界における沈み込みに伴う地殻変動。" }
+                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動", mechanism: "太平洋プレートの沈み込みに伴う地殻変動。" }
                 ]
             },
             tohoku: {
                 name: "東北エリアの状況",
-                desc: "日本海溝周辺における余震活動や地殻変動のモニタリングを行っています。過去の教訓を活かした防災意識が求められる地域です。",
+                desc: "日本海溝周辺における余震や地殻変動のモニタリングです。",
                 center: [39.0, 141.0],
                 zoom: 7,
                 quakes: [
-                    { lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震（サンプル）", mechanism: "東日本大震災以降の余震および周辺プレートの継続的なひずみ調整活動。" }
+                    { lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震", mechanism: "周辺プレートの継続的なひずみ調整活動。" }
                 ]
             },
             chubu: {
                 name: "中部エリアの状況",
-                desc: "フォッサマグナや糸魚川静岡構造線など、複雑な地殻構造を持つエリアの変動状況をモニタリングします。",
+                desc: "フォッサマグナ周辺の複雑な地殻構造の変動状況です。",
                 center: [36.5, 137.0],
                 zoom: 7,
                 quakes: [
-                    { lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震（サンプル）", mechanism: "活断層の活動や地殻内の局所的なひずみの蓄積によるもの。" }
+                    { lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震", mechanism: "活断層の活動や局所的なひずみの蓄積。" }
                 ]
             },
             kinki: {
                 name: "近畿（関西）エリアの状況",
-                desc: "活断層が多く存在する近畿圏における地震活動や地殻変動の傾向を確認できます。",
+                desc: "活断層が多く存在する近畿圏の活動傾向を確認できます。",
                 center: [34.7, 135.5],
                 zoom: 8,
                 quakes: [
-                    { lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震（サンプル）", mechanism: "上町断層帯などの周辺活断層帯における微小な地殻変動活動。" }
+                    { lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震", mechanism: "周辺活断層帯における微小な地殻変動。" }
                 ]
             },
             chugoku_shikoku: {
                 name: "中国・四国エリアの状況",
-                desc: "南海トラフ地震の想定震源域および周辺のひずみ・地殻変動データを注視するエリアです。",
+                desc: "南海トラフ想定震源域周辺のひずみ・変動データです。",
                 center: [34.0, 133.5],
                 zoom: 7,
                 quakes: [
-                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震（サンプル）", mechanism: "フィリピン海プレートの沈み込みに伴う深部低周波 tremors やひずみ変化。" }
+                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", mechanism: "フィリピン海プレートの沈み込みに伴う変動。" }
                 ]
             },
             kyushu_okinawa: {
                 name: "九州・沖縄エリアの状況",
-                desc: "火山活動やプレート沈み込みに伴う地殻変動、周辺海域で発生する地震の情報を確認します。",
+                desc: "火山活動やプレート沈み込みに伴う地殻変動の状況です。",
                 center: [32.5, 130.8],
                 zoom: 7,
                 quakes: [
-                    { lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震（サンプル）", mechanism: "火山フロント周辺およびプレート境界の活動に関連する変動。" }
+                    { lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震", mechanism: "プレート境界および火山フロント周辺の活動。" }
                 ]
             },
             all: {
                 name: "全国のモニタリング状況",
-                desc: "日本全国の広域な地殻変動および地震発生状況を俯瞰して確認できます。",
+                desc: "日本全国の広域な地殻変動および地震発生状況です。",
                 center: [36.2, 138.2],
                 zoom: 6,
                 quakes: [
@@ -347,19 +353,15 @@
             }
         };
 
-        // 指定した地域のデータをマップに反映させる関数
+        // 地域切り替え処理
         function updateArea(key) {
             const selected = areaData[key];
             if (!selected) return;
 
-            // 地図の移動
             map.setView(selected.center, selected.zoom);
-
-            // パネルの文章更新
             document.getElementById('panelTitle').textContent = selected.name;
             document.getElementById('panelDescription').textContent = selected.desc;
 
-            // 既存のマーカーをクリアして新しい地域のマーカーを描画
             markerLayer.clearLayers();
             selected.quakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
@@ -381,10 +383,10 @@
             });
         }
 
-        // 初期ロード時（関東）を実行
+        // 初期化（関東）
         updateArea('kanto');
 
-        // セレクトボックス変更時のイベント
+        // セレクトボックス変更連動
         document.getElementById('targetArea').addEventListener('change', (e) => {
             updateArea(e.target.value);
         });
