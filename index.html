@@ -363,7 +363,7 @@
                 <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
                 <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードを上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※マップ上の赤やオレンジの丸をクリックすると、地震の規模（M）や詳細を確認できます。</span></li>
             </ul>
-            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong>「事前に予測し備える」</strong>ことができます。</p>
+            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
             <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
             <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
 
@@ -427,8 +427,8 @@
                 <div style="margin-top: 8px;">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <!-- ご要望に合わせ、ラベルを「過去一週間の発生件数」にし、右側に「地図表示の赤・橙マーカー件数」を連動表示 -->
-                    <div class="risk-item"><span>過去一週間の発生件数:</span> <span id="quakeCount" class="risk-level-low">0 件 (赤・橙マーカー)</span></div>
+                    <!-- ご要望通り、ラベル自体を「赤色や橙色のマーカー件数」に変更 -->
+                    <div class="risk-item"><span>赤色や橙色のマーカー件数:</span> <span id="quakeCount" class="risk-level-low">0 件</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
@@ -633,9 +633,9 @@
                 return true;
             });
 
-            // マップ上に描画される赤（M5未満: #ef4444）およびオレンジ（M5以上: #f59e0b）のマーカー件数を正確にカウントして連動表示
+            // マップ上に描画される赤・橙マーカーの件数を正確に取得して反映
             const markerCount = filteredQuakes.length;
-            document.getElementById('quakeCount').textContent = `${markerCount} 件 (赤・橙マーカー)`;
+            document.getElementById('quakeCount').textContent = `${markerCount} 件`;
 
             filteredQuakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
