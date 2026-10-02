@@ -427,7 +427,8 @@
                 <div style="margin-top: 8px;">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>過去一週間の発生件数:</span> <span id="quakeCount" class="risk-level-low">読込中...</span></div>
+                    <!-- ご要望に合わせ、ラベルを「過去一週間の発生件数」にし、右側に「地図表示の赤・橙マーカー件数」を連動表示 -->
+                    <div class="risk-item"><span>過去一週間の発生件数:</span> <span id="quakeCount" class="risk-level-low">0 件 (赤・橙マーカー)</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
@@ -548,7 +549,7 @@
             } catch (error) {
                 console.error("地震データの取得に失敗しました:", error);
                 document.getElementById('apiStatus').textContent = 'APIフォールバックモード';
-                document.getElementById('quakeCount').textContent = '接続再試行中';
+                document.getElementById('quakeCount').textContent = '0 件 (接続再試行中)';
             }
         }
 
@@ -632,8 +633,9 @@
                 return true;
             });
 
-            // 取得件数を「過去一週間の発生件数（または直近データ件数）」として表示
-            document.getElementById('quakeCount').textContent = `${filteredQuakes.length} 件 (赤・橙マーカー)`;
+            // マップ上に描画される赤（M5未満: #ef4444）およびオレンジ（M5以上: #f59e0b）のマーカー件数を正確にカウントして連動表示
+            const markerCount = filteredQuakes.length;
+            document.getElementById('quakeCount').textContent = `${markerCount} 件 (赤・橙マーカー)`;
 
             filteredQuakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
