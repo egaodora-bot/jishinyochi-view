@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地殻変動・電磁波モニタリングシステム（リアルタイム全件取得版）</title>
+    <title>地殻変動・電磁波モニタリングシステム</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -358,10 +358,10 @@
             <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
 
             <h3>3．システム構成と、命を守る目的のために。。。</h3>
-            <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に全件取得し、漏れなくマッピングしています。</p>
+            <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に取得し、マッピングしています。</p>
             <ul>
                 <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
-                <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードで上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※発生した赤やオレンジの丸をクリックすると、マグニチュードの大きさを知ることが出来る。</span></li>
+                <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードを上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※マップ上の赤やオレンジの丸をクリックすると、地震の規模（M）や詳細を確認できます。</span></li>
             </ul>
             <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong>「事前に予測し備える」</strong>ことができます。</p>
             <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
@@ -427,7 +427,7 @@
                 <div style="margin-top: 8px;">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>表示中地震件数:</span> <span id="quakeCount" class="risk-level-low">読込中...</span></div>
+                    <div class="risk-item"><span>過去一週間の発生件数:</span> <span id="quakeCount" class="risk-level-low">読込中...</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
@@ -510,7 +510,7 @@
             kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "日向灘・南西諸島周辺のリアルタイム状況。", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
         };
 
-        // リアルタイム地震情報フェッチ＆重複データの排除
+        // リアルタイム地震情報フェッチ
         async function fetchRealtimeEarthquakes() {
             try {
                 document.getElementById('apiStatus').textContent = 'データ同期中...';
@@ -519,13 +519,11 @@
                 
                 const data = await response.json();
                 
-                // 一時的なマップを使って、同じ地震（同一の震源地名・緯度経度・発生時刻付近）の重複を排除
                 const uniqueMap = new Map();
                 data.forEach(item => {
                     const hypo = item.earthquake.hypocenter;
                     if (hypo.latitude === -1 || hypo.longitude === -1 || hypo.latitude === 0 || hypo.longitude === 0) return;
                     
-                    // 重複キー（震源地名＋マグニチュード＋発生時刻の分単位などでユニーク化）
                     const key = `${hypo.name}_${hypo.magnitude}_${item.time.substring(0, 16)}`;
                     
                     if (!uniqueMap.has(key)) {
@@ -545,9 +543,7 @@
 
                 document.getElementById('apiStatus').textContent = 'ライブAPI同期完了';
                 
-                // 警戒レベルの自動判定
                 evaluateSystemStatus(data);
-
                 updateArea(document.getElementById('targetArea').value);
             } catch (error) {
                 console.error("地震データの取得に失敗しました:", error);
@@ -556,7 +552,6 @@
             }
         }
 
-        // 警戒レベルおよび直近情報の自動判定ロジック
         function evaluateSystemStatus(data) {
             const cardContainer = document.getElementById('alertCardContainer');
             const cardTitle = document.getElementById('alertCardTitle');
@@ -620,7 +615,6 @@
             
             let filteredQuakes = liveQuakes;
 
-            // 1. エリア（範囲）フィルター適用
             if (selected.bounds) {
                 const b = selected.bounds;
                 filteredQuakes = filteredQuakes.filter(q => 
@@ -628,7 +622,6 @@
                 );
             }
 
-            // 2. マグニチュードフィルター適用
             filteredQuakes = filteredQuakes.filter(q => {
                 if (currentMagFilter === '4') {
                     return q.mag >= 4.0;
@@ -636,11 +629,11 @@
                 if (currentMagFilter === '5') {
                     return q.mag >= 5.0;
                 }
-                return true; // 'all' の場合
+                return true;
             });
 
-            // 正確に一致した件数を反映
-            document.getElementById('quakeCount').textContent = `${filteredQuakes.length} 件表示`;
+            // 取得件数を「過去一週間の発生件数（または直近データ件数）」として表示
+            document.getElementById('quakeCount').textContent = `${filteredQuakes.length} 件 (赤・橙マーカー)`;
 
             filteredQuakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
@@ -662,7 +655,6 @@
             });
         }
 
-        // 初期実行および定期更新（5分おき）
         fetchRealtimeEarthquakes();
         setInterval(fetchRealtimeEarthquakes, 300000);
 
