@@ -425,10 +425,10 @@
                 <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動の状況。</p>
                 
                 <div style="margin-top: 8px;">
+                    <!-- ご指定通りのタイトルとそれぞれの項目・文字表記 -->
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <!-- ご要望通り、ラベル自体を「赤色や橙色のマーカー件数」に変更 -->
-                    <div class="risk-item"><span>赤色や橙色のマーカー件数:</span> <span id="quakeCount" class="risk-level-low">0 件</span></div>
+                    <div class="risk-item"><span>過去１週間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">赤色や橙色のマーカー数</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
@@ -549,7 +549,6 @@
             } catch (error) {
                 console.error("地震データの取得に失敗しました:", error);
                 document.getElementById('apiStatus').textContent = 'APIフォールバックモード';
-                document.getElementById('quakeCount').textContent = '0 件 (接続再試行中)';
             }
         }
 
@@ -632,10 +631,6 @@
                 }
                 return true;
             });
-
-            // マップ上に描画される赤・橙マーカーの件数を正確に取得して反映
-            const markerCount = filteredQuakes.length;
-            document.getElementById('quakeCount').textContent = `${markerCount} 件`;
 
             filteredQuakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
