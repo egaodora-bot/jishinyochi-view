@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地殻変動・地震モニタリングシステム</title>
+    <title>地殻変動・電磁波モニタリングシステム</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -24,39 +24,52 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            position: relative;
+            z-index: 1001;
         }
         .system-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
         .header-right {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 14px;
-        }
-        /* エリア選択 */
-        .area-selector {
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
+            gap: 12px;
             font-size: 13px;
         }
-        /* メインレイアウト */
+        .area-selector {
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            font-size: 12px;
+        }
+        .help-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .help-btn:hover {
+            background: #2563eb;
+        }
+        /* マップ */
         #map {
             width: 100%;
             height: calc(100vh - 50px);
         }
-        /* フローティングパネル（情報過多対策として重要情報に絞る） */
+        /* 情報パネル */
         .info-panel {
             position: absolute;
             top: 65px;
             right: 15px;
             width: 300px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
             z-index: 1000;
             font-size: 13px;
         }
@@ -67,22 +80,79 @@
             border-bottom: 2px solid #3b82f6;
             padding-bottom: 5px;
         }
+        /* セーフティ注意喚起（赤文字） */
+        .safety-notice {
+            color: red;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 10px;
+            line-height: 1.4;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 8px;
+        }
         /* クレジット表記 */
         .footer-credit {
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 11px;
             color: #64748b;
             text-align: right;
             border-top: 1px solid #e2e8f0;
             padding-top: 5px;
         }
-        /* セーフティ注意喚起（赤文字） */
-        .safety-notice {
-            color: red;
+        /* 初回ウェルカム・ガイド用モーダル */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-box {
+            background: #fff;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+        .modal-box h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #1e293b;
+        }
+        .modal-box p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #475569;
+        }
+        .modal-box ul {
+            font-size: 13px;
+            color: #475569;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+        .modal-close-btn {
+            display: block;
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
-            font-size: 12px;
-            margin-top: 8px;
-            line-height: 1.4;
+            cursor: pointer;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .modal-close-btn:hover {
+            background: #1d4ed8;
         }
         @media (max-width: 600px) {
             header {
@@ -104,31 +174,47 @@
 </head>
 <body>
 
+    <!-- 初回ウェルカムガイド（モーダル） -->
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>地殻変動モニタリングへようこそ</h2>
+            <p>このシステムは、全国各地の地震や地殻変動の状況をわかりやすく確認するためのものです。はじめてご利用いただく方は、以下の手順をご確認ください。</p>
+            <ul>
+                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」から、気になるエリア（関東・北海道など）を選択できます。選択すると自動で地図と解説が連動します。</li>
+                <li><strong>詳細を見る:</strong> マップ上の赤丸（震源）をクリックすると、発生時刻やメカニズムの解説が表示されます。</li>
+            </ul>
+            <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
+        </div>
+    </div>
+
+    <!-- ヘッダー -->
     <header>
-        <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
+        <div class="system-title">地殻変動・電磁波モニタリング</div>
         <div class="header-right">
             <div>
-                <label for="targetArea" style="font-size: 12px;">地域設定:</label>
+                <label for="targetArea" style="font-size: 11px; color: #94a3b8;">地域:</label>
                 <select id="targetArea" class="area-selector">
                     <option value="kanto">関東（埼玉・東京・茨城・千葉）</option>
-                    <option value="hokkaido">北海道</option>
-                    <option value="tohoku">東北</option>
-                    <option value="all">全国</option>
+                    <option value="hokkaido">北海道・千島海溝エリア</option>
+                    <option value="tohoku">東北エリア</option>
+                    <option value="all">全国表示</option>
                 </select>
             </div>
-            <div id="live-clock">--:--:--</div>
+            <button class="help-btn" onclick="openWelcomeModal()">使い方</button>
+            <div id="live-clock" style="font-size: 12px; font-family: monospace;">--:--:--</div>
         </div>
     </header>
 
+    <!-- メインマップ -->
     <div id="map"></div>
 
-    <!-- 要点を絞った情報パネル -->
+    <!-- 連動型情報パネル -->
     <div class="info-panel">
-        <h3>本日の注目ポイント</h3>
-        <p>現在の選択地域における地震・地殻変動の状況をリアルタイムに確認できます。赤丸をクリックすると詳細とメカニズムが表示されます。</p>
+        <h3 id="panelTitle">関東エリアの状況</h3>
+        <p id="panelDescription">選択された地域の直近の動向や注目すべきポイントを表示しています。マップ上の赤い印をクリックすると、詳しい発生メカニズムを確認できます。</p>
         
         <div class="safety-notice">
-            ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを確認しましょう。
+            ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを大切にしましょう。
         </div>
 
         <div class="footer-credit">
@@ -139,7 +225,7 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 時計のリアルタイム更新
+        // リアルタイム時計
         function updateClock() {
             const now = new Date();
             document.getElementById('live-clock').textContent = now.toLocaleTimeString('ja-JP');
@@ -147,8 +233,16 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // マップの初期化（中心：関東・日本周辺）
-        const map = L.map('map').setView([36.2048, 138.2529], 6);
+        // モーダルを開閉する関数
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').style.display = 'none';
+        }
+        function openWelcomeModal() {
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }
+
+        // マップの初期化（初期：関東）
+        const map = L.map('map').setView([35.8, 139.5], 8);
 
         // 地理院地図タイル
         L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
@@ -156,8 +250,7 @@
             maxZoom: 18
         }).addTo(map);
 
-        // 1. 主要境界構造線を細く上品に描画するサンプル
-        // （本来の構造線データに置き換えてご利用いただけます）
+        // 主要境界構造線（細線化対応）
         const faultLine = [
             [35.0, 138.0],
             [36.0, 139.0],
@@ -165,38 +258,61 @@
         ];
         L.polyline(faultLine, {
             color: '#dc2626',
-            weight: 1.5, // 以前より細く調整
+            weight: 1.5,
             opacity: 0.6
-        }).addTo(map).bindPopup("主要境界構造線（細線化対応）");
+        }).addTo(map).bindPopup("主要境界構造線");
 
-        // 4. サンプル震源（クリックでメカニズム解説を表示）
-        const sampleEarthquake = L.circleMarker([35.6895, 139.6917], {
+        // サンプル震源マーカー
+        const quakeMarker = L.circleMarker([35.6895, 139.6917], {
             radius: 8,
             color: '#ef4444',
             fillColor: '#ef4444',
             fillOpacity: 0.7
         }).addTo(map);
 
-        sampleEarthquake.bindPopup(`
+        quakeMarker.bindPopup(`
             <strong>地震情報（サンプル）</strong><br>
             発生時間: 15:00頃<br>
             規模: M 4.2 / 最大震度: 3<br>
             <hr style="margin: 5px 0;">
             <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
-            この地震はプレート境界付近のひずみが解放されて起きたものです。地殻変動データや電磁波の観測とあわせて、今後の余震リスクにご注意ください。
+            この地震はプレート境界付近のひずみが解放されて起きたものです。地殻変動データや日頃の備えとあわせてご確認ください。
         `);
 
-        // 地域設定の切り替え連動（簡易サンプル）
+        // 地域選択による「地図移動 ＆ パネル解説連動」
+        const areaData = {
+            kanto: {
+                name: "関東エリアの状況",
+                desc: "埼玉・東京・茨城・千葉を含む首都圏の観測状況です。活断層やプレート境界のひずみデータに注意を払いつつ、日頃の備えを確認しましょう。",
+                center: [35.8, 139.5],
+                zoom: 8
+            },
+            hokkaido: {
+                name: "北海道・千島海溝エリアの状況",
+                desc: "根室沖など太平洋側を中心に、今後30年以内の発生確率が非常に高い海溝型地震が警戒されている地域です。事前の避難経路や備えの再確認が推奨されます。",
+                center: [42.8, 143.5],
+                zoom: 7
+            },
+            tohoku: {
+                name: "東北エリアの状況",
+                desc: "日本海溝周辺における余震活動や地殻変動のモニタリングを行っています。過去の大地震の教訓を踏まえた備えが継続的に求められる地域です。",
+                center: [39.0, 141.0],
+                zoom: 7
+            },
+            all: {
+                name: "全国のモニタリング状況",
+                desc: "日本全国の広域な地殻変動および地震発生状況を俯瞰して確認できます。気になる地域を選択して詳細をチェックしてください。",
+                center: [36.2, 138.2],
+                zoom: 6
+            }
+        };
+
         document.getElementById('targetArea').addEventListener('change', (e) => {
-            const area = e.target.value;
-            if (area === 'kanto') {
-                map.setView([35.8, 139.5], 8);
-            } else if (area === 'hokkaido') {
-                map.setView([43.0, 142.0], 7);
-            } else if (area === 'tohoku') {
-                map.setView([39.0, 141.0], 7);
-            } else {
-                map.setView([36.2, 138.2], 6);
+            const selected = areaData[e.target.value];
+            if (selected) {
+                map.setView(selected.center, selected.zoom);
+                document.getElementById('panelTitle').textContent = selected.name;
+                document.getElementById('panelDescription').textContent = selected.desc;
             }
         });
     </script>
