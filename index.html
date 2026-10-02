@@ -28,11 +28,15 @@
             z-index: 1001;
             border-bottom: 1px solid #334155;
         }
+        /* システムタイトル共通のスタイル（青文字＋薄い赤の下線） */
         .system-title {
             font-size: 16px;
             font-weight: bold;
             color: #38bdf8;
             letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(239, 68, 68, 0.4);
+            padding-bottom: 2px;
+            display: inline-block;
         }
         .header-right {
             display: flex;
@@ -393,7 +397,7 @@
             <h2>リアルタイム地殻変動・地震モニタリング</h2>
             
             <h3>1．システム名称</h3>
-            <p>碧AI | 地殻変動・電磁波モニタリングシステム</p>
+            <p><span class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</span></p>
 
             <h3>2．システム開発に向けた思い</h3>
             <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
