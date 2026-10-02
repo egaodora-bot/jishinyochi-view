@@ -3,161 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地殻変動・電磁波モニタリング防災システム</title>
+    <title>地殻変動・地震モニタリングシステム</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #0b0f19;
-            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
         }
-        #app {
+        /* ヘッダー */
+        header {
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 15px;
             display: flex;
-            width: 100vw;
-            height: 100vh;
-        }
-        /* 左側：インデントとカメラ部分を考慮したエリア */
-        .sidebar {
-            width: 380px;
-            background: rgba(15, 23, 42, 0.9);
-            border-right: 1px solid #1e293b;
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-            padding-left: env(safe-area-inset-left, 0px);
-        }
-        .header {
-            padding: 20px;
-            border-bottom: 1px solid #1e293b;
-        }
-        .header h1 {
-            font-size: 1.1rem;
-            margin: 0 0 5px 0;
-            color: #38bdf8;
-            letter-spacing: 0.05em;
-        }
-        .header p {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin: 0;
-        }
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        /* 右側：固定エリア（マップや詳細ビジュアル） */
-        .main-display {
-            flex: 1;
-            position: relative;
-            background: #020617;
-            display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .placeholder-box {
-            text-align: center;
-            color: #64748b;
-        }
-        .card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .card h3 {
-            margin-top: 0;
-            font-size: 0.95rem;
-            color: #f8fafc;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
+        .system-title {
+            font-size: 16px;
             font-weight: bold;
-            background: #065f46;
-            color: #34d399;
         }
-        /* フィルター用の簡易フォームスタイル */
-        .filter-group {
-            margin-bottom: 10px;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
         }
-        .filter-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-bottom: 4px;
-        }
-        .filter-group select, .filter-group input {
-            width: 100%;
-            padding: 8px;
-            background: #0f172a;
-            border: 1px solid #334155;
+        /* エリア選択 */
+        .area-selector {
+            padding: 4px 8px;
             border-radius: 4px;
-            color: #f8fafc;
-            font-size: 0.85rem;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+        }
+        /* メインレイアウト */
+        #map {
+            width: 100%;
+            height: calc(100vh - 50px);
+        }
+        /* フローティングパネル（情報過多対策として重要情報に絞る） */
+        .info-panel {
+            position: absolute;
+            top: 65px;
+            right: 15px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 13px;
+        }
+        .info-panel h3 {
+            margin-top: 0;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 5px;
+        }
+        /* クレジット表記 */
+        .footer-credit {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #64748b;
+            text-align: right;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+        }
+        /* セーフティ注意喚起（赤文字） */
+        .safety-notice {
+            color: red;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .info-panel {
+                width: calc(100% - 30px);
+                right: 15px;
+                top: auto;
+                bottom: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- 左側コントロール・情報パネル -->
-        <div class="sidebar">
-            <div class="header">
-                <h1>地殻変動・電磁波モニタリング</h1>
-                <p>Realtime Crustal & EM System</p>
-            </div>
-            <div class="content-area">
-                <!-- 最上部に移動した「ぐにちゅーどフィルター」設定エリア -->
-                <div class="card" style="border-color: #38bdf8;">
-                    <h3>ぐにちゅーどフィルター設定</h3>
-                    <div class="filter-group" style="margin-top: 10px;">
-                        <label for="target-region">監視エリア / 座標系</label>
-                        <select id="target-region">
-                            <option value="all">全国一括監視</option>
-                            <option value="kanto" selected>関東圏 (首都圏・茨城周辺)</option>
-                            <option value="tokai">東海・南海トラフ沿い</option>
-                            <option value="tohoku">東北沖・日本海溝</option>
-                            <option value="custom">カスタム緯度・経度指定</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="radius-range">半径レンジ (km)</label>
-                        <input type="range" id="radius-range" min="10" max="300" value="100" style="width: 100%; accent-color: #38bdf8;">
-                    </div>
-                </div>
 
-                <div class="card">
-                    <h3>システムステータス</h3>
-                    <span class="status-badge">正常稼働中</span>
-                    <p style="font-size: 0.85rem; margin-top: 10px; color: #cbd5e1;">
-                        P2P地震情報および各観測拠点のデータをリアルタイムで解析・同期しています。
-                    </p>
-                </div>
-
-                <div class="card">
-                    <h3>直近の観測トピックス</h3>
-                    <p style="font-size: 0.85rem; color: #94a3b8;">
-                        現在、特異変動の監視を継続中です。詳細なデータは右側のビューに反映されます。
-                    </p>
-                </div>
+    <header>
+        <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
+        <div class="header-right">
+            <div>
+                <label for="targetArea" style="font-size: 12px;">地域設定:</label>
+                <select id="targetArea" class="area-selector">
+                    <option value="kanto">関東（埼玉・東京・茨城・千葉）</option>
+                    <option value="hokkaido">北海道</option>
+                    <option value="tohoku">東北</option>
+                    <option value="all">全国</option>
+                </select>
             </div>
+            <div id="live-clock">--:--:--</div>
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <!-- 要点を絞った情報パネル -->
+    <div class="info-panel">
+        <h3>本日の注目ポイント</h3>
+        <p>現在の選択地域における地震・地殻変動の状況をリアルタイムに確認できます。赤丸をクリックすると詳細とメカニズムが表示されます。</p>
+        
+        <div class="safety-notice">
+            ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを確認しましょう。
         </div>
 
-        <!-- 右側メインディスプレイ（固定ビュー） -->
-        <div class="main-display">
-            <div class="placeholder-box">
-                <h2>ビジュアル・マップレンダリングエリア</h2>
-                <p>ここにリアルタイムの変動マップやグラフが表示されます。</p>
-            </div>
+        <div class="footer-credit">
+            by 林 榮一
         </div>
     </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 時計のリアルタイム更新
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // マップの初期化（中心：関東・日本周辺）
+        const map = L.map('map').setView([36.2048, 138.2529], 6);
+
+        // 地理院地図タイル
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        // 1. 主要境界構造線を細く上品に描画するサンプル
+        // （本来の構造線データに置き換えてご利用いただけます）
+        const faultLine = [
+            [35.0, 138.0],
+            [36.0, 139.0],
+            [37.0, 140.0]
+        ];
+        L.polyline(faultLine, {
+            color: '#dc2626',
+            weight: 1.5, // 以前より細く調整
+            opacity: 0.6
+        }).addTo(map).bindPopup("主要境界構造線（細線化対応）");
+
+        // 4. サンプル震源（クリックでメカニズム解説を表示）
+        const sampleEarthquake = L.circleMarker([35.6895, 139.6917], {
+            radius: 8,
+            color: '#ef4444',
+            fillColor: '#ef4444',
+            fillOpacity: 0.7
+        }).addTo(map);
+
+        sampleEarthquake.bindPopup(`
+            <strong>地震情報（サンプル）</strong><br>
+            発生時間: 15:00頃<br>
+            規模: M 4.2 / 最大震度: 3<br>
+            <hr style="margin: 5px 0;">
+            <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
+            この地震はプレート境界付近のひずみが解放されて起きたものです。地殻変動データや電磁波の観測とあわせて、今後の余震リスクにご注意ください。
+        `);
+
+        // 地域設定の切り替え連動（簡易サンプル）
+        document.getElementById('targetArea').addEventListener('change', (e) => {
+            const area = e.target.value;
+            if (area === 'kanto') {
+                map.setView([35.8, 139.5], 8);
+            } else if (area === 'hokkaido') {
+                map.setView([43.0, 142.0], 7);
+            } else if (area === 'tohoku') {
+                map.setView([39.0, 141.0], 7);
+            } else {
+                map.setView([36.2, 138.2], 6);
+            }
+        });
+    </script>
 </body>
 </html>
