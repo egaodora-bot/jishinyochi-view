@@ -61,7 +61,7 @@
             height: calc(100vh - 50px);
             z-index: 1;
         }
-        /* 右上の情報パネル（すっきりと整理） */
+        /* 右上の情報パネル */
         .info-panel {
             position: absolute;
             top: 65px;
@@ -105,7 +105,7 @@
             border-top: 1px solid #e2e8f0;
             padding-top: 4px;
         }
-        /* 初回ウェルカム・ガイド用モーダル（画面中央に綺麗に表示され、閉じれば消える） */
+        /* 初回ウェルカム・ガイド用モーダル */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -180,14 +180,14 @@
 </head>
 <body>
 
-    <!-- 初回ウェルカムガイド（モーダル：ボタンを押せば完全に消えて地図が広くなります） -->
+    <!-- 初回ウェルカムガイド -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>地殻変動モニタリングへようこそ</h2>
-            <p>このシステムは、全国各地の地震や地殻変動の状況をわかりやすく確認するためのものです。</p>
+            <p>このシステムは、全国各地の実際の地震情報や地殻変動の状況をリアルタイムに確認するためのものです。</p>
             <ul>
-                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」からお好みのエリアを選択すると、地図と解説が連動します。</li>
-                <li><strong>詳細を見る:</strong> マップ上の赤丸（震源）をクリックすると、発生メカニズムの解説を確認できます。</li>
+                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」からエリアを選択すると、地図が連動して最新の実際の地震情報を取得します。</li>
+                <li><strong>詳細を見る:</strong> マップ上の赤丸（震源）をクリックすると、実際の発生時刻やメカニズムの解説を確認できます。</li>
             </ul>
             <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
         </div>
@@ -218,10 +218,10 @@
     <!-- メインマップ -->
     <div id="map"></div>
 
-    <!-- すっきりと整理された右上の情報パネル -->
+    <!-- 情報パネル -->
     <div class="info-panel">
         <h3 id="panelTitle">関東エリアの状況</h3>
-        <p id="panelDescription">首都圏の観測状況です。右上のメニューから地域を変更できます。</p>
+        <p id="panelDescription">実際のリアルタイム地震データを取得して表示しています。</p>
         
         <div class="safety-notice">
             ※変動解説に基づくセーフティ対策を心がけ、日頃からの備えを確認しましょう。
@@ -243,7 +243,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // モーダルを開閉する関数
+        // モーダル制御
         function closeWelcomeModal() {
             document.getElementById('welcomeModal').style.display = 'none';
         }
@@ -251,7 +251,7 @@
             document.getElementById('welcomeModal').style.display = 'flex';
         }
 
-        // マップの初期化（初期：関東）
+        // マップ初期化（初期：関東）
         const map = L.map('map').setView([35.8, 139.5], 8);
 
         // 地理院地図タイル
@@ -275,118 +275,85 @@
         // マーカー管理用レイヤー
         const markerLayer = L.layerGroup().addTo(map);
 
-        // 地域データ定義
-        const areaData = {
-            kanto: {
-                name: "関東エリアの状況",
-                desc: "埼玉・東京・茨城・千葉などの首都圏の観測状況です。",
-                center: [35.8, 139.5],
-                zoom: 8,
-                quakes: [
-                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震", mechanism: "プレート境界付近のひずみ解放に伴うもの。" }
-                ]
-            },
-            hokkaido: {
-                name: "北海道エリアの状況",
-                desc: "千島海溝沿いや根室沖など海溝型地震の警戒エリアです。",
-                center: [42.8, 143.5],
-                zoom: 7,
-                quakes: [
-                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動", mechanism: "太平洋プレートの沈み込みに伴う地殻変動。" }
-                ]
-            },
-            tohoku: {
-                name: "東北エリアの状況",
-                desc: "日本海溝周辺における余震や地殻変動のモニタリングです。",
-                center: [39.0, 141.0],
-                zoom: 7,
-                quakes: [
-                    { lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震", mechanism: "周辺プレートの継続的なひずみ調整活動。" }
-                ]
-            },
-            chubu: {
-                name: "中部エリアの状況",
-                desc: "フォッサマグナ周辺の複雑な地殻構造の変動状況です。",
-                center: [36.5, 137.0],
-                zoom: 7,
-                quakes: [
-                    { lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震", mechanism: "活断層の活動や局所的なひずみの蓄積。" }
-                ]
-            },
-            kinki: {
-                name: "近畿（関西）エリアの状況",
-                desc: "活断層が多く存在する近畿圏の活動傾向を確認できます。",
-                center: [34.7, 135.5],
-                zoom: 8,
-                quakes: [
-                    { lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震", mechanism: "周辺活断層帯における微小な地殻変動。" }
-                ]
-            },
-            chugoku_shikoku: {
-                name: "中国・四国エリアの状況",
-                desc: "南海トラフ想定震源域周辺のひずみ・変動データです。",
-                center: [34.0, 133.5],
-                zoom: 7,
-                quakes: [
-                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", mechanism: "フィリピン海プレートの沈み込みに伴う変動。" }
-                ]
-            },
-            kyushu_okinawa: {
-                name: "九州・沖縄エリアの状況",
-                desc: "火山活動やプレート沈み込みに伴う地殻変動の状況です。",
-                center: [32.5, 130.8],
-                zoom: 7,
-                quakes: [
-                    { lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震", mechanism: "プレート境界および火山フロント周辺の活動。" }
-                ]
-            },
-            all: {
-                name: "全国のモニタリング状況",
-                desc: "日本全国の広域な地殻変動および地震発生状況です。",
-                center: [36.2, 138.2],
-                zoom: 6,
-                quakes: [
-                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "関東の地震", mechanism: "プレート境界付近のひずみ解放。" },
-                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "北海道沖の地震", mechanism: "千島海溝沿いのプレート活動。" },
-                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", mechanism: "南海トラフ周辺のひずみ調整。" }
-                ]
-            }
+        // 各エリアの中心座標とズーム設定
+        const areaConfigs = {
+            kanto: { name: "関東エリアの状況", desc: "首都圏周辺の実際の地震・観測データです。", center: [35.8, 139.5], zoom: 8 },
+            hokkaido: { name: "北海道エリアの状況", desc: "北海道周辺の実際の地震・観測データです。", center: [42.8, 143.5], zoom: 7 },
+            tohoku: { name: "東北エリアの状況", desc: "東北地方周辺の実際の地震・観測データです。", center: [39.0, 141.0], zoom: 7 },
+            chubu: { name: "中部エリアの状況", desc: "中部地方周辺の実際の地震・観測データです。", center: [36.5, 137.0], zoom: 7 },
+            kinki: { name: "近畿（関西）エリアの状況", desc: "近畿圏周辺の実際の地震・観測データです。", center: [34.7, 135.5], zoom: 8 },
+            chugoku_shikoku: { name: "中国・四国エリアの状況", desc: "中国・四国地方周辺の実際の地震データです。", center: [34.0, 133.5], zoom: 7 },
+            kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "九州・沖縄周辺の実際の地震データです。", center: [32.5, 130.8], zoom: 7 },
+            all: { name: "全国のモニタリング状況", desc: "日本全国の実際の地震発生状況です。", center: [36.2, 138.2], zoom: 6 }
         };
 
-        // 地域切り替え処理
-        function updateArea(key) {
-            const selected = areaData[key];
-            if (!selected) return;
+        // P2P地震情報 API から実際のデータを取得してマップに反映する関数
+        async function fetchRealEarthquakeData() {
+            try {
+                // P2P地震情報の履歴APIから最新データを取得
+                const response = await fetch('https://api.p2pquake.net/v2/history?limit=20');
+                const data = await response.json();
 
-            map.setView(selected.center, selected.zoom);
-            document.getElementById('panelTitle').textContent = selected.name;
-            document.getElementById('panelDescription').textContent = selected.desc;
+                markerLayer.clearLayers();
 
-            markerLayer.clearLayers();
-            selected.quakes.forEach(q => {
-                const marker = L.circleMarker([q.lat, q.lng], {
-                    radius: 8,
-                    color: '#ef4444',
-                    fillColor: '#ef4444',
-                    fillOpacity: 0.8
+                data.forEach(item => {
+                    // 地震情報（quake）が含まれており、震源情報がある場合
+                    if (item.quake && item.quake.hypocenter) {
+                        const hypo = item.quake.hypocenter;
+                        const lat = hypo.latitude;
+                        const lng = hypo.longitude;
+                        const mag = hypo.magnitude;
+                        const depth = hypo.depth;
+                        const place = hypo.name;
+                        const time = item.time;
+
+                        // 有効な緯度経度の場合のみプロット
+                        if (lat !== -1 && lng !== -1) {
+                            const marker = L.circleMarker([lat, lng], {
+                                radius: Math.max(6, (mag > 0 ? mag * 1.5 : 6)),
+                                color: '#ef4444',
+                                fillColor: '#ef4444',
+                                fillOpacity: 0.8
+                            });
+
+                            marker.bindPopup(`
+                                <strong>${place}</strong><br>
+                                発生時間: ${time}<br>
+                                規模: M ${mag} / 深さ: ${depth}km<br>
+                                <hr style="margin: 5px 0;">
+                                <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
+                                この情報はAPIから取得した実際の地震データです。プレート境界や周辺のひずみ状況に注意し、日頃の備えにお役立てください。
+                            `);
+
+                            markerLayer.addLayer(marker);
+                        }
+                    }
                 });
+            } catch (error) {
+                console.error("地震データの取得に失敗しました:", error);
+            }
+        }
 
-                marker.bindPopup(`
-                    <strong>${q.title}</strong><br>
-                    規模: M ${q.mag} / 深さ: ${q.depth}<br>
-                    <hr style="margin: 5px 0;">
-                    <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
-                    ${q.mechanism}
-                `);
+        // 地域切り替え時の処理
+        function updateArea(key) {
+            const config = areaConfigs[key];
+            if (!config) return;
 
-                markerLayer.addLayer(marker);
-            });
+            // 地図の表示位置を移動
+            map.setView(config.center, config.zoom);
+
+            // パネルの文章を更新
+            document.getElementById('panelTitle').textContent = config.name;
+            document.getElementById('panelDescription').textContent = config.desc;
+
+            // 実際のデータを取得してプロット
+            fetchRealEarthquakeData();
         }
 
         // 初期化（関東）
         updateArea('kanto');
 
-        // セレクトボックス変更連動
+        // セレクトボックス変更時の連動
         document.getElementById('targetArea').addEventListener('change', (e) => {
             updateArea(e.target.value);
         });
