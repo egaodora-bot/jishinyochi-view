@@ -40,7 +40,7 @@
             font-size: 13px;
             flex-wrap: wrap;
         }
-        /* 地域選択エリア（目立たせる） */
+        /* 地域選択エリア */
         .area-selector-wrapper {
             background: #0f172a;
             border: 2px solid #f97316;
@@ -111,7 +111,7 @@
 
         /* 左側サイドバー */
         .sidebar {
-            width: 380px;
+            width: 390px;
             background: #1e293b;
             padding: 15px;
             box-sizing: border-box;
@@ -285,7 +285,7 @@
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>地殻変動・電磁波モニタリングシステム</h2>
-            <p>過去1週間の地震発生状況（M別フィルタ対応）、電磁波・ひずみリスク、および発生時の想定被害をリアルタイムで統合表示します。</p>
+            <p>過去1週間の地震発生状況（M別フィルタ対応）、地面のゆがみや電磁波の様子、および発生時の想定被害をリアルタイムで統合表示します。</p>
             <ul>
                 <li><strong>地域を選択:</strong> 右上のオレンジ色の枠内からエリアを選択してください。</li>
                 <li><strong>地震フィルター:</strong> ヘッダーの「M4以上」「M5以上」「全て」で表示を切り替えられます。</li>
@@ -313,7 +313,7 @@
                 </select>
             </div>
 
-            <!-- マグニチュードフィルター（期間を1週間に変更） -->
+            <!-- マグニチュードフィルター（期間1週間） -->
             <div>
                 <span style="font-size: 11px; color: #f1f5f9; margin-right: 4px;">過去1週間地震:</span>
                 <div class="mag-filter-group" style="display: inline-flex; vertical-align: middle;">
@@ -334,30 +334,30 @@
         <div class="sidebar">
             <div class="card">
                 <div class="status-badge">全センサー正常稼働中</div>
-                <p>国土地理院GNSSおよび全国VLF電磁波ノイズ・地殻流体観測データを統合解析中。</p>
+                <p>衛星測位システム（GPS）および全国の電磁波・地下水観測データを統合解析中。</p>
             </div>
 
             <div class="card">
                 <h3 id="panelTitle">全国のモニタリング状況</h3>
-                <p id="panelDescription">日本全体のGNSSひずみ・電磁波・地震活動の統合解析状況。</p>
+                <p id="panelDescription">日本全体の地面のゆがみ・電磁波・地震活動の統合解析状況。</p>
                 
                 <div style="margin-top: 8px;">
-                    <div class="risk-item"><span>GNSS基線ひずみ:</span> <span id="riskStrain" class="risk-level-mid">複数箇所で注意・警戒</span></div>
-                    <div class="risk-item"><span>VLF電磁波ノイズ:</span> <span id="riskEM" class="risk-level-mid">一部地域で微小ノイズ</span></div>
-                    <div class="risk-item"><span>地殻流体・地下水位:</span> <span id="riskFluid" class="risk-level-low">監視継続</span></div>
+                    <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">複数箇所で注意・警戒</span></div>
+                    <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部地域で微小ノイズ</span></div>
+                    <div class="risk-item"><span>地下水・湧水の変化:</span> <span id="riskFluid" class="risk-level-low">監視継続</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
                 <div class="impact-box">
                     <h4 id="impactTitle">【リスク地域および想定される発生時の影響】</h4>
-                    <p id="impactDesc">プレート境界および主要ひずみ集中帯において微小変動が継続中。万が一発生した場合、局所的な強い揺れやライフラインへの影響、交通機関への一時的制限が想定されます。</p>
+                    <p id="impactDesc">プレート境界および主要なひずみ集中帯において微小変動が継続中。万が一発生した場合、局所的な強い揺れやライフラインへの影響、交通機関への一時的制限が想定されます。</p>
                 </div>
             </div>
 
             <div class="card">
                 <h3>直近の観測トピック・異常兆候</h3>
                 <ul id="panelTopics">
-                    <li>日本列島全体のプレート収束運動に伴うひずみが蓄積中。</li>
+                    <li>日本列島全体のプレート収束運動に伴うエネルギーが蓄積中。</li>
                     <li>各地域の活断層帯および海溝型地震想定域のモニタリングを強化。</li>
                 </ul>
             </div>
@@ -415,7 +415,7 @@
         const areaData = {
             all: {
                 name: "全国のモニタリング状況",
-                desc: "日本全国のGNSSひずみ・電磁波・地震活動の統合解析状況。",
+                desc: "日本全国の地面のゆがみ・電磁波・地震活動の統合解析状況。",
                 center: [36.2, 138.2],
                 zoom: 6,
                 strain: "全国複数箇所で注意・警戒",
@@ -439,14 +439,14 @@
                     { lat: 31.9, lng: 130.5, mag: 3.2, depth: "約20km", title: "九州南部微小地震", mechanism: "火山フロント周辺の活動。" }
                 ],
                 markers: [
-                    { type: "em", lat: 36.1, lng: 139.4, title: "電磁波モニタリング拠点（関東）", desc: "VLF帯：平常範囲内" },
-                    { type: "em", lat: 43.0, lng: 141.3, title: "電磁波モニタリング拠点（道央）", desc: "電磁波ノイズ：軽度変動検知" },
+                    { type: "em", lat: 36.1, lng: 139.4, title: "電磁波観測拠点（関東）", desc: "電磁波ノイズ：平常範囲内" },
+                    { type: "em", lat: 43.0, lng: 141.3, title: "電磁波観測拠点（道央）", desc: "電磁波ノイズ：軽度変動検知" },
                     { type: "strain_area", lat: 36.0, lng: 137.5, radius: 40000, title: "中部ひずみ集中帯エリア", desc: "地殻短縮運動によるエネルギー蓄積域" }
                 ]
             },
             kanto: {
                 name: "関東エリアの状況",
-                desc: "首都圏周辺の地殻ひずみおよび電磁波変動モニタリング結果。",
+                desc: "首都圏周辺の地面のゆがみおよび電磁波変動のモニタリング結果。",
                 center: [35.8, 139.5],
                 zoom: 8,
                 strain: "注意 (微小変動継続)",
@@ -530,7 +530,7 @@
                 impactTitle: "【中部ひずみ集中帯・活断層帯の想定影響】",
                 impactDesc: "地殻短縮運動が顕著なエリアであり、内陸直下型地震が発生した場合、山岳地帯での大規模土砂崩落やライフライン・主要幹線の長期遮断のリスクがあります。",
                 topics: [
-                    "糸魚川・静岡構造線活断層帯周辺のGNSS基線長に継続的変化。"
+                    "糸魚川・静岡構造線活断層帯周辺の地表変動に継続的変化。"
                 ],
                 faults: [
                     [[37.0, 138.0], [36.0, 137.8], [35.1, 138.3]]
