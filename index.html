@@ -23,7 +23,7 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             position: relative;
             z-index: 1001;
             border-bottom: 1px solid #334155;
@@ -36,25 +36,68 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             font-size: 13px;
+            flex-wrap: wrap;
+        }
+        /* 目立たせた地域選択エリア */
+        .area-selector-wrapper {
+            background: #0f172a;
+            border: 2px solid #f97316;
+            border-radius: 6px;
+            padding: 3px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+        }
+        .area-selector-wrapper label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fb923c;
         }
         .area-selector {
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 4px;
-            border: 1px solid #475569;
-            background: #0f172a;
+            border: none;
+            background: #1e293b;
             color: #fff;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
         }
+        /* マグニチュードフィルター */
+        .mag-filter-group {
+            display: flex;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .mag-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mag-btn.active {
+            background: #0284c7;
+            color: #fff;
+            font-weight: bold;
+        }
+
         .help-btn {
             background: #0284c7;
             color: #fff;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            font-weight: bold;
         }
         .help-btn:hover {
             background: #0369a1;
@@ -63,12 +106,12 @@
         /* レイアウト全体 */
         .main-container {
             display: flex;
-            height: calc(100vh - 50px);
+            height: calc(100vh - 55px);
         }
 
-        /* 左側サイドバー（情報量を大幅に拡充） */
+        /* 左側サイドバー */
         .sidebar {
-            width: 360px;
+            width: 380px;
             background: #1e293b;
             padding: 15px;
             box-sizing: border-box;
@@ -123,6 +166,25 @@
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
+
+        /* ハイリスク詳細ボックス */
+        .impact-box {
+            background: #450a0a;
+            border: 1px solid #7f1d1d;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-top: 8px;
+        }
+        .impact-box h4 {
+            margin: 0 0 4px 0;
+            font-size: 11px;
+            color: #fca5a5;
+        }
+        .impact-box p {
+            color: #fecaca;
+            margin: 0;
+            font-size: 10.5kpx;
+        }
 
         .safety-notice {
             color: #f87171;
@@ -204,7 +266,7 @@
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column-reverse;
-                height: calc(100vh - 50px);
+                height: calc(100vh - 55px);
             }
             .sidebar {
                 width: 100%;
@@ -221,11 +283,11 @@
     <!-- ウェルカムモーダル -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
-            <h2>地殻変動・電磁波モニタリングへようこそ</h2>
-            <p>このシステムは、全国各地のGNSS観測データ、ひずみ集中帯、電磁波異常ノイズの傾向をリアルタイムで解析・可視化する統合プラットフォームです。</p>
+            <h2>地殻変動・電磁波モニタリングシステム</h2>
+            <p>過去3日間の地震発生状況（M別フィルタ対応）、電磁波・ひずみリスク、および発生時の想定被害をリアルタイムで統合表示します。</p>
             <ul>
-                <li><strong>エリア連動:</strong> 右上メニューで地域を切り替えると、左側の詳細リスク指標と地図上の観測マーカーが連動します。</li>
-                <li><strong>マップ確認:</strong> 地図上の各アイコン（赤丸：震源・青丸：電磁波ノイズ・オレンジ丸：ひずみ異常）をクリックすると詳細が表示されます。</li>
+                <li><strong>地域を選択:</strong> 右上のオレンジ色の枠内からエリアを選択してください。</li>
+                <li><strong>地震フィルター:</strong> ヘッダーの「M4以上」「M5以上」「全て」で表示を切り替えられます。</li>
             </ul>
             <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
         </div>
@@ -235,8 +297,9 @@
     <header>
         <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
         <div class="header-right">
-            <div>
-                <label for="targetArea" style="font-size: 11px; color: #94a3b8;">地域:</label>
+            <!-- 1. 目立たせた地域選択エリア -->
+            <div class="area-selector-wrapper">
+                <label for="targetArea">表示地域:</label>
                 <select id="targetArea" class="area-selector">
                     <option value="kanto">関東（首都圏）</option>
                     <option value="hokkaido">北海道</option>
@@ -245,41 +308,57 @@
                     <option value="kinki">近畿（関西）</option>
                     <option value="chugoku_shikoku">中国・四国</option>
                     <option value="kyushu_okinawa">九州・沖縄</option>
-                    <option value="all">全国表示</option>
+                    <option value="all" selected>全国表示</option>
                 </select>
             </div>
+
+            <!-- 2. マグニチュードフィルター -->
+            <div>
+                <span style="font-size: 11px; color: #94a3b8; margin-right: 4px;">過去3日地震:</span>
+                <div class="mag-filter-group" style="display: inline-flex; vertical-align: middle;">
+                    <button class="mag-btn" onclick="setMagFilter('all', this)">全て</button>
+                    <button class="mag-btn active" onclick="setMagFilter('4', this)">M4+</button>
+                    <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
+                </div>
+            </div>
+
             <button class="help-btn" onclick="openWelcomeModal()">使い方</button>
             <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
         </div>
     </header>
 
-    <!-- メインコンテンツ領域（左：詳細サイドバー、右：マップ） -->
+    <!-- メインコンテンツ領域 -->
     <div class="main-container">
-        <!-- 左側サイドバー：詳細リスク・電磁波インジケーター -->
+        <!-- 左側サイドバー：リスク＆発生時影響の詳細 -->
         <div class="sidebar">
             <div class="card">
                 <div class="status-badge">全センサー正常稼働中</div>
-                <p>国土地理院GNSS連続観測網および全国電磁波・VLFノイズ観測拠点のデータを統合解析中。</p>
+                <p>国土地理院GNSSおよび全国VLF電磁波ノイズ・地殻流体観測データを統合解析中。</p>
             </div>
 
             <div class="card">
-                <h3 id="panelTitle">関東エリアの状況</h3>
-                <p id="panelDescription">首都圏周辺の地殻ひずみおよび電磁波変動モニタリング結果。</p>
+                <h3 id="panelTitle">全国のモニタリング状況</h3>
+                <p id="panelDescription">日本全体のGNSSひずみ・電磁波・地震活動の統合解析状況。</p>
                 
                 <div style="margin-top: 8px;">
-                    <div class="risk-item"><span>GNSS基線ひずみ:</span> <span id="riskStrain" class="risk-level-mid">注意 (微小変動継続)</span></div>
-                    <div class="risk-item"><span>VLF電磁波ノイズ:</span> <span id="riskEM" class="risk-level-low">平常範囲内</span></div>
-                    <div class="risk-item"><span>地殻流体・地下水位:</span> <span id="riskFluid" class="risk-level-low">安定</span></div>
-                    <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（監視継続）</span></div>
+                    <div class="risk-item"><span>GNSS基線ひずみ:</span> <span id="riskStrain" class="risk-level-mid">複数箇所で注意・警戒</span></div>
+                    <div class="risk-item"><span>VLF電磁波ノイズ:</span> <span id="riskEM" class="risk-level-mid">一部地域で微小ノイズ</span></div>
+                    <div class="risk-item"><span>地殻流体・地下水位:</span> <span id="riskFluid" class="risk-level-low">監視継続</span></div>
+                    <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
+                </div>
+
+                <!-- 3. 書くリスク高いところの「電磁波」「ひずみ」「発生した時の結果など」表示 -->
+                <div class="impact-box">
+                    <h4 id="impactTitle">【リスク地域および想定される発生時の影響】</h4>
+                    <p id="impactDesc">プレート境界および主要ひずみ集中帯において微小変動が継続中。万が一発生した場合、局所的な強い揺れやライフラインへの影響、交通機関への一時的制限が想定されます。</p>
                 </div>
             </div>
 
             <div class="card">
                 <h3>直近の観測トピック・異常兆候</h3>
                 <ul id="panelTopics">
-                    <li>房総半島沖の深部低周波微動（スロースリップ）の減衰を確認。</li>
-                    <li>関東平野北部活断層系における微小な歪み変化を観測中。</li>
-                    <li>大気重力波・電離層TEC変動に特異な異常シグナルは未検知。</li>
+                    <li>日本列島全体のプレート収束運動に伴うひずみが蓄積中。</li>
+                    <li>各地域の活断層帯および海溝型地震想定域のモニタリングを強化。</li>
                 </ul>
             </div>
 
@@ -318,8 +397,8 @@
             document.getElementById('welcomeModal').style.display = 'flex';
         }
 
-        // マップ初期化（初期：関東）
-        const map = L.map('map').setView([35.8, 139.5], 8);
+        // マップ初期化（初期：全国）
+        const map = L.map('map').setView([36.2, 138.2], 6);
 
         // 地理院地図タイル
         L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
@@ -327,12 +406,44 @@
             maxZoom: 18
         }).addTo(map);
 
-        // レイヤーグループの作成
         const markerLayer = L.layerGroup().addTo(map);
         const faultLayer = L.layerGroup().addTo(map);
 
-        // エリアごとの詳細データ（リスク指標・トピック・マップオブジェクトを含む）
+        let currentMagFilter = '4'; // 初期値：M4以上
+
+        // エリアデータ定義（リスク、電磁波、ひずみ、発生時の結果・被害想定を含む）
         const areaData = {
+            all: {
+                name: "全国のモニタリング状況",
+                desc: "日本全国のGNSSひずみ・電磁波・地震活動の統合解析状況。",
+                center: [36.2, 138.2],
+                zoom: 6,
+                strain: "全国複数箇所で注意・警戒",
+                em: "一部地域で微小ノイズ検知",
+                fluid: "監視継続",
+                level: "LEVEL 2（総合警戒）",
+                impactTitle: "【全国規模の想定影響とリスク】",
+                impactDesc: "太平洋プレートおよびフィリピン海プレートの沈み込み帯全域でひずみが蓄積。M5〜M6クラスの地震発生時には、沿岸部での津波注意報や内陸主要都市でのインフラ一時停止の恐れがあります。",
+                topics: [
+                    "日本列島全体のプレート収束運動に伴うひずみが継続蓄積中。",
+                    "各地域の活断層帯および海溝型地震想定域のモニタリングを強化。"
+                ],
+                faults: [
+                    [[36.2, 137.0], [35.8, 138.0], [35.2, 139.0]],
+                    [[40.5, 140.5], [39.0, 140.8], [37.8, 140.2]]
+                ],
+                quakes: [
+                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "関東直下の地震", mechanism: "プレート境界付近のひずみ解放。" },
+                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "北海道沖の地震", mechanism: "千島海溝沿いのプレート活動。" },
+                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", mechanism: "南海トラフ周辺のひずみ調整。" },
+                    { lat: 31.9, lng: 130.5, mag: 3.2, depth: "約20km", title: "九州南部微小地震", mechanism: "火山フロント周辺の活動。" }
+                ],
+                markers: [
+                    { type: "em", lat: 36.1, lng: 139.4, title: "電磁波モニタリング拠点（関東）", desc: "VLF帯：平常範囲内" },
+                    { type: "em", lat: 43.0, lng: 141.3, title: "電磁波モニタリング拠点（道央）", desc: "電磁波ノイズ：軽度変動検知" },
+                    { type: "strain_area", lat: 36.0, lng: 137.5, radius: 40000, title: "中部ひずみ集中帯エリア", desc: "地殻短縮運動によるエネルギー蓄積域" }
+                ]
+            },
             kanto: {
                 name: "関東エリアの状況",
                 desc: "首都圏周辺の地殻ひずみおよび電磁波変動モニタリング結果。",
@@ -342,16 +453,20 @@
                 em: "平常範囲内",
                 fluid: "安定",
                 level: "LEVEL 2（監視継続）",
+                impactTitle: "【首都圏直下・相模トラフ地震の想定影響】",
+                impactDesc: "首都圏直下でM6クラスが発生した場合、最大震度6弱以上が予測され、交通網（鉄道・高速道路）の数日間にわたる麻痺、帰宅困難者の発生、および一部電力・通信インフラの障害が懸念されます。",
                 topics: [
                     "房総半島沖の深部低周波微動（スロースリップ）の減衰を確認。",
-                    "関東平野北部活断層系における微小な歪み変化を観測中。",
-                    "大気重力波・電離層TEC変動に特異な異常シグナルは未検知。"
+                    "関東平野北部活断層系における微小な歪み変化を観測中。"
                 ],
                 faults: [
-                    [[36.2, 139.0], [35.8, 139.7], [35.2, 139.5]] // 首都圏直下主要構造線
+                    [[36.2, 139.0], [35.8, 139.7], [35.2, 139.5]]
+                ],
+                quakes: [
+                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震活動", desc: "プレート境界付近のひずみ解放に伴うもの。" },
+                    { lat: 35.4, lng: 139.8, mag: 3.4, depth: "約40km", title: "東京湾北部地震", desc: "フィリピン海プレート内の微小破壊。" }
                 ],
                 markers: [
-                    { type: "quake", lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震活動", desc: "プレート境界付近のひずみ解放に伴うもの。" },
                     { type: "em", lat: 36.1, lng: 139.4, title: "VLF電磁波観測点（熊谷観測所）", desc: "電磁波ノイズレベル：平常（安定推移）" },
                     { type: "strain_area", lat: 35.4, lng: 140.2, radius: 25000, title: "房総沖ひずみ集中監視エリア", desc: "スロースリップに伴う微小変動域" }
                 ]
@@ -365,16 +480,20 @@
                 em: "軽度ノイズ検出",
                 fluid: "一部で変動あり",
                 level: "LEVEL 2（警戒継続）",
+                impactTitle: "【千島海溝沿い巨大地震の想定影響】",
+                impactDesc: "根室沖〜十勝沖にかけての固着域で異常が拡大した場合、津波被害および寒冷地特有の避難インフラへの重大な負荷が想定されます。",
                 topics: [
-                    "根室沖周辺のプレート境界における固着状態の監視を強化中。",
-                    "十勝地方の地殻変動ベクトルにわずかな歪み蓄積傾向。"
+                    "根室沖周辺のプレート境界における固着状態の監視を強化中。"
                 ],
                 faults: [
                     [[43.5, 144.0], [42.5, 145.0], [41.8, 143.2]]
                 ],
+                quakes: [
+                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動", desc: "太平洋プレートの沈み込みに伴う地殻変動。" },
+                    { lat: 43.2, lng: 145.1, mag: 3.8, depth: "約40km", title: "釧路沖微小地震", desc: "プレート境界の微小すべり。" }
+                ],
                 markers: [
-                    { type: "quake", lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動", desc: "太平洋プレートの沈み込みに伴う地殻変動。" },
-                    { type: "em", lat: 43.0, lng: 141.3, title: "道央電磁波モニタリング拠点", desc: "地電流の微小変動を観測中" }
+                    { type: "em", lat: 43.0, lng: 141.3, title: "道央電磁波モニタリング拠点", desc: "地電流および大気電場の微小変動を観測中" }
                 ]
             },
             tohoku: {
@@ -386,16 +505,18 @@
                 em: "平常",
                 fluid: "安定",
                 level: "LEVEL 1（平常監視）",
+                impactTitle: "【日本海溝沿い余効変動・内陸活断層の影響】",
+                impactDesc: "余効変動は減衰中ですが、奥羽山脈周辺の活断層における突発的な内陸地震が発生した際、土砂災害や山間部道路の寸断に注意が必要です。",
                 topics: [
-                    "日本海溝沿いの余効変動は緩やかに減衰しつつ推移。",
-                    "内陸活断層周辺の微小地震活動は概ね平穏。"
+                    "日本海溝沿いの余効変動は緩やかに減衰しつつ推移。"
                 ],
                 faults: [
                     [[40.5, 140.5], [39.0, 140.8], [37.8, 140.2]]
                 ],
-                markers: [
-                    { type: "quake", lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震", desc: "プレート間のひずみ調整活動。" }
-                ]
+                quakes: [
+                    { lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震", desc: "プレート間のひずみ調整活動。" }
+                ],
+                markers: []
             },
             chubu: {
                 name: "中部エリアの状況",
@@ -406,16 +527,20 @@
                 em: "平常範囲",
                 fluid: "温泉湧出量等に特異変化なし",
                 level: "LEVEL 2（要注意）",
+                impactTitle: "【中部ひずみ集中帯・活断層帯の想定影響】",
+                impactDesc: "地殻短縮運動が顕著なエリアであり、内陸直下型地震が発生した場合、山岳地帯での大規模土砂崩落やライフライン・主要幹線の長期遮断のリスクがあります。",
                 topics: [
-                    "糸魚川・静岡構造線活断層帯周辺のGNSS基線長に継続的変化。",
-                    "中部山岳エリアにおける微小地震の散発的発生。"
+                    "糸魚川・静岡構造線活断層帯周辺のGNSS基線長に継続的変化。"
                 ],
                 faults: [
                     [[37.0, 138.0], [36.0, 137.8], [35.1, 138.3]]
                 ],
+                quakes: [
+                    { lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震", desc: "活断層の活動に伴う局所的ひずみ解放。" },
+                    { lat: 35.8, lng: 137.2, mag: 4.1, depth: "約15km", title: "飛騨地方地震", desc: "地殻内流体の移動に伴う群発傾向。" }
+                ],
                 markers: [
-                    { type: "quake", lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震", desc: "活断層の活動に伴う局所的ひずみ解放。" },
-                    { type: "strain_area", lat: 36.0, lng: 137.5, radius: 20000, title: "中部ひずみ集中帯監視ポイント", desc: "地殻短縮運動が継続しているエリア" }
+                    { type: "strain_area", lat: 36.0, lng: 137.5, radius: 30000, title: "中部ひずみ集中帯監視ポイント", desc: "地殻短縮運動が継続しているエリア" }
                 ]
             },
             kinki: {
@@ -427,16 +552,18 @@
                 em: "平常",
                 fluid: "安定",
                 level: "LEVEL 1（平常監視）",
+                impactTitle: "【上町断層帯・近畿圏活断層の想定影響】",
+                impactDesc: "都市部直下の活断層が活動した場合、広範囲にわたる建物倒壊や火災発生、都市機能の甚大な停止が想定されます。",
                 topics: [
-                    "上町断層帯および生駒断層帯周辺の観測データは安定推移。",
-                    "紀伊半島側の深部低周波微動は平常レベル。"
+                    "上町断層帯および生駒断層帯周辺の観測データは安定推移。"
                 ],
                 faults: [
                     [[35.0, 135.2], [34.6, 135.5], [34.2, 135.0]]
                 ],
-                markers: [
-                    { type: "quake", lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震", desc: "周辺活断層帯における微小な活動。" }
-                ]
+                quakes: [
+                    { lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震", desc: "周辺活断層帯における微小な活動。" }
+                ],
+                markers: []
             },
             chugoku_shikoku: {
                 name: "中国・四国エリアの状況",
@@ -447,16 +574,19 @@
                 em: "一部微小シグナル",
                 fluid: "安定",
                 level: "LEVEL 2（警戒継続）",
+                impactTitle: "【南海トラフ巨大地震の想定影響】",
+                impactDesc: "四国太平洋側を中心に甚大な津波被害および長周期地震動による高層ビル・プラントへの影響が強く懸念されます。",
                 topics: [
-                    "南海トラフ沿いのプレート境界滑り状態を常時監視中。",
-                    "四国西部におけるひずみ計のデータに一時的な微小変化。"
+                    "南海トラフ沿いのプレート境界滑り状態を常時監視中。"
                 ],
                 faults: [
                     [[34.5, 132.5], [33.8, 133.2], [33.0, 134.0]]
                 ],
-                markers: [
-                    { type: "quake", lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", desc: "南海トラフ周辺のひずみ調整。" }
-                ]
+                quakes: [
+                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", desc: "南海トラフ周辺のひずみ調整。" },
+                    { lat: 34.1, lng: 134.2, mag: 3.1, depth: "約25km", title: "徳島県北部地震", desc: "局所的な地殻変動。" }
+                ],
+                markers: []
             },
             kyushu_okinawa: {
                 name: "九州・沖縄エリアの状況",
@@ -467,61 +597,50 @@
                 em: "平常",
                 fluid: "火山活動周辺で微小変動",
                 level: "LEVEL 1（平常監視）",
+                impactTitle: "【日向灘・南西諸島海溝周辺の想定影響】",
+                impactDesc: "日向灘地震等の発生時には九州東岸を中心に津波到達時間が短いため、迅速な避難が必須となります。",
                 topics: [
-                    "日向灘から南西諸島海溝にかけてのプレート境界活動を監視。",
-                    "火山フロント周辺の地殻変動および電磁波データを解析中。"
+                    "日向灘から南西諸島海溝にかけてのプレート境界活動を監視。"
                 ],
                 faults: [
                     [[33.0, 130.5], [32.0, 130.8], [31.2, 130.5]]
                 ],
-                markers: [
-                    { type: "quake", lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震", desc: "プレート境界および火山周辺の活動。" }
-                ]
-            },
-            all: {
-                name: "全国のモニタリング状況",
-                desc: "日本全国のGNSSひずみ・電磁波・地震活動の統合解析状況。",
-                center: [36.2, 138.2],
-                zoom: 6,
-                strain: "全国複数箇所で注意・警戒",
-                em: "一部地域で微小ノイズ",
-                fluid: "監視継続",
-                level: "LEVEL 2（総合警戒）",
-                topics: [
-                    "日本列島全体のプレート収束運動に伴うひずみが蓄積中。",
-                    "各地域の活断層帯および海溝型地震想定域のモニタリングを強化。"
+                quakes: [
+                    { lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震", desc: "プレート境界および火山周辺の活動。" }
                 ],
-                faults: [
-                    [[36.2, 137.0], [35.8, 138.0], [35.2, 139.0]],
-                    [[40.5, 140.5], [39.0, 140.8], [37.8, 140.2]]
-                ],
-                markers: [
-                    { type: "quake", lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "関東の地震", desc: "プレート境界付近のひずみ解放。" },
-                    { type: "quake", lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "北海道沖の地震", desc: "千島海溝沿いのプレート活動。" },
-                    { type: "quake", lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", desc: "南海トラフ周辺のひずみ調整。" },
-                    { type: "em", lat: 36.1, lng: 139.4, title: "電磁波モニタリング拠点（関東）", desc: "平常範囲" },
-                    { type: "strain_area", lat: 36.0, lng: 137.5, radius: 30000, title: "中部ひずみ集中帯エリア", desc: "地殻変動エネルギー蓄積域" }
-                ]
+                markers: []
             }
         };
 
-        // 地域切り替え時の処理（左側パネル＆右側マップを完全に連動）
+        // マグニチュードフィルター切り替え
+        function setMagFilter(val, btnElement) {
+            currentMagFilter = val;
+            // ボタンのactive切り替え
+            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            // 再描画
+            updateArea(document.getElementById('targetArea').value);
+        }
+
+        // 地域切り替え・連動処理
         function updateArea(key) {
             const selected = areaData[key];
             if (!selected) return;
 
-            // 地図の表示位置を移動
             map.setView(selected.center, selected.zoom);
 
-            // 左側パネルのテキストを更新
+            // パネルテキスト更新
             document.getElementById('panelTitle').textContent = selected.name;
             document.getElementById('panelDescription').textContent = selected.desc;
             document.getElementById('riskStrain').textContent = selected.strain;
             document.getElementById('riskEM').textContent = selected.em;
             document.getElementById('riskFluid').textContent = selected.fluid;
             document.getElementById('riskLevel').textContent = selected.level;
+            
+            // 3. リスク・発生時影響の表示更新
+            document.getElementById('impactTitle').textContent = selected.impactTitle;
+            document.getElementById('impactDesc').textContent = selected.impactDesc;
 
-            // トピックリストを更新
             const topicsUl = document.getElementById('panelTopics');
             topicsUl.innerHTML = '';
             selected.topics.forEach(t => {
@@ -530,7 +649,7 @@
                 topicsUl.appendChild(li);
             });
 
-            // 活断層・構造線ラインの描画
+            // 活断層ライン
             faultLayer.clearLayers();
             if (selected.faults) {
                 selected.faults.forEach(fLine => {
@@ -543,63 +662,76 @@
                 });
             }
 
-            // マーカー（震源・電磁波・ひずみエリア）の再描画
+            // マーカー（震源・電磁波・ひずみ）の更新（マグニチュードフィルター適用）
             markerLayer.clearLayers();
-            selected.markers.forEach(m => {
-                if (m.type === 'quake') {
-                    const marker = L.circleMarker([m.lat, m.lng], {
-                        radius: 9,
-                        color: '#ef4444',
-                        fillColor: '#ef4444',
+            
+            // 地震マーカー
+            if (selected.quakes) {
+                selected.quakes.forEach(q => {
+                    // マグニチュードフィルター判定
+                    if (currentMagFilter === '4' && q.mag < 4.0) return;
+                    if (currentMagFilter === '5' && q.mag < 5.0) return;
+
+                    const marker = L.circleMarker([q.lat, q.lng], {
+                        radius: q.mag >= 5 ? 11 : 8,
+                        color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
+                        fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
                         fillOpacity: 0.9
                     });
                     marker.bindPopup(`
                         <div style="color: #333;">
-                            <strong>${m.title}</strong><br>
-                            規模: M ${m.mag} / 深さ: ${m.depth}<br>
+                            <strong>${q.title}</strong><br>
+                            規模: M ${q.mag} / 深さ: ${q.depth}<br>
                             <hr style="margin: 4px 0;">
-                            <strong>【メカニズム解説】</strong><br>
-                            ${m.desc}
+                            <strong>【メカニズム】</strong><br>
+                            ${q.mechanism}
                         </div>
                     `);
                     markerLayer.addLayer(marker);
-                } else if (m.type === 'em') {
-                    const marker = L.circleMarker([m.lat, m.lng], {
-                        radius: 8,
-                        color: '#38bdf8',
-                        fillColor: '#38bdf8',
-                        fillOpacity: 0.8
-                    });
-                    marker.bindPopup(`
-                        <div style="color: #333;">
-                            <strong>${m.title}</strong><br>
-                            <hr style="margin: 4px 0;">
-                            ${m.desc}
-                        </div>
-                    `);
-                    markerLayer.addLayer(marker);
-                } else if (m.type === 'strain_area') {
-                    const circle = L.circle([m.lat, m.lng], {
-                        radius: m.radius,
-                        color: '#f97316',
-                        fillColor: '#f97316',
-                        fillOpacity: 0.25,
-                        weight: 1.5
-                    });
-                    circle.bindPopup(`
-                        <div style="color: #333;">
-                            <strong>${m.title}</strong><br>
-                            <hr style="margin: 4px 0;">
-                            ${m.desc}
-                        </div>
-                    `);
-                    markerLayer.addLayer(circle);
-                }
-            });
+                });
+            }
+
+            // その他の観測点（電磁波・ひずみエリア）
+            if (selected.markers) {
+                selected.markers.forEach(m => {
+                    if (m.type === 'em') {
+                        const marker = L.circleMarker([m.lat, m.lng], {
+                            radius: 8,
+                            color: '#38bdf8',
+                            fillColor: '#38bdf8',
+                            fillOpacity: 0.8
+                        });
+                        marker.bindPopup(`
+                            <div style="color: #333;">
+                                <strong>${m.title}</strong><br>
+                                <hr style="margin: 4px 0;">
+                                ${m.desc}
+                            </div>
+                        `);
+                        markerLayer.addLayer(marker);
+                    } else if (m.type === 'strain_area') {
+                        const circle = L.circle([m.lat, m.lng], {
+                            radius: m.radius,
+                            color: '#f97316',
+                            fillColor: '#f97316',
+                            fillOpacity: 0.25,
+                            weight: 1.5
+                        });
+                        circle.bindPopup(`
+                            <div style="color: #333;">
+                                <strong>${m.title}</strong><br>
+                                <hr style="margin: 4px 0;">
+                                ${m.desc}
+                            </div>
+                        `);
+                        markerLayer.addLayer(circle);
+                    }
+                });
+            }
         }
 
-        // 初期化（関東）
-        updateArea('kanto');
+        // 初期化（全国表示）
+        updateArea('all');
 
         // セレクトボックス変更時の連動
         document.getElementById('targetArea').addEventListener('change', (e) => {
