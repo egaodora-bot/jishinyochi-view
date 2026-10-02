@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地殻変動・電磁波モニタリングシステム</title>
+    <title>碧AI | 地殻変動・電磁波モニタリングシステム</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -29,9 +29,10 @@
             border-bottom: 1px solid #334155;
         }
         .system-title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             color: #38bdf8;
+            letter-spacing: 0.5px;
         }
         .header-right {
             display: flex;
@@ -392,7 +393,7 @@
             <h2>リアルタイム地殻変動・地震モニタリング</h2>
             
             <h3>1．システム名称</h3>
-            <p>リアルタイム地殻変動・地震モニタリング</p>
+            <p>碧AI | 地殻変動・電磁波モニタリングシステム</p>
 
             <h3>2．システム開発に向けた思い</h3>
             <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
@@ -415,7 +416,7 @@
 
     <!-- ヘッダー -->
     <header>
-        <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
+        <div class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</div>
         <div class="header-right">
             <!-- 地域選択エリア -->
             <div class="area-selector-wrapper">
@@ -575,7 +576,7 @@
 
         // エリア定義
         const areaData = {
-            all: { name: "全国のモニタリング状況", desc: "日本全国の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
+            all: { name: "全国のモニタリング状況", desc: "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
             kanto: { name: "関東エリアの状況", desc: "首都圏周辺の地面のゆがみおよびリアルタイム地震活動。", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
             hokkaido: { name: "北海道エリアの状況", desc: "千島海溝および周辺のリアルタイム地震活動。", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
             tohoku: { name: "東北エリアの状況", desc: "日本海溝周辺のリアルタイム地震活動。", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
@@ -650,7 +651,7 @@
 
             if (hypo.magnitude >= 5.0 || maxScale >= 50) {
                 cardContainer.classList.add('alert-active');
-                cardTitle.textContent = "⚠️️ 強い地震活動の検知（特別警戒）";
+                cardTitle.textContent = "⚠ 強い地震活動の検知（特別警戒）";
                 infoText.textContent = `${latest.time}\n震源地: ${hypo.name}\n規模: M${hypo.magnitude} / ${scaleStr}\n周辺地域では十分注意してください。`;
                 
                 riskLevelEl.textContent = "LEVEL 3（特別警戒）";
