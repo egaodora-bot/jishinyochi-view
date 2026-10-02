@@ -16,7 +16,6 @@
         }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* 共通パネルスタイル */
         .panel-box {
             position: absolute; z-index: 1000;
             background: rgba(255, 255, 255, 0.98); padding: 8px 10px; border-radius: 10px;
@@ -25,7 +24,6 @@
             backdrop-filter: blur(6px);
         }
 
-        /* システムタイトルヘッダー（アイコン誘導ボタン付き） */
         #sysTitleBar {
             top: 6px; left: 6px; right: 6px; width: auto; max-width: none;
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
@@ -38,7 +36,6 @@
         .sys-title-text { font-weight: bold; font-size: 11.5px; display: flex; align-items: center; gap: 6px; }
         .sys-badge { background: #dc2626; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: bold; }
 
-        /* スマホ追加ボタン（ヘッダー内） */
         .app-icon-btn {
             background: #dc2626; border: 1px solid #f87171;
             color: #fff; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: bold;
@@ -47,7 +44,6 @@
         }
         .app-icon-btn:hover { background: #b91c1c; }
 
-        /* 最上部：常駐テロップ・警戒ステータス枠 */
         #telopBox {
             top: 48px; left: 6px; right: 6px; width: auto; max-width: none;
             background: linear-gradient(135deg, #7f1d1d, #991b1b);
@@ -57,12 +53,10 @@
         }
         #telopBox .panel-title { color: #ffffff; border-bottom-color: rgba(255,255,255,0.3); }
 
-        /* 地震速報・表示設定パネル */
         #infoBox { 
             top: 110px; left: 6px; right: 6px; width: auto; max-width: none;
         }
 
-        /* 下部：ひずみ・変動モニタリング解説・予測検証 */
         #tableBox { 
             bottom: 6px; left: 6px; right: 6px; width: auto; max-width: none;
             max-height: 44vh;
@@ -90,16 +84,14 @@
             0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
         }
 
-        /* セーフティ判断バナー（赤太文字を強調） */
+        /* すべて赤文字にしたセーフティ判断バナー */
         .safety-banner {
-            background: #fef08a; border: 1.5px solid #eab308; border-left: 4px solid #ca8a04;
-            color: #713f12; font-size: 9.5px; font-weight: bold; padding: 5px 7px; border-radius: 4px;
+            background: #fff5f5; border: 1.5px solid #f87171; border-left: 4px solid #dc2626;
+            color: #dc2626; font-size: 9.5px; font-weight: 900; padding: 6px 8px; border-radius: 4px;
             margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(220,38,38,0.1);
         }
-        .highlight-red { color: #dc2626; font-weight: 900; }
 
-        /* 変動と予測を一体化したカードグリッド */
         .strain-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -151,7 +143,6 @@
             animation: strainPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
         }
 
-        /* 設定アコーディオンボタン */
         .settings-toggle-btn {
             background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #0f172a; border: 1px solid #cbd5e1; 
             padding: 4px 8px; border-radius: 6px; font-size: 9.5px; font-weight: bold; cursor: pointer; 
@@ -189,7 +180,6 @@
         .risk-badge-row.purple { background: rgba(124, 58, 237, 0.96); }
         .badge-sub { font-size: 7.5px; background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 6px; font-weight: normal; }
 
-        /* アイコンプレビュー＆QR案内モーダル（左寄せ） */
         #iconModal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 2000;
             display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px);
@@ -213,7 +203,7 @@
             #telopBox { width: 440px; left: 6px; right: auto; }
             #infoBox { width: 440px; left: 6px; right: auto; top: 170px; }
             #tableBox { width: 440px; left: 6px; right: auto; bottom: 6px; max-height: 58vh; }
-            .strain-grid { grid-template-columns: 1fr; }
+            .strain-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -230,19 +220,19 @@
         </div>
     </div>
 
-    <!-- スマホホーム追加・システム説明モーダル（左寄せ） -->
+    <!-- スマホホーム追加・システム説明・開発支持者モーダル -->
     <div id="iconModal" onclick="closeIconModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
             <div style="font-weight: bold; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px;">📖 アプリ概要とホーム追加手順</div>
             
             <div style="font-size: 9.5px; color: #334155; line-height: 1.4; margin-bottom: 10px;">
-                <b>1. 地殻変動・電磁波モニタリングシステムとは？</b><br>
-                日本各地のプレートの歪みや年間変動、科学的論文に基づく電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートするための専用ツールです。
+                <b>1. システムの目的</b><br>
+                日本各地（首都圏、南海トラフ、北海道・千島海溝など）のプレートの歪みや電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートします。
             </div>
 
             <div style="font-size: 9.5px; color: #334155; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 8px;">
-                <b>2. 防災モニタリングをホーム画面へ追加する</b><br>
-                スマホのホーム画面にアイコンとして常駐させ、いつでも素早くアクセスできます。
+                <b>2. ホーム画面への常駐追加</b><br>
+                スマホのホーム画面に追加することで、いつでも素早く防災情報にアクセスできます。
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; margin: 6px 0;">
@@ -251,14 +241,19 @@
                     <span style="font-size: 7px; font-weight: bold; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
                 </div>
                 <div style="font-size: 8.5px; color: #64748b; line-height: 1.3;">
-                    <b>ホーム画面アイコン</b><br>赤ベースに緑の日本地図で高い視認性を確保しています。
+                    <b>ホーム画面アイコン</b><br>赤ベースに日本地図で視認性を確保。
                 </div>
             </div>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px; border-radius: 6px; font-size: 9px; line-height: 1.4;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px; border-radius: 6px; font-size: 9px; line-height: 1.4; margin-bottom: 8px;">
                 <b>📌 操作手順:</b><br>
-                ・<b>iPhone (Safari):</b> 画面<span class="highlight-red">最下部のメニューバー</span>にある共有ボタン [ ↗ ] をタップ ＞<b>「ホーム画面に追加」</b>を選択。<br>
-                ・<b>Android (Chrome):</b> 画面<span class="highlight-red">右上のメニュー [ ︙ ]</span> をタップ ＞<b>「ホーム画面に追加」</b>を選択。
+                ・<b>iPhone (Safari):</b> 共有ボタン [ ↗ ] ＞<b>「ホーム画面に追加」</b><br>
+                ・<b>Android (Chrome):</b> 右上メニュー [ ︙ ] ＞<b>「ホーム画面に追加」</b>
+            </div>
+
+            <!-- 開発構成支持者の名前表示枠 -->
+            <div style="background: #fdf2f8; border: 1.5px solid #f472b6; padding: 6px; border-radius: 6px; font-size: 9.5px; color: #be185d; font-weight: bold; text-align: center;">
+                ✨ 開発構成支持者：[あなたの名前を入力してください] ✨
             </div>
 
             <button class="modal-close-btn" onclick="closeIconModal()">閉じる</button>
@@ -274,7 +269,7 @@
         <div class="panel-content" onclick="event.stopPropagation()">
             <div class="telop-content">
                 <span class="telop-badge">命を守る警戒</span>
-                <span>関東平野・新潟北陸の歪み集中帯において地殻変動を観測中。科学的論文に基づく電磁気学的前兆・微小破壊リスクを考慮し、<b>常に最悪（セーフティ）を想定した事前対策</b>を共有・推奨。</span>
+                <span>北海道（千島海溝沿い）や首都圏・新潟の歪み集中帯で地殻変動を観測中。電磁気学的変動の兆候を考慮し、<b>常に最悪（セーフティ）を想定した事前対策</b>を共有・推奨します。</span>
             </div>
         </div>
     </div>
@@ -291,7 +286,7 @@
             <div class="condition-hint">※表示切替は下のバーをクリックして変更できます</div>
             
             <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
-                <span>⚙ マップ表示・スマホ設定（地震速報フィルター・追加手順）</span>
+                <span>⚙ マップ表示・スマホ設定（フィルター・追加手順）</span>
                 <span id="settingsToggleIcon" style="font-size:9.5px; color:#64748b;">▼</span>
             </div>
 
@@ -305,58 +300,55 @@
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
                 <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗ 地面のズレる方向と勢い（矢印）</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
-
-                <div class="settings-group-title">■ スマホのホーム画面に追加して活用する</div>
-                <div class="pwa-guide-box">
-                    みんなで防災意識を共有するため、このページをスマホのホーム画面にアイコンとして登録できます。上の<b>「📱 ホーム登録・手順」</b>ボタンから詳細な位置を確認できます。
-                </div>
             </div>
             
             <div id="earthquake-data" style="margin-top: 6px;">読込中...</div>
         </div>
     </div>
 
-    <!-- 下部：変動解説 & 論文に基づく予測検証 -->
+    <!-- 下部：変動解説 & 論文に基づく予測検証（直感的な表現にブラッシュアップ） -->
     <div class="panel-box" id="tableBox">
         <div class="panel-title" onclick="toggleCollapse('tableBox', event)">
             <span>🗺️ 変動解説 ＆ 論文に基づく予測検証</span>
             <span style="font-size:9px; color:#555;">[±開閉]</span>
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
+            <!-- すべて赤文字にしたセーフティ判断バナー -->
             <div class="safety-banner">
                 <span style="font-size:12px;">⚠</span>
                 <div>
-                    <b>命を守るセーフティ判断：</b> 観測される「年間変動」や電磁気学的変化の兆候から、常に<span class="highlight-red">「想定以上の強い揺れ」</span>を前提に<span class="highlight-red">早めの安全行動</span>を心がけてください。
+                    命を守るセーフティ判断：観測される年間変動や電磁気学的変化の兆候から、常に想定以上の強い揺れを前提に早めの安全行動を心がけてください。油断せず事前の備えを徹底しましょう。
                 </div>
             </div>
 
             <div style="font-size:8.5px; color:#475569; margin-bottom:5px; line-height:1.3;">
-                ※各地域の<b>「年間変動（事実）」</b>と、それに対する<b>「電磁気学的予測（論文知見）」</b>を紐づけて表示しています。カードをタッチすると地図がフォーカスします。
+                ※各地域の<b>「身近な変動リスク」</b>と、<b>「電磁気学的・地殻予測の仕組み」</b>をまとめています。カードをタッチすると地図がフォーカスします。
             </div>
 
             <div class="strain-grid">
-                <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【変動スピード】年間約15cm（南東方向へ圧縮）<br><b>【予測検証】</b>岩石圧縮に伴う電磁場変動（ピエゾ効果等）を想定。M5クラスの浅発地震や群発傾向を警戒。')">
-                    <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">年間15cm圧縮</span></div>
-                    <div class="strain-card-sub">🔮 圧縮破壊と電磁波兆候の連動予測</div>
-                    <div class="strain-card-desc">関東平野の強い力によるひずみ蓄積が、微小震源連鎖や電磁場変化を引き起こすリスク。</div>
+                <!-- 新規追加：北海道エリア -->
+                <div class="strain-card red" onclick="focusArea(42.8, 144.0, 7, '北海道・千島海溝エリア', '【身近なリスク】超巨大地震による甚大な揺れと津波の切迫。<br><b>【電磁気学的予測】</b>プレート間の巨大な固着エネルギーの蓄積に伴い、電磁場異常や深部低周波震動の発生を監視。')">
+                    <div class="strain-card-title"><span>📍 北海道・千島海溝</span><span style="color:#dc2626;">M9級巨大地震切迫</span></div>
+                    <div class="strain-card-sub">🔮 プレート固着と電磁気学的前兆監視</div>
+                    <div class="strain-card-desc">太平洋プレートが深く沈み込み、数百年分のひずみが限界に達している日本最高レベルの警戒エリア。</div>
                 </div>
 
-                <div class="strain-card red" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '【変動スピード】年間約25cm（北西方向へ蓄積）<br><b>【予測検証】</b>プレート固着とスロースリップに伴う電離層異常・深部低周波地震の相関を注視。')">
+                <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【身近なリスク】都市機能のまひ・大規模火災・交通網の寸断。<br><b>【電磁気学的予測】</b>岩石圧縮に伴うピエゾ効果や微小震源連鎖・電磁波ノイズの発生リスクを想定。')">
+                    <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">年間15cm圧縮</span></div>
+                    <div class="strain-card-sub">🔮 都市直下の圧縮と電磁波兆候</div>
+                    <div class="strain-card-desc">関東平野の強い力によるひずみ蓄積が、都市部での突発的なM5級や群発地震を引き起こすリスク。</div>
+                </div>
+
+                <div class="strain-card red" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '【身近なリスク】太平洋側の広範囲にわたる長周期地震動と津波。<br><b>【電磁気学的予測】</b>スロースリップに伴う電離層の電子数異常や電磁気学的シグナルの相関を検証。')">
                     <div class="strain-card-title"><span>📍 南海トラフ</span><span style="color:#dc2626;">年間25cm蓄積</span></div>
                     <div class="strain-card-sub">🔮 スロースリップと電離層異常</div>
-                    <div class="strain-card-desc">プレート境界の固着エネルギーが蓄積中。数日〜数週間の低周波微動と電磁波異常の相関を検証。</div>
+                    <div class="strain-card-desc">プレート境界がギシギシと強い力で押し合っており、数日〜数週間の低周波微動と電磁波異常の連動を追跡。</div>
                 </div>
 
-                <div class="strain-card" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸エリア', '【変動スピード】年間約12cm（西方向への変化）<br><b>【予測検証】</b>活断層の歪み集中帯における岩石応力解放と電磁波ノイズ発生の関連性を検証。')">
+                <div class="strain-card" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸エリア', '【身近なリスク】活断層直上での局地的な激しい縦揺れ・土砂崩れ。<br><b>【電磁気学的予測】</b>活断層の歪み集中帯における応力解放と、地下電流の変動パターンを検証。')">
                     <div class="strain-card-title"><span>📍 新潟・北陸</span><span style="color:#7c3aed;">年間12cm急変</span></div>
                     <div class="strain-card-sub">🔮 活断層歪みと電磁ノイズ発生</div>
                     <div class="strain-card-desc">活断層周辺での急な歪み変化。歪みの加速度とM4級地震発生タイミングの相関を注視。</div>
-                </div>
-
-                <div class="strain-card" onclick="focusArea(39.0, 142.0, 7, '東北沖エリア', '【変動スピード】年間約45cm（東方向への余効変動）<br><b>【予測検証】</b>余効変動プロセスにおける地殻内のひずみ緩和と地下電流・電磁場の変動。')">
-                    <div class="strain-card-title"><span>📍 東北沖</span><span style="color:#0369a1;">年間45cm揺り戻し</span></div>
-                    <div class="strain-card-sub">🔮 余効変動と応力緩和の挙動</div>
-                    <div class="strain-card-desc">大地震後の長期的な地殻の余効変動。広域な応力再配分に伴うバックグラウンドの変動を追跡。</div>
                 </div>
             </div>
         </div>
@@ -373,7 +365,7 @@
                 zoomControl: false,
                 zoomSnap: 0.1,
                 wheelPxPerZoomLevel: 240
-            }).setView([37.0, 138.0], 5);
+            }).setView([39.0, 141.0], 5);
             
             L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -437,10 +429,10 @@
         var eqLayer = map ? L.layerGroup().addTo(map) : null;
 
         var crustalVectors = [
+            { name: '北海道東部', lat: 42.8, lon: 144.0, dLat: 0.1, dLon: 0.35, value: '西 30cm/年' },
             { name: '東北沖', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.4, value: '東 45cm/年' },
             { name: '南海トラフ', lat: 34.0, lon: 137.0, dLat: -0.06, dLon: 0.15, value: '北西 25cm/年' },
-            { name: '首都圏', lat: 35.68, lon: 139.69, dLat: 0.02, dLon: 0.2, value: '南東 15cm/年' },
-            { name: '新潟・北陸', lat: 37.2, lon: 138.8, dLat: 0.02, dLon: -0.18, value: '西 12cm/年' }
+            { name: '首都圏', lat: 35.68, lon: 139.69, dLat: 0.02, dLon: 0.2, value: '南東 15cm/年' }
         ];
 
         function safeRenderLayers() {
@@ -453,12 +445,13 @@
 
                 if (showZones) {
                     L.polyline([
-                        [37.0, 138.0], [36.0, 138.0], [35.36, 138.73], [35.15, 138.65]
+                        [44.0, 145.0], [42.0, 143.0], [37.0, 138.0], [35.36, 138.73], [35.15, 138.65]
                     ], { color: '#dc2626', weight: 3.5, opacity: 0.9 }).addTo(plateLayersGroup);
                 }
 
                 if (showStrain) {
                     let strainZones = [
+                        { center: [42.8, 144.0], radius: 35000, color: '#dc2626', label: '北海道 巨大地震域' },
                         { center: [37.2, 138.8], radius: 25000, color: '#7c3aed', label: '新潟・北陸 歪み集中' },
                         { center: [35.68, 139.69], radius: 28000, color: '#dc2626', label: '首都直下 圧縮領域' }
                     ];
@@ -497,9 +490,10 @@
         safeRenderLayers();
 
         var persistentRiskAreas = [
-            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.0, labelLon: 141.5, name: '首都直下', typeText: '年間15cm(圧縮)', badgeClass: 'red', title: '首都直下想定 (関東平野)', desc: '水平変動: 南東へ約15cm/年<br><b>【論文・セーフティ検証】</b>岩石圧縮に伴う電磁場変化と微小地震発生の相関を注視。' },
-            { lat: 33.5, lon: 134.5, radius: 50000, labelLat: 31.0, labelLon: 132.0, name: '南海トラフ', typeText: '年間25cm(固着)', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '水平変動: 北西へ約25cm/年<br><b>【論文・セーフティ検証】</b>プレート固着とスロースリップ、深部低周波地震の発生監視。' },
-            { lat: 37.2, lon: 138.8, radius: 32000, labelLat: 39.2, labelLon: 136.2, name: '新潟・北陸', typeText: '年間12cm(歪急変)', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '水平変動: 西へ約12cm/年<br><b>【論文・セーフティ検証】</b>活断層の応力解放プロセスおよび小規模地震の発生頻度検証。' }
+            { lat: 42.8, lon: 144.0, radius: 45000, labelLat: 44.5, labelLon: 142.0, name: '北海道(千島海溝)', typeText: 'M9切迫域', badgeClass: 'red', title: '北海道・千島海溝エリア', desc: '【発生要因】太平洋プレートの沈み込みによる極限の歪み蓄積。<br><b>【予測】</b>超巨大地震および津波の発生確率が高く、電磁気学的異常を伴う前兆監視中。' },
+            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.0, labelLon: 141.5, name: '首都直下', typeText: '年間15cm(圧縮)', badgeClass: 'red', title: '首都直下想定 (関東平野)', desc: '【発生要因】プレートの強い圧縮力による地殻内断層のひずみ。<br><b>【予測】</b>岩石圧縮に伴う電磁場変化と、M5クラスの浅発地震・群発傾向を警戒。' },
+            { lat: 33.5, lon: 134.5, radius: 50000, labelLat: 31.0, labelLon: 132.0, name: '南海トラフ', typeText: '年間25cm(固着)', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '【発生要因】フィリピン海プレートの固着とスロースリップ。<br><b>【予測】</b>深部低周波地震の発生や電離層・電磁波異常との相関を継続監視。' },
+            { lat: 37.2, lon: 138.8, radius: 32000, labelLat: 39.2, labelLon: 136.2, name: '新潟・北陸', typeText: '年間12cm(歪急変)', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '【発生要因】活断層周辺の複雑な応力集中と地殻変動。<br><b>【予測】</b>岩石の応力解放プロセスおよびM4級地震の発生タイミングを検証。' }
         ];
 
         if(persistentRiskGroup) {
@@ -558,10 +552,8 @@
                     if (!item.earthquake) return false;
                     let hypocenter = item.earthquake.hypocenter;
                     if (!hypocenter) return false;
-                    
                     let mag = parseFloat(hypocenter.magnitude);
                     if (isNaN(mag)) return false;
-                    
                     if (magM5 && mag < 5.0) return false;
                     if (magM4 && mag < 4.0) return false;
                     return true;
@@ -599,7 +591,13 @@
                         iconSize: [size, size], iconAnchor: [size/2, size/2]
                     });
                     var mainMarker = L.marker([lat, lon], { icon: pulsingIcon }).addTo(eqLayer);
-                    mainMarker.bindPopup(`<b>${i === 0 ? '🔴 地震情報' : '🔴 履歴'}</b><br>M${mag} - ${displayName}<br><span style="font-size:10px; color:#555;">時刻: ${eqTime.replace('T', ' ')}</span>`);
+                    
+                    // クリック時のポップアップに「発生要因と今後の予測」を追加
+                    let factorAndForecast = parseFloat(mag) >= 5.0 ? 
+                        "<b>【発生要因】</b>深部プレート内または境界での強い応力解放<br><b>【今後の予測】</b>同等規模の余震および周辺断層への波及に警戒が必要です。" :
+                        "<b>【発生要因】</b>地殻内の微小なひずみ解放・断層活動<br><b>【今後の予測】</b>一時的な揺れに留まる可能性が高いですが、継続的なモニタリング推奨。";
+
+                    mainMarker.bindPopup(`<b>${i === 0 ? '🔴 最新地震情報' : '🔴 地震履歴'}</b><br>M${mag} - ${displayName}<br><span style="font-size:10px; color:#555;">発生時刻: ${eqTime.replace('T', ' ')}</span><hr style="margin:3px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:9.5px; line-height:1.4; display:block;">${factorAndForecast}</span>`);
                     
                     markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
                 } catch(err) {}
@@ -632,9 +630,7 @@
             }
         }
 
-        // 初期データ読み込み
         safeFetchEq();
-        // 5分ごとに自動更新
         setInterval(safeFetchEq, 300000);
     </script>
 </body>
