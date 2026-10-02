@@ -156,7 +156,7 @@
             margin-bottom: 8px;
         }
         
-        /* 直近の地震活動情報枠（修正） */
+        /* 直近の地震活動情報枠 */
         .emergency-alert-card {
             background: #1e1b4b;
             border: 1px solid #3730a3;
@@ -189,6 +189,7 @@
             color: #e2e8f0;
             line-height: 1.4;
             word-break: break-all;
+            white-space: pre-line;
         }
         .emergency-alert-card.alert-active .info-text-box {
             border: 1px solid #7f1d1d;
@@ -270,7 +271,7 @@
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
-            max-width: 500px;
+            max-width: 520px;
             max-height: 85vh;
             overflow-y: auto;
             padding: 25px;
@@ -324,15 +325,17 @@
 </head>
 <body>
 
-    <!-- ウェルカムモーダル（想いを込めた文章に修正） -->
+    <!-- ウェルカムモーダル（想いを込めた文章に修正・重複解消） -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>リアルタイム地殻変動・地震モニタリング</h2>
-            <p>このシステムは、1995年1月17日発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究に参加していました。その時にもしかしたらと連絡があった東京から関西の間で震度7クラスの地震の可能性がありました。</p>
-            <p>出来れば地震予知は出来なくても予測は出来るようになりたいと思っていた。そんな中、65で退職し再就職したが時間がある為、最近のAIで処理できないかと思っていた。</p>
-            <p>このたび、たくさんの地震関連情報から命を守る為、防災ポータルとして、プログラムを構築しました。</p>
+            <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
+            <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
+            <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
             <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に全件取得し、漏れなくマッピングしています。</p>
-            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、予測しそなえることが出来ますので、自分や家族の命を守るツールとして参考に活用してください。</p>
+            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong>「事前に予測し備える」</strong>ことができます。</p>
+            <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
+            <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
             <ul>
                 <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
                 <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードで上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※発生した赤やオレンジの丸をクリックすると、マグニチュードの大きさを知ることが出来る。</span></li>
@@ -384,7 +387,7 @@
                 <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
             </div>
 
-            <!-- 直近の地震活動情報枠（緊急地震速報の誤解を招かない表現＆文字切れ解消） -->
+            <!-- 直近の地震活動情報枠（強い地震検知時に自動で赤色警戒へ切り替わり） -->
             <div id="alertCardContainer" class="emergency-alert-card">
                 <h3 id="alertCardTitle">直近の地震活動情報</h3>
                 <div id="emergencyInfoText" class="info-text-box">現在、重大な速報値はありません（常時監視中）</div>
@@ -498,7 +501,7 @@
 
                 document.getElementById('apiStatus').textContent = 'ライブAPI全件同期完了';
                 
-                // 最新の地震情報を更新
+                // 最新の地震情報を更新（強い地震の場合は自動で赤色警戒へ）
                 checkEmergencyAlert(data);
 
                 updateArea(document.getElementById('targetArea').value);
@@ -509,7 +512,7 @@
             }
         }
 
-        // 直近の地震活動情報をカードに反映（緊急度に応じたデザイン切り替え）
+        // 直近の地震活動情報をカードに反映（強い地震検知で警告モードに切り替え）
         function checkEmergencyAlert(data) {
             const cardContainer = document.getElementById('alertCardContainer');
             const cardTitle = document.getElementById('alertCardTitle');
@@ -530,7 +533,7 @@
             else if (maxScale >= 70) scaleStr = "震度7";
             else if (maxScale > 0) scaleStr = `最大震度${maxScale/10}`;
 
-            // M5.0以上または震度5弱以上の場合に警戒モード、それ以外は通常情報表示
+            // M5.0以上または震度5弱以上の強い地震を検知した場合は赤枠の警戒モードへ変更
             if (hypo.magnitude >= 5.0 || maxScale >= 50) {
                 cardContainer.classList.add('alert-active');
                 cardTitle.textContent = "⚠️ 強い地震活動の検知";
@@ -538,7 +541,7 @@
             } else {
                 cardContainer.classList.remove('alert-active');
                 cardTitle.textContent = "直近の地震活動情報";
-                infoText.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude} / ${scaleStr}) [${latest.time}]`;
+                infoText.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude} / ${scaleStr})\n発生時刻: ${latest.time}`;
             }
         }
 
@@ -575,7 +578,7 @@
                 return true;
             });
 
-            // ★修正：実際に画面・条件に合致して表示されている件数をカウントして表示
+            // 実際に画面・条件に合致して表示されている件数をカウントして表示
             document.getElementById('quakeCount').textContent = `${filteredQuakes.length} 件表示`;
 
             filteredQuakes.forEach(q => {
