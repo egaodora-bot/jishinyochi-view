@@ -303,7 +303,7 @@
 
                 <div class="settings-group-title">■ マップ上の表示項目</div>
                 <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗️️ 地面のズレる方向と勢い（矢印）</label>
+                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗ 地面のズレる方向と勢い（矢印）</label>
                 <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
 
                 <div class="settings-group-title">■ スマホのホーム画面に追加して活用する</div>
@@ -324,7 +324,7 @@
         </div>
         <div class="panel-content" onclick="event.stopPropagation()">
             <div class="safety-banner">
-                <span style="font-size:12px;">⚠️️</span>
+                <span style="font-size:12px;">⚠</span>
                 <div>
                     <b>命を守るセーフティ判断：</b> 観測される「年間変動」や電磁気学的変化の兆候から、常に<span class="highlight-red">「想定以上の強い揺れ」</span>を前提に<span class="highlight-red">早めの安全行動</span>を心がけてください。
                 </div>
@@ -592,50 +592,50 @@
                     let lon = hypocenter.longitude;
                     if (!lat || lat === -200 || lat === 0 || isNaN(lat)) continue;
 
-                    (function(index, l, lo, m, name, time) {
-                        setTimeout(function() {
-                            try {
-                                if(!eqLayer) return;
-                                let size = Math.max(12, parseFloat(m) * 3.5);
-                                var pulsingIcon = L.divIcon({
-                                    className: '',
-                                    html: `<div class="eq-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
-                                    iconSize: [size, size], iconAnchor: [size/2, size/2]
-                                });
-                                var mainMarker = L.marker([l, lo], { icon: pulsingIcon }).addTo(eqLayer);
-                                mainMarker.bindPopup(`<b>${index === 0 ? '🔴 地震情報' : '🔴 履歴'}</b><br>M${m} - ${name}<br><span style="font-size:10px; color:#555;">時刻: ${time.replace('T', ' ')}</span>`);
-                                markerMap["eq_" + index] = { marker: mainMarker, lat: l, lon: lo };
-                            } catch(err) {}
-                        }, index * 30);
-                    })(i, lat, lon, mag, displayName, eqTime);
-                } catch(innerErr) {}
+                    let size = Math.max(12, parseFloat(mag) * 3.5);
+                    var pulsingIcon = L.divIcon({
+                        className: '',
+                        html: `<div class="eq-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
+                        iconSize: [size, size], iconAnchor: [size/2, size/2]
+                    });
+                    var mainMarker = L.marker([lat, lon], { icon: pulsingIcon }).addTo(eqLayer);
+                    mainMarker.bindPopup(`<b>${i === 0 ? '🔴 地震情報' : '🔴 履歴'}</b><br>M${mag} - ${displayName}<br><span style="font-size:10px; color:#555;">時刻: ${eqTime.replace('T', ' ')}</span>`);
+                    
+                    markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
+                } catch(err) {}
             }
 
-            if (filteredData.length === 0) {
-                html = `<div style="padding: 6px; background:#f8fafc; color: #475569; font-size: 9.5px; text-align: center; border-radius: 4px; border: 1px dashed #cbd5e1; font-weight: bold;">
-                            ✅ 現在、指定条件に一致する地震速報はありません。<br>
-                            <span style="font-size:8.5px; color:#64748b; font-weight:normal;">（平常監視中：電磁気学的前兆・異常連鎖は検知されていません）</span>
-                        </div>`;
+            if(filteredData.length === 0) {
+                html = `<div style="padding:6px; font-size:9px; color:#64748b; text-align:center;">条件に一致する地震情報がないか、データを取得できませんでした。</div>`;
             }
 
-            document.getElementById('earthquake-data').innerHTML = html;
-            document.getElementById('update-time').innerText = "データ更新: " + new Date().toLocaleTimeString();
+            if(document.getElementById('earthquake-data')) {
+                document.getElementById('earthquake-data').innerHTML = html;
+            }
+            if(document.getElementById('update-time')) {
+                let now = new Date();
+                document.getElementById('update-time').innerText = "最終更新: " + now.toLocaleTimeString();
+            }
         }
 
         function highlightAndOpenPopup(id) {
-            try {
-                document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-                document.getElementById(id)?.classList.add('highlighted');
-                if (markerMap[id] && map) {
-                    let m = markerMap[id];
-                    map.setView([m.lat, m.lon], 8);
-                    m.marker.openPopup();
-                }
-            } catch(e) {}
+            document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
+            let targetEl = document.getElementById(id);
+            if(targetEl) {
+                targetEl.classList.add('highlighted');
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            let info = markerMap[id];
+            if(info && map) {
+                map.setView([info.lat, info.lon], 8);
+                info.marker.openPopup();
+            }
         }
 
+        // 初期データ読み込み
         safeFetchEq();
-        setInterval(() => { safeFetchEq(); }, 15000);
+        // 5分ごとに自動更新
+        setInterval(safeFetchEq, 300000);
     </script>
 </body>
 </html>
