@@ -227,6 +227,14 @@
             color: #f1f5f9;
             margin: 0;
             font-size: 11px;
+            line-height: 1.4;
+        }
+        .level-criteria-desc {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #334155;
+            font-size: 10.5px;
+            line-height: 1.4;
         }
 
         .safety-notice {
@@ -271,7 +279,7 @@
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
-            max-width: 520px;
+            max-width: 540px;
             max-height: 85vh;
             overflow-y: auto;
             padding: 25px;
@@ -284,11 +292,22 @@
             margin-top: 0;
             font-size: 16px;
             color: #38bdf8;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 8px;
+        }
+        .modal-box h3 {
+            font-size: 13px;
+            color: #38bdf8;
+            margin: 14px 0 4px 0;
         }
         .modal-box p, .modal-box ul {
-            font-size: 12px;
+            font-size: 11.5px;
             color: #e2e8f0;
             line-height: 1.6;
+            margin: 0 0 8px 0;
+        }
+        .modal-box ul {
+            padding-left: 16px;
         }
         .modal-close-btn {
             display: block;
@@ -325,21 +344,29 @@
 </head>
 <body>
 
-    <!-- ウェルカムモーダル（想いを込めた文章に修正・重複解消） -->
+    <!-- ウェルカムモーダル（ご指定の中区分付きの文章） -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>リアルタイム地殻変動・地震モニタリング</h2>
+            
+            <h3>1．システム名称</h3>
+            <p>リアルタイム地殻変動・地震モニタリング</p>
+
+            <h3>2．システム開発に向けた思い</h3>
             <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
             <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
             <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
+
+            <h3>3．システム構成と、命を守る目的のために。。。</h3>
             <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に全件取得し、漏れなくマッピングしています。</p>
-            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong>「事前に予測し備える」</strong>ことができます。</p>
-            <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
-            <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
             <ul>
                 <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
                 <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードで上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※発生した赤やオレンジの丸をクリックすると、マグニチュードの大きさを知ることが出来る。</span></li>
             </ul>
+            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong>「事前に予測し備える」</strong>ことができます。</p>
+            <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
+            <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
+
             <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
         </div>
     </div>
@@ -387,7 +414,7 @@
                 <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
             </div>
 
-            <!-- 直近の地震活動情報枠（強い地震検知時に自動で赤色警戒へ切り替わり） -->
+            <!-- 直近の地震活動情報枠 -->
             <div id="alertCardContainer" class="emergency-alert-card">
                 <h3 id="alertCardTitle">直近の地震活動情報</h3>
                 <div id="emergencyInfoText" class="info-text-box">現在、重大な速報値はありません（常時監視中）</div>
@@ -404,9 +431,15 @@
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
+                <!-- 警戒レベルの基準解説付きリスク地域ボックス -->
                 <div class="impact-box">
                     <h4 id="impactTitle">【リスク地域および想定される影響】</h4>
                     <p id="impactDesc">リアルタイムの震源データおよびプレート境界のひずみ蓄積状況を常時反映しています。</p>
+                    <div id="levelCriteriaDesc" class="level-criteria-desc" style="color: #38bdf8;">
+                        ※LEVEL 1（平時・注意）：直近で目立った大地震がなく、通常の監視状態。<br>
+                        ※LEVEL 2（総合警戒）：中規模の地震活動が複数見られ、突発的な事象に備える状態。<br>
+                        ※LEVEL 3（特別警戒）：直近でM5.0以上または震度5弱以上の強い地震を検知した状態。
+                    </div>
                 </div>
             </div>
 
@@ -501,8 +534,8 @@
 
                 document.getElementById('apiStatus').textContent = 'ライブAPI全件同期完了';
                 
-                // 最新の地震情報を更新（強い地震の場合は自動で赤色警戒へ）
-                checkEmergencyAlert(data);
+                // 最新の地震情報および警戒レベルの自動判定
+                evaluateSystemStatus(data);
 
                 updateArea(document.getElementById('targetArea').value);
             } catch (error) {
@@ -512,11 +545,13 @@
             }
         }
 
-        // 直近の地震活動情報をカードに反映（強い地震検知で警告モードに切り替え）
-        function checkEmergencyAlert(data) {
+        // 警戒レベルおよび直近情報の自動判定ロジック
+        function evaluateSystemStatus(data) {
             const cardContainer = document.getElementById('alertCardContainer');
             const cardTitle = document.getElementById('alertCardTitle');
             const infoText = document.getElementById('emergencyInfoText');
+            const riskLevelEl = document.getElementById('riskLevel');
+            const criteriaDesc = document.getElementById('levelCriteriaDesc');
             
             if (!data || data.length === 0) return;
 
@@ -533,15 +568,27 @@
             else if (maxScale >= 70) scaleStr = "震度7";
             else if (maxScale > 0) scaleStr = `最大震度${maxScale/10}`;
 
-            // M5.0以上または震度5弱以上の強い地震を検知した場合は赤枠の警戒モードへ変更
+            // レベル自動判定（M5.0以上または震度5弱以上ならLEVEL 3、それ以外は状況に応じてLEVEL 2または1）
             if (hypo.magnitude >= 5.0 || maxScale >= 50) {
+                // LEVEL 3（特別警戒）
                 cardContainer.classList.add('alert-active');
-                cardTitle.textContent = "⚠️ 強い地震活動の検知";
+                cardTitle.textContent = "⚠️ 強い地震活動の検知（特別警戒）";
                 infoText.textContent = `${latest.time}\n震源地: ${hypo.name}\n規模: M${hypo.magnitude} / ${scaleStr}\n周辺地域では十分注意してください。`;
+                
+                riskLevelEl.textContent = "LEVEL 3（特別警戒）";
+                riskLevelEl.className = "risk-level-high";
+                criteriaDesc.style.color = "#f87171"; // 赤文字
+                criteriaDesc.innerHTML = "<strong>【現在の適用基準：LEVEL 3】</strong><br>直近でM5.0以上または震度5弱以上の強い地震を検知した状態。余震や二次災害に警戒してください。";
             } else {
+                // LEVEL 2（総合警戒：平常時の常時監視）
                 cardContainer.classList.remove('alert-active');
                 cardTitle.textContent = "直近の地震活動情報";
                 infoText.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude} / ${scaleStr})\n発生時刻: ${latest.time}`;
+                
+                riskLevelEl.textContent = "LEVEL 2（総合警戒）";
+                riskLevelEl.className = "risk-level-mid";
+                criteriaDesc.style.color = "#fbbf24"; // 黄・青系
+                criteriaDesc.innerHTML = "<strong>【現在の適用基準：LEVEL 2】</strong><br>中規模の地震活動が見られ、突発的な事象に備える状態です。<br><span style='color: #38bdf8;'>※平時はLEVEL 1〜2で常時モニタリングを行っています。</span>";
             }
         }
 
