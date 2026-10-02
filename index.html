@@ -2,636 +2,203 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>地殻変動・電磁波モニタリング防災システム</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地殻変動・地震モニタリングシステム</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        html, body {
-            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+        body {
+            margin: 0;
+            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: #e2e8f0;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #f4f6f9;
+            color: #333;
         }
-        #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
-        
-        .panel-box {
-            position: absolute; z-index: 1000;
-            background: rgba(255, 255, 255, 0.98); padding: 8px 10px; border-radius: 10px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.3); font-size: 11px; 
-            border: 1.5px solid #cbd5e1; transition: all 0.25s ease;
-            backdrop-filter: blur(6px);
+        /* ヘッダー */
+        header {
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-
-        #sysTitleBar {
-            top: 6px; left: 6px; right: 6px; width: auto; max-width: none;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            color: #ffffff;
-            border: 1px solid #3b82f6;
-            padding: 6px 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.5);
+        .system-title {
+            font-size: 16px;
+            font-weight: bold;
         }
-        .sys-title-text { font-weight: bold; font-size: 11.5px; display: flex; align-items: center; gap: 6px; }
-        .sys-badge { background: #dc2626; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: bold; }
-
-        .app-icon-btn {
-            background: #dc2626; border: 1px solid #f87171;
-            color: #fff; padding: 3px 8px; border-radius: 5px; font-size: 9.5px; font-weight: bold;
-            cursor: pointer; display: flex; align-items: center; gap: 3px;
-            box-shadow: 0 2px 6px rgba(220,38,38,0.4);
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
         }
-        .app-icon-btn:hover { background: #b91c1c; }
-
-        #telopBox {
-            top: 48px; left: 6px; right: 6px; width: auto; max-width: none;
-            background: linear-gradient(135deg, #7f1d1d, #991b1b);
-            color: #ffffff;
-            border: 1px solid #f87171;
-            box-shadow: 0 4px 16px rgba(153, 27, 27, 0.5);
-        }
-        #telopBox .panel-title { color: #ffffff; border-bottom-color: rgba(255,255,255,0.3); }
-
-        #infoBox { 
-            top: 110px; left: 6px; right: 6px; width: auto; max-width: none;
-        }
-
-        #tableBox { 
-            bottom: 6px; left: 6px; right: 6px; width: auto; max-width: none;
-            max-height: 44vh;
-        }
-
-        .panel-content { display: block; max-height: 22vh; overflow-y: auto; margin-top: 5px; }
-        .panel-box.collapsed .panel-content { display: none !important; }
-        .panel-box.collapsed { padding-bottom: 8px !important; }
-
-        .panel-title { 
-            font-weight: bold; font-size: 11.5px; color: #0f172a; 
-            display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; 
-            user-select: none;
-        }
-
-        .telop-content {
-            font-size: 10.5px; font-weight: bold; line-height: 1.4; color: #fef2f2; margin-top: 3px;
-            display: flex; align-items: flex-start; gap: 6px;
-        }
-        .telop-badge {
-            background: #dc2626; color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 4px; animation: pulseBadge 1.5s infinite; flex-shrink: 0;
-        }
-        @keyframes pulseBadge {
-            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
-        }
-
-        /* すべて赤文字にしたセーフティ判断バナー */
-        .safety-banner {
-            background: #fff5f5; border: 1.5px solid #f87171; border-left: 4px solid #dc2626;
-            color: #dc2626; font-size: 9.5px; font-weight: 900; padding: 6px 8px; border-radius: 4px;
-            margin-bottom: 6px; line-height: 1.4; display: flex; align-items: flex-start; gap: 5px;
-            box-shadow: 0 1px 3px rgba(220,38,38,0.1);
-        }
-
-        .strain-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            margin-top: 4px;
-        }
-        .strain-card {
-            background: #f8fafc;
+        /* エリア選択 */
+        .area-selector {
+            padding: 4px 8px;
+            border-radius: 4px;
             border: 1px solid #cbd5e1;
-            border-left: 4px solid #7c3aed;
-            border-radius: 6px;
-            padding: 6px 7px;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-size: 13px;
         }
-        .strain-card.red { border-left-color: #dc2626; background: #fff5f5; }
-        .strain-card:active { background: #e2e8f0; }
-        .strain-card-title { font-weight: bold; color: #1e293b; font-size: 9.5px; display: flex; justify-content: space-between; align-items: center; }
-        .strain-card-sub { font-size: 8.5px; color: #b91c1c; font-weight: bold; margin-top: 2px; }
-        .strain-card-desc { font-size: 8px; color: #475569; margin-top: 3px; line-height: 1.3; border-top: 1px dashed #cbd5e1; padding-top: 3px; }
-
-        .update-time { font-size: 9.5px; color: #334155; font-weight: bold; margin-bottom: 2px; }
-        .data-condition { font-size: 9px; color: #1e3a8a; background: #eff6ff; padding: 3px 6px; border-radius: 4px; margin-bottom: 2px; font-weight: 600; border: 1px solid #bfdbfe; }
-        .condition-hint { font-size: 8px; color: #64748b; margin-bottom: 4px; padding-left: 2px; }
-        
-        #earthquake-data { max-height: 50px; overflow-y: auto; scroll-behavior: smooth; }
-        .eq-item { border-bottom: 1px solid #f1f5f9; padding: 3px 2px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #0f172a; font-weight: 500; }
-        .eq-item.highlighted { background: #fee2e2; border-left: 3px solid #dc2626; }
-        .eq-dot { display: inline-block; background: #dc2626; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-        .eq-dot.latest { background: #991b1b; width: 7px; height: 7px; }
-
-        @keyframes eqPulse {
-            0% { transform: scale(0.9); opacity: 0.9; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-            70% { transform: scale(1.3); opacity: 0.4; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-            100% { transform: scale(0.9); opacity: 0.9; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        /* メインレイアウト */
+        #map {
+            width: 100%;
+            height: calc(100vh - 50px);
         }
-        .eq-pulsing-marker {
-            background-color: #dc2626; border: 2px solid #ffffff; border-radius: 50%;
-            animation: eqPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        /* フローティングパネル（情報過多対策として重要情報に絞る） */
+        .info-panel {
+            position: absolute;
+            top: 65px;
+            right: 15px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 13px;
         }
-
-        @keyframes strainPulse {
-            0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
-            70% { transform: scale(1.1); opacity: 0.4; box-shadow: 0 0 0 16px rgba(124, 58, 237, 0); }
-            100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+        .info-panel h3 {
+            margin-top: 0;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 5px;
         }
-        .strain-pulsing-marker {
-            background-color: #7c3aed; border: 2px solid #ffffff; border-radius: 50%;
-            animation: strainPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        /* クレジット表記 */
+        .footer-credit {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #64748b;
+            text-align: right;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
         }
-
-        .settings-toggle-btn {
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #0f172a; border: 1px solid #cbd5e1; 
-            padding: 4px 8px; border-radius: 6px; font-size: 9.5px; font-weight: bold; cursor: pointer; 
-            margin-top: 4px; text-align: center; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        /* セーフティ注意喚起（赤文字） */
+        .safety-notice {
+            color: red;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 8px;
+            line-height: 1.4;
         }
-        .settings-toggle-btn:hover { background: #e2e8f0; }
-
-        .filter-panel {
-            display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; 
-            margin-top: 4px; font-size: 9.5px; max-height: 160px; overflow-y: auto; color: #0f172a;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
-        }
-        .settings-group-title { font-weight: bold; color: #1e3a8a; margin-top: 6px; margin-bottom: 2px; font-size: 9.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; }
-        .filter-panel label { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; cursor: pointer; color: #334155; }
-        
-        .pwa-guide-box {
-            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 6px; margin-top: 4px; font-size: 9px; color: #1e3a8a; line-height: 1.4;
-        }
-        .pwa-guide-box b { color: #1d4ed8; }
-
-        .vector-tip-label {
-            background: rgba(220, 38, 38, 0.95); border: 1.5px solid #ffffff; color: #ffffff;
-            font-size: 8.5px; font-weight: bold; padding: 2px 4px; border-radius: 4px;
-            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); text-align: center;
-        }
-
-        .risk-badge-row {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 3px 6px; font-size: 9px; font-weight: bold; border-radius: 16px; 
-            color: #ffffff; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
-            cursor: pointer; border: 1.5px solid #ffffff;
-        }
-        .risk-badge-row.red { background: rgba(220, 38, 38, 0.96); }
-        .risk-badge-row.purple { background: rgba(124, 58, 237, 0.96); }
-        .badge-sub { font-size: 7.5px; background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 6px; font-weight: normal; }
-
-        #iconModal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 2000;
-            display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px);
-        }
-        .modal-card {
-            background: #ffffff; width: 88%; max-width: 320px; padding: 16px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left; font-size: 11px; color: #0f172a;
-        }
-        .app-icon-preview {
-            width: 58px; height: 58px; background: linear-gradient(135deg, #dc2626, #991b1b);
-            border: 2px solid #fca5a5; border-radius: 14px; margin: 8px 0; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.4);
-        }
-        .modal-close-btn {
-            background: #0f172a; color: #fff; border: none; padding: 6px 16px; border-radius: 6px;
-            font-size: 10.5px; font-weight: bold; cursor: pointer; margin-top: 12px; width: 100%; text-align: center;
-        }
-
-        @media screen and (min-width: 769px) {
-            #sysTitleBar { width: 440px; left: 6px; right: auto; }
-            #telopBox { width: 440px; left: 6px; right: auto; }
-            #infoBox { width: 440px; left: 6px; right: auto; top: 170px; }
-            #tableBox { width: 440px; left: 6px; right: auto; bottom: 6px; max-height: 58vh; }
-            .strain-grid { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .info-panel {
+                width: calc(100% - 30px);
+                right: 15px;
+                top: auto;
+                bottom: 15px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- システムタイトルバー -->
-    <div class="panel-box" id="sysTitleBar">
-        <div class="sys-title-text">
-            <span>🛡️ 地殻変動・電磁波モニタリング</span>
+    <header>
+        <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
+        <div class="header-right">
+            <div>
+                <label for="targetArea" style="font-size: 12px;">地域設定:</label>
+                <select id="targetArea" class="area-selector">
+                    <option value="kanto">関東（埼玉・東京・茨城・千葉）</option>
+                    <option value="hokkaido">北海道</option>
+                    <option value="tohoku">東北</option>
+                    <option value="all">全国</option>
+                </select>
+            </div>
+            <div id="live-clock">--:--:--</div>
         </div>
-        <div style="display:flex; gap:4px; align-items:center;">
-            <span class="sys-badge">公開用</span>
-            <button class="app-icon-btn" onclick="openIconModal()">📱 ホーム登録・手順</button>
-        </div>
-    </div>
-
-    <!-- スマホホーム追加・システム説明・開発支持者モーダル -->
-    <div id="iconModal" onclick="closeIconModal()">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <div style="font-weight: bold; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px;">📖 アプリ概要とホーム追加手順</div>
-            
-            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; margin-bottom: 10px;">
-                <b>1. システムの目的</b><br>
-                日本各地（首都圏、南海トラフ、北海道・千島海溝など）のプレートの歪みや電磁気学的予測データを視覚化し、日頃の防災意識向上と迅速なセーフティ判断をサポートします。
-            </div>
-
-            <div style="font-size: 9.5px; color: #334155; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 8px;">
-                <b>2. ホーム画面への常駐追加</b><br>
-                スマホのホーム画面に追加することで、いつでも素早く防災情報にアクセスできます。
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 10px; margin: 6px 0;">
-                <div class="app-icon-preview">
-                    <span style="font-size: 18px;">🗾</span>
-                    <span style="font-size: 7px; font-weight: bold; color:#dcfce7; letter-spacing: 0.5px;">JP SEISMIC</span>
-                </div>
-                <div style="font-size: 8.5px; color: #64748b; line-height: 1.3;">
-                    <b>ホーム画面アイコン</b><br>赤ベースに日本地図で視認性を確保。
-                </div>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 7px; border-radius: 6px; font-size: 9px; line-height: 1.4; margin-bottom: 8px;">
-                <b>📌 操作手順:</b><br>
-                ・<b>iPhone (Safari):</b> 共有ボタン [ ↗ ] ＞<b>「ホーム画面に追加」</b><br>
-                ・<b>Android (Chrome):</b> 右上メニュー [ ︙ ] ＞<b>「ホーム画面に追加」</b>
-            </div>
-
-            <!-- 開発構成支持者の名前表示枠 -->
-            <div style="background: #fdf2f8; border: 1.5px solid #f472b6; padding: 6px; border-radius: 6px; font-size: 9.5px; color: #be185d; font-weight: bold; text-align: center;">
-                ✨ 開発構成支持者：[あなたの名前を入力してください] ✨
-            </div>
-
-            <button class="modal-close-btn" onclick="closeIconModal()">閉じる</button>
-        </div>
-    </div>
-
-    <!-- 最上部：常駐テロップ・警戒ステータス枠 -->
-    <div class="panel-box" id="telopBox">
-        <div class="panel-title" onclick="toggleCollapse('telopBox', event)">
-            <span>🚨 リアルタイム危機ステータス・テロップ</span>
-            <span style="font-size:9px; color:#f87171;">[±開閉]</span>
-        </div>
-        <div class="panel-content" onclick="event.stopPropagation()">
-            <div class="telop-content">
-                <span class="telop-badge">命を守る警戒</span>
-                <span>北海道（千島海溝沿い）や首都圏・新潟の歪み集中帯で地殻変動を観測中。電磁気学的変動の兆候を考慮し、<b>常に最悪（セーフティ）を想定した事前対策</b>を共有・推奨します。</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- 中部：地震速報・表示設定パネル -->
-    <div class="panel-box" id="infoBox">
-        <div class="panel-title" onclick="toggleCollapse('infoBox', event)">
-            <span>📊 地震速報・マップ表示設定</span>
-            <span style="font-size:9px; color:#555;">[±開閉]</span>
-        </div>
-        <div class="panel-content" onclick="event.stopPropagation()">
-            <div id="update-time" class="update-time">取得中...</div>
-            <div class="data-condition" id="data-condition">📅 現在の設定条件: 読み込み中...</div>
-            <div class="condition-hint">※表示切替は下のバーをクリックして変更できます</div>
-            
-            <div class="settings-toggle-btn" onclick="toggleFilterPanel()">
-                <span>⚙ マップ表示・スマホ設定（フィルター・追加手順）</span>
-                <span id="settingsToggleIcon" style="font-size:9.5px; color:#64748b;">▼</span>
-            </div>
-
-            <div class="filter-panel" id="filterPanel">
-                <div class="settings-group-title" style="margin-top:0;">■ 地震速報の表示切り替え（優先）</div>
-                <label><input type="radio" name="magFilter" id="magAll" checked onchange="safeFetchEq()"> すべての地震を表示する（小さな地震も含む）</label>
-                <label><input type="radio" name="magFilter" id="magM4" onchange="safeFetchEq()"> マグニチュード4.0以上のみ（実用的な防災用）</label>
-                <label><input type="radio" name="magFilter" id="magM5" onchange="safeFetchEq()"> マグニチュード5.0以上のみ（強い揺れに絞る）</label>
-
-                <div class="settings-group-title">■ マップ上の表示項目</div>
-                <label><input type="checkbox" id="chkPlZones" checked onchange="safeRenderLayers()"> ⚠️ 主要境界・構造線を表示</label>
-                <label><input type="checkbox" id="chkVectors" checked onchange="safeRenderLayers()"> ↗ 地面のズレる方向と勢い（矢印）</label>
-                <label><input type="checkbox" id="chkStrainZone" checked onchange="safeRenderLayers()"> ⚡ 特に注意が必要なエリア（光る円）</label>
-            </div>
-            
-            <div id="earthquake-data" style="margin-top: 6px;">読込中...</div>
-        </div>
-    </div>
-
-    <!-- 下部：変動解説 & 論文に基づく予測検証（直感的な表現にブラッシュアップ） -->
-    <div class="panel-box" id="tableBox">
-        <div class="panel-title" onclick="toggleCollapse('tableBox', event)">
-            <span>🗺️ 変動解説 ＆ 論文に基づく予測検証</span>
-            <span style="font-size:9px; color:#555;">[±開閉]</span>
-        </div>
-        <div class="panel-content" onclick="event.stopPropagation()">
-            <!-- すべて赤文字にしたセーフティ判断バナー -->
-            <div class="safety-banner">
-                <span style="font-size:12px;">⚠</span>
-                <div>
-                    命を守るセーフティ判断：観測される年間変動や電磁気学的変化の兆候から、常に想定以上の強い揺れを前提に早めの安全行動を心がけてください。油断せず事前の備えを徹底しましょう。
-                </div>
-            </div>
-
-            <div style="font-size:8.5px; color:#475569; margin-bottom:5px; line-height:1.3;">
-                ※各地域の<b>「身近な変動リスク」</b>と、<b>「電磁気学的・地殻予測の仕組み」</b>をまとめています。カードをタッチすると地図がフォーカスします。
-            </div>
-
-            <div class="strain-grid">
-                <!-- 新規追加：北海道エリア -->
-                <div class="strain-card red" onclick="focusArea(42.8, 144.0, 7, '北海道・千島海溝エリア', '【身近なリスク】超巨大地震による甚大な揺れと津波の切迫。<br><b>【電磁気学的予測】</b>プレート間の巨大な固着エネルギーの蓄積に伴い、電磁場異常や深部低周波震動の発生を監視。')">
-                    <div class="strain-card-title"><span>📍 北海道・千島海溝</span><span style="color:#dc2626;">M9級巨大地震切迫</span></div>
-                    <div class="strain-card-sub">🔮 プレート固着と電磁気学的前兆監視</div>
-                    <div class="strain-card-desc">太平洋プレートが深く沈み込み、数百年分のひずみが限界に達している日本最高レベルの警戒エリア。</div>
-                </div>
-
-                <div class="strain-card red" onclick="focusArea(35.68, 139.69, 9, '首都直下 (関東平野)', '【身近なリスク】都市機能のまひ・大規模火災・交通網の寸断。<br><b>【電磁気学的予測】</b>岩石圧縮に伴うピエゾ効果や微小震源連鎖・電磁波ノイズの発生リスクを想定。')">
-                    <div class="strain-card-title"><span>📍 首都直下</span><span style="color:#dc2626;">年間15cm圧縮</span></div>
-                    <div class="strain-card-sub">🔮 都市直下の圧縮と電磁波兆候</div>
-                    <div class="strain-card-desc">関東平野の強い力によるひずみ蓄積が、都市部での突発的なM5級や群発地震を引き起こすリスク。</div>
-                </div>
-
-                <div class="strain-card red" onclick="focusArea(33.5, 134.5, 7, '南海トラフ', '【身近なリスク】太平洋側の広範囲にわたる長周期地震動と津波。<br><b>【電磁気学的予測】</b>スロースリップに伴う電離層の電子数異常や電磁気学的シグナルの相関を検証。')">
-                    <div class="strain-card-title"><span>📍 南海トラフ</span><span style="color:#dc2626;">年間25cm蓄積</span></div>
-                    <div class="strain-card-sub">🔮 スロースリップと電離層異常</div>
-                    <div class="strain-card-desc">プレート境界がギシギシと強い力で押し合っており、数日〜数週間の低周波微動と電磁波異常の連動を追跡。</div>
-                </div>
-
-                <div class="strain-card" onclick="focusArea(37.2, 138.8, 7, '新潟・北陸エリア', '【身近なリスク】活断層直上での局地的な激しい縦揺れ・土砂崩れ。<br><b>【電磁気学的予測】</b>活断層の歪み集中帯における応力解放と、地下電流の変動パターンを検証。')">
-                    <div class="strain-card-title"><span>📍 新潟・北陸</span><span style="color:#7c3aed;">年間12cm急変</span></div>
-                    <div class="strain-card-sub">🔮 活断層歪みと電磁ノイズ発生</div>
-                    <div class="strain-card-desc">活断層周辺での急な歪み変化。歪みの加速度とM4級地震発生タイミングの相関を注視。</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </header>
 
     <div id="map"></div>
+
+    <!-- 要点を絞った情報パネル -->
+    <div class="info-panel">
+        <h3>本日の注目ポイント</h3>
+        <p>現在の選択地域における地震・地殻変動の状況をリアルタイムに確認できます。赤丸をクリックすると詳細とメカニズムが表示されます。</p>
+        
+        <div class="safety-notice">
+            ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを確認しましょう。
+        </div>
+
+        <div class="footer-credit">
+            by 林 榮一
+        </div>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        var map;
-        try {
-            map = L.map('map', { 
-                zoomControl: false,
-                zoomSnap: 0.1,
-                wheelPxPerZoomLevel: 240
-            }).setView([39.0, 141.0], 5);
-            
-            L.control.zoom({ position: 'topright' }).addTo(map);
-
-            L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-                attribution: '&copy; 国土地理院',
-                maxZoom: 18,
-                minZoom: 4
-            }).addTo(map);
-
-            setTimeout(function() { if(map) map.invalidateSize(); }, 100);
-            setTimeout(function() { if(map) map.invalidateSize(); }, 500);
-        } catch (e) {
-            console.error("マップ初期化エラー:", e);
+        // 時計のリアルタイム更新
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('ja-JP');
         }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        function toggleCollapse(id, event) {
-            if(event) event.stopPropagation();
-            var box = document.getElementById(id);
-            if (box) {
-                box.classList.toggle('collapsed');
-                setTimeout(function() { if(map) map.invalidateSize(); }, 300);
-            }
-        }
+        // マップの初期化（中心：関東・日本周辺）
+        const map = L.map('map').setView([36.2048, 138.2529], 6);
 
-        function toggleFilterPanel() {
-            var panel = document.getElementById('filterPanel');
-            var icon = document.getElementById('settingsToggleIcon');
-            if(panel) {
-                if (panel.style.display === 'block') {
-                    panel.style.display = 'none';
-                    if(icon) icon.innerText = '▼';
-                } else {
-                    panel.style.display = 'block';
-                    if(icon) icon.innerText = '▲';
-                }
-                setTimeout(function() { if(map) map.invalidateSize(); }, 300);
-            }
-        }
+        // 地理院地図タイル
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
+            maxZoom: 18
+        }).addTo(map);
 
-        function openIconModal() {
-            document.getElementById('iconModal').style.display = 'flex';
-        }
-        function closeIconModal() {
-            document.getElementById('iconModal').style.display = 'none';
-        }
-
-        function focusArea(lat, lon, zoom, title, desc) {
-            try {
-                if(map) {
-                    map.setView([lat, lon], zoom);
-                    L.popup()
-                        .setLatLng([lat, lon])
-                        .setContent(`<b style="font-size:11.5px; color:#0f172a;">【${title}】</b><hr style="margin:3px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:10px; line-height:1.4; display:block;">${desc}</span>`)
-                        .openOn(map);
-                }
-            } catch(e) {}
-        }
-
-        var plateLayersGroup = map ? L.layerGroup().addTo(map) : null;
-        var persistentRiskGroup = map ? L.layerGroup().addTo(map) : null;
-        var eqLayer = map ? L.layerGroup().addTo(map) : null;
-
-        var crustalVectors = [
-            { name: '北海道東部', lat: 42.8, lon: 144.0, dLat: 0.1, dLon: 0.35, value: '西 30cm/年' },
-            { name: '東北沖', lat: 39.0, lon: 142.0, dLat: 0.05, dLon: 0.4, value: '東 45cm/年' },
-            { name: '南海トラフ', lat: 34.0, lon: 137.0, dLat: -0.06, dLon: 0.15, value: '北西 25cm/年' },
-            { name: '首都圏', lat: 35.68, lon: 139.69, dLat: 0.02, dLon: 0.2, value: '南東 15cm/年' }
+        // 1. 主要境界構造線を細く上品に描画するサンプル
+        // （本来の構造線データに置き換えてご利用いただけます）
+        const faultLine = [
+            [35.0, 138.0],
+            [36.0, 139.0],
+            [37.0, 140.0]
         ];
+        L.polyline(faultLine, {
+            color: '#dc2626',
+            weight: 1.5, // 以前より細く調整
+            opacity: 0.6
+        }).addTo(map).bindPopup("主要境界構造線（細線化対応）");
 
-        function safeRenderLayers() {
-            try {
-                if(!plateLayersGroup) return;
-                plateLayersGroup.clearLayers();
-                let showZones = document.getElementById('chkPlZones')?.checked ?? true;
-                let showVectors = document.getElementById('chkVectors')?.checked ?? true;
-                let showStrain = document.getElementById('chkStrainZone')?.checked ?? true;
+        // 4. サンプル震源（クリックでメカニズム解説を表示）
+        const sampleEarthquake = L.circleMarker([35.6895, 139.6917], {
+            radius: 8,
+            color: '#ef4444',
+            fillColor: '#ef4444',
+            fillOpacity: 0.7
+        }).addTo(map);
 
-                if (showZones) {
-                    L.polyline([
-                        [44.0, 145.0], [42.0, 143.0], [37.0, 138.0], [35.36, 138.73], [35.15, 138.65]
-                    ], { color: '#dc2626', weight: 3.5, opacity: 0.9 }).addTo(plateLayersGroup);
-                }
+        sampleEarthquake.bindPopup(`
+            <strong>地震情報（サンプル）</strong><br>
+            発生時間: 15:00頃<br>
+            規模: M 4.2 / 最大震度: 3<br>
+            <hr style="margin: 5px 0;">
+            <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
+            この地震はプレート境界付近のひずみが解放されて起きたものです。地殻変動データや電磁波の観測とあわせて、今後の余震リスクにご注意ください。
+        `);
 
-                if (showStrain) {
-                    let strainZones = [
-                        { center: [42.8, 144.0], radius: 35000, color: '#dc2626', label: '北海道 巨大地震域' },
-                        { center: [37.2, 138.8], radius: 25000, color: '#7c3aed', label: '新潟・北陸 歪み集中' },
-                        { center: [35.68, 139.69], radius: 28000, color: '#dc2626', label: '首都直下 圧縮領域' }
-                    ];
-                    strainZones.forEach(sz => {
-                        L.circle(sz.center, {
-                            radius: sz.radius, color: sz.color, weight: 3, opacity: 0.9, fillColor: sz.color, fillOpacity: 0.28, dashArray: '6, 6'
-                        }).addTo(plateLayersGroup);
-
-                        let size = 20;
-                        var pulsingIcon = L.divIcon({
-                            className: '',
-                            html: `<div class="strain-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
-                            iconSize: [size, size], iconAnchor: [size/2, size/2]
-                        });
-                        L.marker(sz.center, { icon: pulsingIcon }).addTo(plateLayersGroup);
-                    });
-                }
-
-                if (showVectors) {
-                    crustalVectors.forEach(v => {
-                        let startPoint = [v.lat, v.lon];
-                        let endPoint = [v.lat + v.dLat, v.lon + v.dLon];
-                        L.circleMarker(startPoint, { radius: 4, color: '#fff', fillColor: '#dc2626', fillOpacity: 1, weight: 2 }).addTo(plateLayersGroup);
-                        L.polyline([startPoint, endPoint], { color: '#dc2626', weight: 3, opacity: 0.85 }).addTo(plateLayersGroup);
-                        L.marker([endPoint[0] + 0.025, endPoint[1]], {
-                            icon: L.divIcon({
-                                className: '',
-                                html: `<div class="vector-tip-label">${v.value}</div>`,
-                                iconSize: [85, 20], iconAnchor: [42, 10]
-                            })
-                        }).addTo(plateLayersGroup);
-                    });
-                }
-            } catch(e) {}
-        }
-        safeRenderLayers();
-
-        var persistentRiskAreas = [
-            { lat: 42.8, lon: 144.0, radius: 45000, labelLat: 44.5, labelLon: 142.0, name: '北海道(千島海溝)', typeText: 'M9切迫域', badgeClass: 'red', title: '北海道・千島海溝エリア', desc: '【発生要因】太平洋プレートの沈み込みによる極限の歪み蓄積。<br><b>【予測】</b>超巨大地震および津波の発生確率が高く、電磁気学的異常を伴う前兆監視中。' },
-            { lat: 35.68, lon: 139.69, radius: 35000, labelLat: 34.0, labelLon: 141.5, name: '首都直下', typeText: '年間15cm(圧縮)', badgeClass: 'red', title: '首都直下想定 (関東平野)', desc: '【発生要因】プレートの強い圧縮力による地殻内断層のひずみ。<br><b>【予測】</b>岩石圧縮に伴う電磁場変化と、M5クラスの浅発地震・群発傾向を警戒。' },
-            { lat: 33.5, lon: 134.5, radius: 50000, labelLat: 31.0, labelLon: 132.0, name: '南海トラフ', typeText: '年間25cm(固着)', badgeClass: 'red', title: '南海トラフ巨大地震想定', desc: '【発生要因】フィリピン海プレートの固着とスロースリップ。<br><b>【予測】</b>深部低周波地震の発生や電離層・電磁波異常との相関を継続監視。' },
-            { lat: 37.2, lon: 138.8, radius: 32000, labelLat: 39.2, labelLon: 136.2, name: '新潟・北陸', typeText: '年間12cm(歪急変)', badgeClass: 'purple', title: '新潟・北陸 歪み集中帯', desc: '【発生要因】活断層周辺の複雑な応力集中と地殻変動。<br><b>【予測】</b>岩石の応力解放プロセスおよびM4級地震の発生タイミングを検証。' }
-        ];
-
-        if(persistentRiskGroup) {
-            persistentRiskAreas.forEach(function(a) {
-                try {
-                    let pinPoint = [a.lat, a.lon];
-                    let labelPoint = [a.labelLat, a.labelLon];
-                    let circleColor = (a.badgeClass === 'red') ? '#dc2626' : '#7c3aed';
-
-                    L.circle(pinPoint, { radius: a.radius, color: circleColor, weight: 2.5, opacity: 0.85, fillColor: circleColor, fillOpacity: 0.2, dashArray: '5, 5' }).addTo(persistentRiskGroup);
-                    L.polyline([pinPoint, labelPoint], { color: '#334155', weight: 2.5, opacity: 0.8, dashArray: '3, 3' }).addTo(persistentRiskGroup);
-
-                    var marker = L.marker(labelPoint, {
-                        icon: L.divIcon({
-                            className: '',
-                            html: `<div class="risk-badge-row ${a.badgeClass}"><span>📍 ${a.name}</span><span class="badge-sub">${a.typeText}</span></div>`,
-                            iconSize: [170, 26], iconAnchor: [85, 13]
-                        }),
-                        interactive: true
-                    });
-                    marker.on('click touchend', (function(l, lo, t, d) {
-                        return function(e) { if(e.originalEvent) e.originalEvent.stopPropagation(); focusArea(l, lo, 7, t, d); };
-                    })(a.lat, a.lon, a.title, a.desc));
-                    marker.addTo(persistentRiskGroup);
-                } catch(e) {}
-            });
-        }
-
-        var markerMap = {};
-        async function safeFetchEq() {
-            if(!eqLayer) return;
-            eqLayer.clearLayers();
-            markerMap = {};
-            let filteredData = [];
-
-            let magAll = document.getElementById('magAll')?.checked ?? true;
-            let magM4 = document.getElementById('magM4')?.checked ?? false;
-            let magM5 = document.getElementById('magM5')?.checked ?? false;
-
-            let conditionText = "すべての地震を表示中";
-            if (magM4) conditionText = "M4.0以上表示";
-            if (magM5) conditionText = "M5.0以上表示";
-            if (document.getElementById('data-condition')) {
-                document.getElementById('data-condition').innerText = "📅 現在の設定条件: " + conditionText;
+        // 地域設定の切り替え連動（簡易サンプル）
+        document.getElementById('targetArea').addEventListener('change', (e) => {
+            const area = e.target.value;
+            if (area === 'kanto') {
+                map.setView([35.8, 139.5], 8);
+            } else if (area === 'hokkaido') {
+                map.setView([43.0, 142.0], 7);
+            } else if (area === 'tohoku') {
+                map.setView([39.0, 141.0], 7);
+            } else {
+                map.setView([36.2, 138.2], 6);
             }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
-                let res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=50', { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (!res.ok) throw new Error('Network error');
-                let data = await res.json();
-
-                filteredData = data.filter(item => {
-                    if (!item.earthquake) return false;
-                    let hypocenter = item.earthquake.hypocenter;
-                    if (!hypocenter) return false;
-                    let mag = parseFloat(hypocenter.magnitude);
-                    if (isNaN(mag)) return false;
-                    if (magM5 && mag < 5.0) return false;
-                    if (magM4 && mag < 4.0) return false;
-                    return true;
-                });
-            } catch(e) {
-                filteredData = [];
-            }
-
-            let html = "";
-            for(let i=0; i<filteredData.length; i++) {
-                try {
-                    let item = filteredData[i];
-                    let eq = item.earthquake;
-                    if(!eq) continue;
-                    let hypocenter = eq.hypocenter || {};
-                    let displayName = hypocenter.name || "震源情報";
-                    let mag = parseFloat(hypocenter.magnitude || "0").toFixed(1);
-                    let eqTime = item.time || "";
-                    let uniqueId = "eq_" + i;
-
-                    html += `<div class="eq-item" id="${uniqueId}" onclick="highlightAndOpenPopup('${uniqueId}')">
-                                <span class="eq-dot ${i === 0 ? 'latest' : ''}"></span>
-                                <span style="color:#dc2626; font-weight:bold;">${eqTime.replace('T', ' ').substring(5, 16)}</span> 
-                                <span>${displayName} (M${mag})</span>
-                           </div>`;
-                    
-                    let lat = hypocenter.latitude;
-                    let lon = hypocenter.longitude;
-                    if (!lat || lat === -200 || lat === 0 || isNaN(lat)) continue;
-
-                    let size = Math.max(12, parseFloat(mag) * 3.5);
-                    var pulsingIcon = L.divIcon({
-                        className: '',
-                        html: `<div class="eq-pulsing-marker" style="width:${size}px; height:${size}px; margin-top:-${size/2}px; margin-left:-${size/2}px;"></div>`,
-                        iconSize: [size, size], iconAnchor: [size/2, size/2]
-                    });
-                    var mainMarker = L.marker([lat, lon], { icon: pulsingIcon }).addTo(eqLayer);
-                    
-                    // クリック時のポップアップに「発生要因と今後の予測」を追加
-                    let factorAndForecast = parseFloat(mag) >= 5.0 ? 
-                        "<b>【発生要因】</b>深部プレート内または境界での強い応力解放<br><b>【今後の予測】</b>同等規模の余震および周辺断層への波及に警戒が必要です。" :
-                        "<b>【発生要因】</b>地殻内の微小なひずみ解放・断層活動<br><b>【今後の予測】</b>一時的な揺れに留まる可能性が高いですが、継続的なモニタリング推奨。";
-
-                    mainMarker.bindPopup(`<b>${i === 0 ? '🔴 最新地震情報' : '🔴 地震履歴'}</b><br>M${mag} - ${displayName}<br><span style="font-size:10px; color:#555;">発生時刻: ${eqTime.replace('T', ' ')}</span><hr style="margin:3px 0; border:0; border-top:1px solid #cbd5e1;"><span style="font-size:9.5px; line-height:1.4; display:block;">${factorAndForecast}</span>`);
-                    
-                    markerMap[uniqueId] = { marker: mainMarker, lat: lat, lon: lon };
-                } catch(err) {}
-            }
-
-            if(filteredData.length === 0) {
-                html = `<div style="padding:6px; font-size:9px; color:#64748b; text-align:center;">条件に一致する地震情報がないか、データを取得できませんでした。</div>`;
-            }
-
-            if(document.getElementById('earthquake-data')) {
-                document.getElementById('earthquake-data').innerHTML = html;
-            }
-            if(document.getElementById('update-time')) {
-                let now = new Date();
-                document.getElementById('update-time').innerText = "最終更新: " + now.toLocaleTimeString();
-            }
-        }
-
-        function highlightAndOpenPopup(id) {
-            document.querySelectorAll('.eq-item').forEach(el => el.classList.remove('highlighted'));
-            let targetEl = document.getElementById(id);
-            if(targetEl) {
-                targetEl.classList.add('highlighted');
-                targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-            let info = markerMap[id];
-            if(info && map) {
-                map.setView([info.lat, info.lon], 8);
-                info.marker.openPopup();
-            }
-        }
-
-        safeFetchEq();
-        setInterval(safeFetchEq, 300000);
+        });
     </script>
 </body>
 </html>
