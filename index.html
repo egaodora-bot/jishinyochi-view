@@ -156,48 +156,44 @@
             margin-bottom: 8px;
         }
         
-        /* 緊急地震速報枠（追加） */
+        /* 直近の地震活動情報枠（修正） */
         .emergency-alert-card {
-            background: #450a0a;
-            border: 1px solid #ef4444;
+            background: #1e1b4b;
+            border: 1px solid #3730a3;
             border-radius: 8px;
             padding: 10px 12px;
             margin-bottom: 12px;
         }
+        .emergency-alert-card.alert-active {
+            background: #450a0a;
+            border: 1px solid #ef4444;
+        }
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 12px;
-            color: #fca5a5;
-            border-bottom: 1px solid #7f1d1d;
+            color: #a5b4fc;
+            border-bottom: 1px solid #312e81;
             padding-bottom: 3px;
         }
-        .marquee-container {
-            overflow: hidden;
-            white-space: nowrap;
-            box-sizing: border-box;
-            background: #1e1b4b;
+        .emergency-alert-card.alert-active h3 {
+            color: #fca5a5;
+            border-bottom: 1px solid #7f1d1d;
+        }
+        .info-text-box {
+            background: #0f172a;
             border-radius: 4px;
-            padding: 4px 6px;
+            padding: 6px 8px;
             margin-top: 4px;
             border: 1px solid #3730a3;
+            font-size: 11px;
+            color: #e2e8f0;
+            line-height: 1.4;
+            word-break: break-all;
         }
-        .marquee-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: marquee 15s linear infinite;
-            font-size: 11.5px;
+        .emergency-alert-card.alert-active .info-text-box {
+            border: 1px solid #7f1d1d;
             color: #f87171;
             font-weight: bold;
-        }
-        .marquee-text.normal {
-            animation: none;
-            padding-left: 0;
-            color: #34d399;
-            font-weight: normal;
-        }
-        @keyframes marquee {
-            0%   { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
         }
 
         .risk-item {
@@ -264,7 +260,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -274,7 +270,9 @@
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
-            max-width: 440px;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
             padding: 25px;
             border-radius: 10px;
             border: 1px solid #334155;
@@ -283,11 +281,11 @@
         }
         .modal-box h2 {
             margin-top: 0;
-            font-size: 17px;
+            font-size: 16px;
             color: #38bdf8;
         }
         .modal-box p, .modal-box ul {
-            font-size: 12.5px;
+            font-size: 12px;
             color: #e2e8f0;
             line-height: 1.6;
         }
@@ -326,12 +324,15 @@
 </head>
 <body>
 
-    <!-- ウェルカムモーダル（更新された使い方の文言） -->
+    <!-- ウェルカムモーダル（想いを込めた文章に修正） -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <h2>リアルタイム地殻変動・地震モニタリング</h2>
-            <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に全件取得し、漏れなくマッピングします。</p>
-            <p>地震を予知することは難しい。でも、地震発生状況を知ることで、予測しそなえることが出来ますので、自分や家族の命を守るツールとして参考に活用してください。</p>
+            <p>このシステムは、1995年1月17日発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究に参加していました。その時にもしかしたらと連絡があった東京から関西の間で震度7クラスの地震の可能性がありました。</p>
+            <p>出来れば地震予知は出来なくても予測は出来るようになりたいと思っていた。そんな中、65で退職し再就職したが時間がある為、最近のAIで処理できないかと思っていた。</p>
+            <p>このたび、たくさんの地震関連情報から命を守る為、防災ポータルとして、プログラムを構築しました。</p>
+            <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に全件取得し、漏れなくマッピングしています。</p>
+            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、予測しそなえることが出来ますので、自分や家族の命を守るツールとして参考に活用してください。</p>
             <ul>
                 <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
                 <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードで上部のスイッチで絞込可能。<br><span style="color: #fb923c; font-size: 11px;">※発生した赤やオレンジの丸をクリックすると、マグニチュードの大きさを知ることが出来る。</span></li>
@@ -342,7 +343,7 @@
 
     <!-- ヘッダー -->
     <header>
-        <div class="system-title">地殻変動・電磁波モニタリングシステム（リアルタイム全件取得）</div>
+        <div class="system-title">地殻変動・電磁波モニタリングシステム</div>
         <div class="header-right">
             <!-- 地域選択エリア -->
             <div class="area-selector-wrapper">
@@ -369,7 +370,7 @@
                 </div>
             </div>
 
-            <button class="help-btn" onclick="openWelcomeModal()">使い方</button>
+            <button class="help-btn" onclick="openWelcomeModal()">使い方・想い</button>
             <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
         </div>
     </header>
@@ -383,12 +384,10 @@
                 <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
             </div>
 
-            <!-- 緊急地震速報情報枠（追加・自動スクロール対応） -->
-            <div class="emergency-alert-card">
-                <h3>緊急地震速報情報</h3>
-                <div class="marquee-container">
-                    <div id="emergencyMarquee" class="marquee-text normal">現在、緊急地震速報の発表はありません（常時監視中）</div>
-                </div>
+            <!-- 直近の地震活動情報枠（緊急地震速報の誤解を招かない表現＆文字切れ解消） -->
+            <div id="alertCardContainer" class="emergency-alert-card">
+                <h3 id="alertCardTitle">直近の地震活動情報</h3>
+                <div id="emergencyInfoText" class="info-text-box">現在、重大な速報値はありません（常時監視中）</div>
             </div>
 
             <div class="card">
@@ -398,7 +397,7 @@
                 <div style="margin-top: 8px;">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>取得地震件数:</span> <span id="quakeCount" class="risk-level-low">読込中...</span></div>
+                    <div class="risk-item"><span>表示中地震件数:</span> <span id="quakeCount" class="risk-level-low">読込中...</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
                 </div>
 
@@ -498,9 +497,8 @@
                 }).filter(q => q.lat !== -1 && q.lng !== -1);
 
                 document.getElementById('apiStatus').textContent = 'ライブAPI全件同期完了';
-                document.getElementById('quakeCount').textContent = `${liveQuakes.length} 件検知`;
                 
-                // 直近（過去数時間以内など）に大きな地震がある場合の緊急速報シミュレーション表示
+                // 最新の地震情報を更新
                 checkEmergencyAlert(data);
 
                 updateArea(document.getElementById('targetArea').value);
@@ -511,17 +509,18 @@
             }
         }
 
-        // 緊急地震速報枠への連動表示（テキスト長い場合は自動スクロール）
+        // 直近の地震活動情報をカードに反映（緊急度に応じたデザイン切り替え）
         function checkEmergencyAlert(data) {
-            const marqueeEl = document.getElementById('emergencyMarquee');
+            const cardContainer = document.getElementById('alertCardContainer');
+            const cardTitle = document.getElementById('alertCardTitle');
+            const infoText = document.getElementById('emergencyInfoText');
+            
             if (!data || data.length === 0) return;
 
-            // 最新の地震データを取得
             const latest = data[0];
             const hypo = latest.earthquake.hypocenter;
             const maxScale = latest.earthquake.maxScale;
             
-            // 震度換算（P2Pスケール: 40=震度4, 50=震度5弱, 55=震度5強, 60=震度6弱...）
             let scaleStr = "不明";
             if (maxScale === 40) scaleStr = "震度4";
             else if (maxScale === 50) scaleStr = "震度5弱";
@@ -529,15 +528,17 @@
             else if (maxScale === 60) scaleStr = "震度6弱";
             else if (maxScale === 65) scaleStr = "震度6強";
             else if (maxScale >= 70) scaleStr = "震度7";
-            else if (maxScale > 0) scaleStr = `最大${maxScale/10}`;
+            else if (maxScale > 0) scaleStr = `最大震度${maxScale/10}`;
 
-            // 直近の大きな地震（例: M5.0以上または震度5弱以上）の場合に警戒速報として流す
+            // M5.0以上または震度5弱以上の場合に警戒モード、それ以外は通常情報表示
             if (hypo.magnitude >= 5.0 || maxScale >= 50) {
-                marqueeEl.textContent = `【強い地震検知】 震源地: ${hypo.name} (M${hypo.magnitude} / ${scaleStr}) 発生時刻: ${latest.time} - 周辺地域では余震や安全確認に十分注意してください。`;
-                marqueeEl.classList.remove('normal'); // 流す
+                cardContainer.classList.add('alert-active');
+                cardTitle.textContent = "⚠️ 強い地震活動の検知";
+                infoText.textContent = `${latest.time}\n震源地: ${hypo.name}\n規模: M${hypo.magnitude} / ${scaleStr}\n周辺地域では十分注意してください。`;
             } else {
-                marqueeEl.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude}) - 現在、重大な緊急地震速報の発表はありません（常時監視中）。`;
-                marqueeEl.classList.add('normal'); // 静止表示
+                cardContainer.classList.remove('alert-active');
+                cardTitle.textContent = "直近の地震活動情報";
+                infoText.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude} / ${scaleStr}) [${latest.time}]`;
             }
         }
 
@@ -567,10 +568,17 @@
                 );
             }
 
-            filteredQuakes.forEach(q => {
-                if (currentMagFilter === '4' && q.mag < 4.0 && q.mag > 0) return;
-                if (currentMagFilter === '5' && q.mag < 5.0 && q.mag > 0) return;
+            // マグニチュードフィルター適用
+            filteredQuakes = filteredQuakes.filter(q => {
+                if (currentMagFilter === '4' && q.mag < 4.0 && q.mag > 0) return false;
+                if (currentMagFilter === '5' && q.mag < 5.0 && q.mag > 0) return false;
+                return true;
+            });
 
+            // ★修正：実際に画面・条件に合致して表示されている件数をカウントして表示
+            document.getElementById('quakeCount').textContent = `${filteredQuakes.length} 件表示`;
+
+            filteredQuakes.forEach(q => {
                 const marker = L.circleMarker([q.lat, q.lng], {
                     radius: q.mag >= 5 ? 11 : 7,
                     color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
