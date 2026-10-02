@@ -180,8 +180,8 @@
             <h2>地殻変動モニタリングへようこそ</h2>
             <p>このシステムは、全国各地の地震や地殻変動の状況をわかりやすく確認するためのものです。はじめてご利用いただく方は、以下の手順をご確認ください。</p>
             <ul>
-                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」から、気になるエリア（関東・北海道など）を選択できます。選択すると自動で地図と解説が連動します。</li>
-                <li><strong>詳細を見る:</strong> マップ上の赤丸（震源）をクリックすると、発生時刻やメカニズムの解説が表示されます。</li>
+                <li><strong>地域を選ぶ:</strong> 右上の「地域設定」からお好みのエリアを選択してください。地図と連動してその地域の情報がすぐに表示されます。</li>
+                <li><strong>詳細を見る:</strong> マップ上に現れる赤丸（震源）をクリックすると、発生時刻やメカニズムの解説を確認できます。</li>
             </ul>
             <button class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
         </div>
@@ -194,9 +194,13 @@
             <div>
                 <label for="targetArea" style="font-size: 11px; color: #94a3b8;">地域:</label>
                 <select id="targetArea" class="area-selector">
-                    <option value="kanto">関東（埼玉・東京・茨城・千葉）</option>
-                    <option value="hokkaido">北海道・千島海溝エリア</option>
-                    <option value="tohoku">東北エリア</option>
+                    <option value="kanto">関東（埼玉・東京・茨城・千葉等）</option>
+                    <option value="hokkaido">北海道</option>
+                    <option value="tohoku">東北</option>
+                    <option value="chubu">中部</option>
+                    <option value="kinki">近畿（関西）</option>
+                    <option value="chugoku_shikoku">中国・四国</option>
+                    <option value="kyushu_okinawa">九州・沖縄</option>
                     <option value="all">全国表示</option>
                 </select>
             </div>
@@ -211,7 +215,7 @@
     <!-- 連動型情報パネル -->
     <div class="info-panel">
         <h3 id="panelTitle">関東エリアの状況</h3>
-        <p id="panelDescription">選択された地域の直近の動向や注目すべきポイントを表示しています。マップ上の赤い印をクリックすると、詳しい発生メカニズムを確認できます。</p>
+        <p id="panelDescription">埼玉・東京・茨城・千葉などの首都圏の観測状況です。身近な地域で地震や地殻変動が起きた際の傾向を確認できます。</p>
         
         <div class="safety-notice">
             ※変動解説や論文に基づくセーフティ対策から心がけて下さい。日頃からの備えを大切にしましょう。
@@ -262,58 +266,127 @@
             opacity: 0.6
         }).addTo(map).bindPopup("主要境界構造線");
 
-        // サンプル震源マーカー
-        const quakeMarker = L.circleMarker([35.6895, 139.6917], {
-            radius: 8,
-            color: '#ef4444',
-            fillColor: '#ef4444',
-            fillOpacity: 0.7
-        }).addTo(map);
+        // マーカーを管理するレイヤーグループ
+        const markerLayer = L.layerGroup().addTo(map);
 
-        quakeMarker.bindPopup(`
-            <strong>地震情報（サンプル）</strong><br>
-            発生時間: 15:00頃<br>
-            規模: M 4.2 / 最大震度: 3<br>
-            <hr style="margin: 5px 0;">
-            <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
-            この地震はプレート境界付近のひずみが解放されて起きたものです。地殻変動データや日頃の備えとあわせてご確認ください。
-        `);
-
-        // 地域選択による「地図移動 ＆ パネル解説連動」
+        // 地域ごとのデータ設定（中心位置、ズーム、説明、およびその地域のサンプル震源）
         const areaData = {
             kanto: {
                 name: "関東エリアの状況",
-                desc: "埼玉・東京・茨城・千葉を含む首都圏の観測状況です。活断層やプレート境界のひずみデータに注意を払いつつ、日頃の備えを確認しましょう。",
+                desc: "埼玉・東京・茨城・千葉などの首都圏の観測状況です。身近な地域で地震や地殻変動が起きた際の影響や備えを確認できます。",
                 center: [35.8, 139.5],
-                zoom: 8
+                zoom: 8,
+                quakes: [
+                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "首都圏直下の地震（サンプル）", mechanism: "プレート境界付近のひずみ解放に伴うもの。慎重な日常の備えが推奨されます。" }
+                ]
             },
             hokkaido: {
-                name: "北海道・千島海溝エリアの状況",
-                desc: "根室沖など太平洋側を中心に、今後30年以内の発生確率が非常に高い海溝型地震が警戒されている地域です。事前の避難経路や備えの再確認が推奨されます。",
+                name: "北海道エリアの状況",
+                desc: "千島海溝沿いや根室沖など、今後30年以内の発生確率が高いとされる海溝型地震の警戒エリアです。",
                 center: [42.8, 143.5],
-                zoom: 7
+                zoom: 7,
+                quakes: [
+                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "根室沖周辺の活動（サンプル）", mechanism: "太平洋プレートと陸側プレートの境界における沈み込みに伴う地殻変動。" }
+                ]
             },
             tohoku: {
                 name: "東北エリアの状況",
-                desc: "日本海溝周辺における余震活動や地殻変動のモニタリングを行っています。過去の大地震の教訓を踏まえた備えが継続的に求められる地域です。",
+                desc: "日本海溝周辺における余震活動や地殻変動のモニタリングを行っています。過去の教訓を活かした防災意識が求められる地域です。",
                 center: [39.0, 141.0],
-                zoom: 7
+                zoom: 7,
+                quakes: [
+                    { lat: 38.3, lng: 142.8, mag: 4.8, depth: "約40km", title: "日本海溝付近の地震（サンプル）", mechanism: "東日本大震災以降の余震および周辺プレートの継続的なひずみ調整活動。" }
+                ]
+            },
+            chubu: {
+                name: "中部エリアの状況",
+                desc: "フォッサマグナや糸魚川静岡構造線など、複雑な地殻構造を持つエリアの変動状況をモニタリングします。",
+                center: [36.5, 137.0],
+                zoom: 7,
+                quakes: [
+                    { lat: 36.2, lng: 137.9, mag: 3.9, depth: "約10km", title: "中部地方内陸の地震（サンプル）", mechanism: "活断層の活動や地殻内の局所的なひずみの蓄積によるもの。" }
+                ]
+            },
+            kinki: {
+                name: "近畿（関西）エリアの状況",
+                desc: "活断層が多く存在する近畿圏における地震活動や地殻変動の傾向を確認できます。",
+                center: [34.7, 135.5],
+                zoom: 8,
+                quakes: [
+                    { lat: 34.69, lng: 135.5, mag: 3.5, depth: "約15km", title: "近畿圏内陸の地震（サンプル）", mechanism: "上町断層帯などの周辺活断層帯における微小な地殻変動活動。" }
+                ]
+            },
+            chugoku_shikoku: {
+                name: "中国・四国エリアの状況",
+                desc: "南海トラフ地震の想定震源域および周辺のひずみ・地殻変動データを注視するエリアです。",
+                center: [34.0, 133.5],
+                zoom: 7,
+                quakes: [
+                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震（サンプル）", mechanism: "フィリピン海プレートの沈み込みに伴う深部低周波 tremors やひずみ変化。" }
+                ]
+            },
+            kyushu_okinawa: {
+                name: "九州・沖縄エリアの状況",
+                desc: "火山活動やプレート沈み込みに伴う地殻変動、周辺海域で発生する地震の情報を確認します。",
+                center: [32.5, 130.8],
+                zoom: 7,
+                quakes: [
+                    { lat: 31.9, lng: 130.5, mag: 4.1, depth: "約20km", title: "九州南部周辺の地震（サンプル）", mechanism: "火山フロント周辺およびプレート境界の活動に関連する変動。" }
+                ]
             },
             all: {
                 name: "全国のモニタリング状況",
-                desc: "日本全国の広域な地殻変動および地震発生状況を俯瞰して確認できます。気になる地域を選択して詳細をチェックしてください。",
+                desc: "日本全国の広域な地殻変動および地震発生状況を俯瞰して確認できます。",
                 center: [36.2, 138.2],
-                zoom: 6
+                zoom: 6,
+                quakes: [
+                    { lat: 35.6895, lng: 139.6917, mag: 4.2, depth: "約50km", title: "関東の地震", mechanism: "プレート境界付近のひずみ解放。" },
+                    { lat: 42.9, lng: 144.3, mag: 5.1, depth: "約30km", title: "北海道沖の地震", mechanism: "千島海溝沿いのプレート活動。" },
+                    { lat: 33.5, lng: 133.5, mag: 4.0, depth: "約35km", title: "四国沖の地震", mechanism: "南海トラフ周辺のひずみ調整。" }
+                ]
             }
         };
 
+        // 指定した地域のデータをマップに反映させる関数
+        function updateArea(key) {
+            const selected = areaData[key];
+            if (!selected) return;
+
+            // 地図の移動
+            map.setView(selected.center, selected.zoom);
+
+            // パネルの文章更新
+            document.getElementById('panelTitle').textContent = selected.name;
+            document.getElementById('panelDescription').textContent = selected.desc;
+
+            // 既存のマーカーをクリアして新しい地域のマーカーを描画
+            markerLayer.clearLayers();
+            selected.quakes.forEach(q => {
+                const marker = L.circleMarker([q.lat, q.lng], {
+                    radius: 8,
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.8
+                });
+
+                marker.bindPopup(`
+                    <strong>${q.title}</strong><br>
+                    規模: M ${q.mag} / 深さ: ${q.depth}<br>
+                    <hr style="margin: 5px 0;">
+                    <strong>【なぜ起きたのか（メカニズム解説）】</strong><br>
+                    ${q.mechanism}
+                `);
+
+                markerLayer.addLayer(marker);
+            });
+        }
+
+        // 初期ロード時（関東）を実行
+        updateArea('kanto');
+
+        // セレクトボックス変更時のイベント
         document.getElementById('targetArea').addEventListener('change', (e) => {
-            const selected = areaData[e.target.value];
-            if (selected) {
-                map.setView(selected.center, selected.zoom);
-                document.getElementById('panelTitle').textContent = selected.name;
-                document.getElementById('panelDescription').textContent = selected.desc;
-            }
+            updateArea(e.target.value);
         });
     </script>
 </body>
