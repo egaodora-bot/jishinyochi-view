@@ -250,18 +250,19 @@
             z-index: 1;
         }
 
-        /* モーダルの修正（確実にクリックできるように変更） */
+        /* モーダル：ポインターイベントを確実に有効化 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 999999;
+            pointer-events: auto;
         }
         .modal-box {
             background: #1e293b;
@@ -287,10 +288,11 @@
             border-bottom-left-radius: 10px;
             border-bottom-right-radius: 10px;
             text-align: center;
+            display: flex;
+            gap: 10px;
         }
         .modal-close-btn {
-            display: inline-block;
-            width: 100%;
+            flex: 1;
             background: #0284c7;
             color: white;
             border: none;
@@ -302,6 +304,19 @@
         }
         .modal-close-btn:hover {
             background: #0369a1;
+        }
+        .modal-skip-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 14px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-skip-btn:hover {
+            background: #334155;
         }
 
         @media (max-width: 768px) {
@@ -342,235 +357,4 @@
                     <li><strong>当システム起動中の場合：</strong>ブラウザで表示している間は、リアルタイムで最新情報を自動更新し、強い地震や警戒レベルの変化を画面上で検知・通知します。</li>
                     <li><strong>当システムを起動していない時（スリープ時など）：</strong>当システムはバックグラウンドでのプッシュ通知を行わない仕様となっています。そのため、万が一の大きな地震や災害時にスマホ本体で通知を受け取りたい場合は、<strong>「Yahoo!防災速報」</strong>や<strong>「NERV防災アプリ」</strong>などの公式防災アプリをあわせてご活用ください。</li>
                 </ul>
-                <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
-                <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
-                <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-close-btn" id="startBtn">確認してはじめる</button>
-            </div>
-        </div>
-    </div>
-
-    <header>
-        <div class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</div>
-        <div class="header-right">
-            <div class="area-selector-wrapper">
-                <label for="targetArea">表示地域:</label>
-                <select id="targetArea" class="area-selector">
-                    <option value="kanto">関東（首都圏）</option>
-                    <option value="hokkaido">北海道</option>
-                    <option value="tohoku">東北</option>
-                    <option value="chubu">中部</option>
-                    <option value="kinki">近畿（関西）</option>
-                    <option value="chugoku_shikoku">中国・四国</option>
-                    <option value="kyushu_okinawa">九州・沖縄</option>
-                    <option value="all" selected>全国表示</option>
-                </select>
-            </div>
-            <div class="mag-filter-group">
-                <button class="mag-btn" onclick="setMagFilter('all', this)">全て</button>
-                <button class="mag-btn active" onclick="setMagFilter('4', this)">M4+</button>
-                <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
-            </div>
-            <button type="button" class="help-btn" onclick="openWelcomeModal()">使い方・想い</button>
-            <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="card">
-                <div class="status-badge" id="apiStatus">ライブAPI接続中...</div>
-                <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
-            </div>
-
-            <div id="alertCardContainer" class="emergency-alert-card">
-                <h3 id="alertCardTitle">直近の地震活動情報</h3>
-                <div id="emergencyInfoText" class="info-text-box">現在、重大な速報値はありません（常時監視中）</div>
-            </div>
-
-            <div class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
-                <h3 style="color: #fb923c;">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
-                <div style="font-size: 11.5px; line-height: 1.5; color: #f8fafc;">
-                    <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
-                    <ul style="padding-left: 14px; margin: 0 0 8px 0; color: #cbd5e1;">
-                        <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測（要警戒）</li>
-                        <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 id="panelTitle">全国のモニタリング状況</h3>
-                <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動の状況。</p>
-                <div style="margin-top: 8px;">
-                    <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
-                    <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>過去１週間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">マーカー表示中</span></div>
-                    <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
-                </div>
-
-                <div class="accordion-wrapper">
-                    <button class="accordion-header" onclick="toggleAccordion()">
-                        <span>🌐 全国の長期スパン発生確率（政府評価）</span>
-                        <span id="accordionIcon">▼</span>
-                    </button>
-                    <div id="accordionContent" class="accordion-content">
-                        <p style="margin-top: 4px; color: #38bdf8; font-weight: bold;">【30年以内の発生確率の目安】</p>
-                        <ul style="padding-left: 14px; margin-bottom: 4px;">
-                            <li><strong>南海トラフ巨大地震:</strong> 70〜80%台</li>
-                            <li><strong>首都直下地震（関東）:</strong> 約70%</li>
-                            <li><strong>千島海溝沿い（根室沖等）:</strong> 最大80%程度</li>
-                            <li><strong>日本海溝沿い（宮城県沖等）:</strong> 高い確率グループ</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="impact-box">
-                    <h4 id="impactTitle">【リスク地域および想定される影響】</h4>
-                    <p id="impactDesc">リアルタイムの震源データおよびプレート境界のひずみ蓄積状況を常時反映しています。</p>
-                    <div id="levelCriteriaDesc" class="level-criteria-desc" style="color: #38bdf8;">
-                        ※LEVEL 1（平時・注意）：直近で目立った大地震がなく、通常の監視状態。<br>
-                        ※LEVEL 2（総合警戒）：中規模の地震活動が見られ、突発的な事象に備える状態。<br>
-                        ※LEVEL 3（特別警戒）：直近でM5.0以上または震度5弱以上の強い地震を検知した状態。
-                    </div>
-                </div>
-            </div>
-
-            <div class="card" style="text-align: right; padding: 8px 15px;">
-                <div style="font-size: 11px; color: #cbd5e1;">by 林 榮一</div>
-            </div>
-        </div>
-
-        <div id="map"></div>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        function closeWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        function openWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-        }
-
-        // イベントリスナーを確実に付与
-        document.addEventListener('DOMContentLoaded', () => {
-            const startBtn = document.getElementById('startBtn');
-            if (startBtn) {
-                startBtn.addEventListener('click', closeWelcomeModal);
-            }
-        });
-
-        function updateClock() {
-            const now = new Date();
-            const clockEl = document.getElementById('live-clock');
-            if (clockEl) clockEl.textContent = now.toLocaleTimeString('ja-JP');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function toggleAccordion() {
-            const content = document.getElementById('accordionContent');
-            const icon = document.getElementById('accordionIcon');
-            if (content && icon) {
-                content.classList.toggle('open');
-                icon.textContent = content.classList.contains('open') ? '▲' : '▼';
-            }
-        }
-
-        const map = L.map('map').setView([36.2, 138.2], 6);
-
-        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
-            maxZoom: 18
-        }).addTo(map);
-
-        const markerLayer = L.layerGroup().addTo(map);
-        const anomalyLayer = L.layerGroup().addTo(map);
-
-        let currentMagFilter = '4';
-        let liveQuakes = [];
-
-        const anomalySpots = [
-            {
-                name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター",
-                lat: 35.8, lng: 139.3,
-                radius: 45000,
-                color: "#a855f7",
-                desc: "地殻の微小な伸び縮みと、VLF帯電磁波のざわめき（微小ノイズ）を観測中。"
-            },
-            {
-                name: "【プレート境界ひずみ】東海・南海トラフ想定域",
-                lat: 34.4, lng: 137.5,
-                radius: 65000,
-                color: "#f97316",
-                desc: "フィリピン海プレート沈下帯におけるひずみデータが通常基準を超えて推移中。"
-            },
-            {
-                name: "【地殻変動監視】東北沖・日本海溝セクター",
-                lat: 38.5, lng: 142.0,
-                radius: 55000,
-                color: "#38bdf8",
-                desc: "東日本大震災余効変動および周辺海溝沿いの微小活動を監視中。"
-            }
-        ];
-
-        const areaData = {
-            all: { name: "全国のモニタリング状況", desc: "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
-            kanto: { name: "関東エリアの状況", desc: "首都圏周辺の地面のゆがみおよびリアルタイム地震活動。", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
-            hokkaido: { name: "北海道エリアの状況", desc: "千島海溝および周辺のリアルタイム地震活動。", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
-            tohoku: { name: "東北エリアの状況", desc: "日本海溝周辺のリアルタイム地震活動。", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
-            chubu: { name: "中部エリアの状況", desc: "中部山岳地帯・ひずみ集中帯のリアルタイム状況。", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5} },
-            kinki: { name: "近畿エリアの状況", desc: "近畿圏活断層帯のリアルタイム状況。", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5} },
-            chugoku_shikoku: { name: "中国・四国エリアの状況", desc: "南海トラフ周辺のリアルタイム状況。", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0} },
-            kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "日向灘・南西諸島周辺のリアルタイム状況。", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
-        };
-
-        function renderAnomalyMarkers() {
-            anomalyLayer.clearLayers();
-            anomalySpots.forEach(spot => {
-                const circle = L.circle([spot.lat, spot.lng], {
-                    radius: spot.radius,
-                    color: spot.color,
-                    fillColor: spot.color,
-                    fillOpacity: 0.22,
-                    weight: 2,
-                    dashArray: '5, 5'
-                });
-                const marker = L.circleMarker([spot.lat, spot.lng], {
-                    radius: 8,
-                    color: '#ffffff',
-                    fillColor: spot.color,
-                    fillOpacity: 0.95,
-                    weight: 2
-                });
-                const popupContent = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
-                circle.bindPopup(popupContent);
-                marker.bindPopup(popupContent);
-                anomalyLayer.addLayer(circle);
-                anomalyLayer.addLayer(marker);
-            });
-        }
-
-        async function fetchRealtimeEarthquakes() {
-            try {
-                const statusEl = document.getElementById('apiStatus');
-                if (statusEl) statusEl.textContent = 'データ同期中...';
-                
-                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
-                if (!response.ok) throw new Error('API通信エラー');
-                
-                const data = await response.json();
-                const uniqueMap = new Map();
-                
-                data.forEach(item => {
+                <p>繰り返しますが、地震を予知することは難しい。でも、地震
