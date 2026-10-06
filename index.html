@@ -250,7 +250,7 @@
             z-index: 1;
         }
 
-        /* モーダル：ポインターイベントを確実に有効化 */
+        /* モーダル：サイズ調整とボタン確実表示 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -262,14 +262,13 @@
             justify-content: center;
             align-items: center;
             z-index: 999999;
-            pointer-events: auto;
         }
         .modal-box {
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
-            max-width: 520px;
-            max-height: 85vh;
+            max-width: 500px;
+            height: 80vh; /* 高さを固定して収める */
             display: flex;
             flex-direction: column;
             border-radius: 10px;
@@ -277,12 +276,12 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.7);
         }
         .modal-content-scroll {
-            padding: 20px;
+            padding: 15px 20px;
             overflow-y: auto;
-            flex-grow: 1;
+            flex: 1; /* 残りの高さをスクロール領域に */
         }
         .modal-footer {
-            padding: 15px 20px;
+            padding: 12px 20px;
             background: #111827;
             border-top: 1px solid #334155;
             border-bottom-left-radius: 10px;
@@ -290,15 +289,16 @@
             text-align: center;
             display: flex;
             gap: 10px;
+            flex-shrink: 0; /* ボタンが潰れたり消えたりしないように保護 */
         }
         .modal-close-btn {
-            flex: 1;
+            flex: 2;
             background: #0284c7;
             color: white;
             border: none;
-            padding: 14px;
+            padding: 10px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -306,10 +306,11 @@
             background: #0369a1;
         }
         .modal-skip-btn {
+            flex: 1;
             background: #475569;
             color: white;
             border: none;
-            padding: 14px 16px;
+            padding: 10px;
             border-radius: 6px;
             font-size: 14px;
             font-weight: bold;
@@ -339,14 +340,14 @@
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-content-scroll">
-                <h2>リアルタイム地殻変動・地震モニタリング</h2>
-                <h3>1．システム名称</h3>
+                <h2 style="margin-top: 0; font-size: 16px;">リアルタイム地殻変動・地震モニタリング</h2>
+                <h3 style="font-size: 13px;">1．システム名称</h3>
                 <p><span class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</span></p>
-                <h3>2．システム開発に向けた思い</h3>
+                <h3 style="font-size: 13px;">2．システム開発に向けた思い</h3>
                 <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
                 <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
                 <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
-                <h3>3．システム構成と通知について</h3>
+                <h3 style="font-size: 13px;">3．システム構成と通知について</h3>
                 <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に取得し、マッピングしています。</p>
                 <ul>
                     <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
@@ -357,4 +358,50 @@
                     <li><strong>当システム起動中の場合：</strong>ブラウザで表示している間は、リアルタイムで最新情報を自動更新し、強い地震や警戒レベルの変化を画面上で検知・通知します。</li>
                     <li><strong>当システムを起動していない時（スリープ時など）：</strong>当システムはバックグラウンドでのプッシュ通知を行わない仕様となっています。そのため、万が一の大きな地震や災害時にスマホ本体で通知を受け取りたい場合は、<strong>「Yahoo!防災速報」</strong>や<strong>「NERV防災アプリ」</strong>などの公式防災アプリをあわせてご活用ください。</li>
                 </ul>
-                <p>繰り返しますが、地震を予知することは難しい。でも、地震
+                <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
+                <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
+                <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
+                <button type="button" class="modal-skip-btn" onclick="closeWelcomeModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</div>
+        <div class="header-right">
+            <div class="area-selector-wrapper">
+                <label for="targetArea">表示地域:</label>
+                <select id="targetArea" class="area-selector">
+                    <option value="kanto">関東（首都圏）</option>
+                    <option value="hokkaido">北海道</option>
+                    <option value="tohoku">東北</option>
+                    <option value="chubu">中部</option>
+                    <option value="kinki">近畿（関西）</option>
+                    <option value="chugoku_shikoku">中国・四国</option>
+                    <option value="kyushu_okinawa">九州・沖縄</option>
+                    <option value="all" selected>全国表示</option>
+                </select>
+            </div>
+            <div class="mag-filter-group">
+                <button class="mag-btn" onclick="setMagFilter('all', this)">全て</button>
+                <button class="mag-btn active" onclick="setMagFilter('4', this)">M4+</button>
+                <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
+            </div>
+            <button type="button" class="help-btn" onclick="openWelcomeModal()">使い方・想い</button>
+            <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="status-badge" id="apiStatus">ライブAPI接続中...</div>
+                <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
+            </div>
+
+            <div id="alertCardContainer" class="emergency-alert-card">
+                <h3 id="alertCardTitle">直近の地震活動情報</h3>
+                <div id="emergencyInfoText
