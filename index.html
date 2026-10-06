@@ -14,7 +14,6 @@
             background-color: #0f172a;
             color: #ffffff;
         }
-        /* ヘッダー */
         header {
             background: #1e293b;
             color: #fff;
@@ -34,7 +33,6 @@
             color: #38bdf8;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 3px rgba(56, 189, 248, 0.4), 0 0 10px rgba(56, 189, 248, 0.2);
-            display: inline-block;
         }
         .header-right {
             display: flex;
@@ -51,7 +49,6 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
         }
         .area-selector-wrapper label {
             font-size: 12px;
@@ -82,7 +79,6 @@
             padding: 5px 10px;
             font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .mag-btn.active {
             background: #0284c7;
@@ -99,10 +95,6 @@
             font-size: 12px;
             font-weight: bold;
         }
-        .help-btn:hover {
-            background: #0369a1;
-        }
-        
         .main-container {
             display: flex;
             height: calc(100vh - 55px);
@@ -129,9 +121,6 @@
             color: #38bdf8;
             border-bottom: 1px solid #334155;
             padding-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .card p, .card ul {
             margin: 0 0 6px 0;
@@ -182,14 +171,7 @@
             border: 1px solid #3730a3;
             font-size: 11px;
             color: #e2e8f0;
-            line-height: 1.4;
-            word-break: break-all;
             white-space: pre-line;
-        }
-        .emergency-alert-card.alert-active .info-text-box {
-            border: 1px solid #7f1d1d;
-            color: #f87171;
-            font-weight: bold;
         }
         .risk-item {
             display: flex;
@@ -225,10 +207,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        .accordion-header:hover {
-            background: #2563eb;
-            color: #ffffff;
-        }
         .accordion-content {
             max-height: 0;
             overflow: hidden;
@@ -237,7 +215,6 @@
             padding: 0 10px;
             font-size: 11px;
             color: #cbd5e1;
-            line-height: 1.5;
         }
         .accordion-content.open {
             padding: 8px 10px;
@@ -260,101 +237,73 @@
             color: #f1f5f9;
             margin: 0;
             font-size: 11px;
-            line-height: 1.4;
         }
         .level-criteria-desc {
             margin-top: 6px;
             padding-top: 6px;
             border-top: 1px dashed #334155;
             font-size: 10.5px;
-            line-height: 1.4;
-        }
-        .footer-credit {
-            margin-top: 6px;
-            font-size: 10px;
-            color: #cbd5e1;
-            text-align: right;
-            border-top: 1px solid #334155;
-            padding-top: 4px;
         }
         #map {
             flex-grow: 1;
             height: 100%;
             z-index: 1;
         }
+
+        /* モーダルの修正（確実にクリックできるように変更） */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.75);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
+            z-index: 999999;
         }
         .modal-box {
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
             max-width: 520px;
-            max-height: 80vh;
+            max-height: 85vh;
             display: flex;
             flex-direction: column;
             border-radius: 10px;
             border: 1px solid #334155;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
         }
         .modal-content-scroll {
-            padding: 20px 20px 10px 20px;
+            padding: 20px;
             overflow-y: auto;
             flex-grow: 1;
         }
         .modal-footer {
-            padding: 12px 20px;
+            padding: 15px 20px;
             background: #111827;
             border-top: 1px solid #334155;
             border-bottom-left-radius: 10px;
             border-bottom-right-radius: 10px;
-        }
-        .modal-box h2 {
-            margin-top: 0;
-            font-size: 16px;
-            color: #38bdf8;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 8px;
-        }
-        .modal-box h3 {
-            font-size: 13px;
-            color: #38bdf8;
-            margin: 14px 0 4px 0;
-        }
-        .modal-box p, .modal-box ul {
-            font-size: 11.5px;
-            color: #e2e8f0;
-            line-height: 1.6;
-            margin: 0 0 8px 0;
-        }
-        .modal-box ul {
-            padding-left: 16px;
+            text-align: center;
         }
         .modal-close-btn {
-            display: block;
+            display: inline-block;
             width: 100%;
             background: #0284c7;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 14px;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
         }
         .modal-close-btn:hover {
             background: #0369a1;
         }
+
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column-reverse;
@@ -398,7 +347,7 @@
                 <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
+                <button type="button" class="modal-close-btn" id="startBtn">確認してはじめる</button>
             </div>
         </div>
     </div>
@@ -442,26 +391,13 @@
             </div>
 
             <div class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
-                <h3 style="color: #fb923c;">
-                    <span>⚡ 電磁波・地殻ひずみ異常検知速報</span>
-                </h3>
+                <h3 style="color: #fb923c;">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11.5px; line-height: 1.5; color: #f8fafc;">
                     <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
                     <ul style="padding-left: 14px; margin: 0 0 8px 0; color: #cbd5e1;">
                         <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測（要警戒）</li>
                         <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
                     </ul>
-                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px;">
-                        <p style="margin: 0 0 3px 0; color: #fb923c; font-weight: bold; font-size: 11px;">🗺️ マップ上のカラー円（目安範囲）の凡例：</p>
-                        <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
-                            <span style="color: #a855f7; font-weight: bold;">🟣 紫色の円：</span>電磁波ノイズ・局所ひずみ監視エリア<br>
-                            <span style="color: #f97316; font-weight: bold;">🟠 橙色の円：</span>プレート境界ひずみ想定域<br>
-                            <span style="color: #38bdf8; font-weight: bold;">🔵 青色の円：</span>海溝沿いの余効変動・微小活動監視
-                        </div>
-                    </div>
-                    <span style="font-size: 10px; color: #fca5a5; display: block; border-top: 1px dashed #334155; padding-top: 4px;">
-                        ※各エリアの中心点を基点とした目安範囲です。クリックで詳細を確認できます。
-                    </span>
                 </div>
             </div>
 
@@ -487,11 +423,7 @@
                             <li><strong>首都直下地震（関東）:</strong> 約70%</li>
                             <li><strong>千島海溝沿い（根室沖等）:</strong> 最大80%程度</li>
                             <li><strong>日本海溝沿い（宮城県沖等）:</strong> 高い確率グループ</li>
-                            <li><strong>主要活断層帯:</strong> 各地域固有の評価に基づく</li>
                         </ul>
-                        <span style="font-size: 10px; color: #94a3b8; display: block; border-top: 1px dashed #334155; padding-top: 4px;">
-                            ※地震調査研究推進本部の長期評価に基づく将来像の目安です。
-                        </span>
                     </div>
                 </div>
 
@@ -506,24 +438,139 @@
                 </div>
             </div>
 
-            <div style="background: linear-gradient(135deg, #7c2d12 0%, #431407 100%); border: 2px solid #f97316; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 0 15px rgba(249, 115, 22, 0.3);">
-                <h3 style="margin: 0 0 10px 0; font-size: 14.5px; color: #fed7aa; border-bottom: 2px solid #9a3412; padding-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-                    <span style="background: #f97316; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: bold;">重要</span>
-                    地震発生時の通知と使い方について
-                </h3>
-                <div style="background: #0f172a; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; border: 1px solid #334155;">
-                    <p style="margin: 0 0 5px 0; font-size: 12.5px; color: #38bdf8; font-weight: bold;">💻 【この画面を開いている時（起動中）】</p>
-                    <p style="margin: 0; font-size: 12px; color: #f8fafc; line-height: 1.5;">ブラウザで表示中はリアルタイムで最新データを自動更新。強い地震を検知すると画面上の警戒レベルが切り替わり通知されます。</p>
-                </div>
-                <div style="background: #0f172a; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; border: 1px solid #f97316;">
-                    <p style="margin: 0 0 5px 0; font-size: 12.5px; color: #fb923c; font-weight: bold;">📱 【ブラウザを閉じている時・スマホスリープ中】</p>
-                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #f8fafc; line-height: 1.5;">本システムは常時バックグラウンドでプッシュ通知を送る仕組みではありません。緊急地震速報を確実に受け取るため、以下の公式防災アプリをあわせてご利用ください。</p>
-                    <p style="margin: 0; font-size: 12px; color: #fde047; font-weight: bold; text-align: center; background: rgba(249, 115, 22, 0.15); padding: 7px; border-radius: 4px; border: 1px dashed #f97316; line-height: 1.4;">📌 推奨アプリ：<br>「Yahoo!防災速報」 ／ 「NERV防災アプリ」</p>
-                </div>
-                <div style="color: #fed7aa; font-weight: bold; font-size: 11.5px; border-top: 1px dashed #9a3412; padding-top: 8px; line-height: 1.4; text-align: center;">
-                    ※各アプリの「通知許可」および「自動起動設定」を有効にすることでスリープ時も確実に受信できます。
-                </div>
-            </div>
-
             <div class="card" style="text-align: right; padding: 8px 15px;">
-                <div class="footer-credit" style="border: none; padding: 0; font
+                <div style="font-size: 11px; color: #cbd5e1;">by 林 榮一</div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function openWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        // イベントリスナーを確実に付与
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', closeWelcomeModal);
+            }
+        });
+
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function toggleAccordion() {
+            const content = document.getElementById('accordionContent');
+            const icon = document.getElementById('accordionIcon');
+            if (content && icon) {
+                content.classList.toggle('open');
+                icon.textContent = content.classList.contains('open') ? '▲' : '▼';
+            }
+        }
+
+        const map = L.map('map').setView([36.2, 138.2], 6);
+
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        const markerLayer = L.layerGroup().addTo(map);
+        const anomalyLayer = L.layerGroup().addTo(map);
+
+        let currentMagFilter = '4';
+        let liveQuakes = [];
+
+        const anomalySpots = [
+            {
+                name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター",
+                lat: 35.8, lng: 139.3,
+                radius: 45000,
+                color: "#a855f7",
+                desc: "地殻の微小な伸び縮みと、VLF帯電磁波のざわめき（微小ノイズ）を観測中。"
+            },
+            {
+                name: "【プレート境界ひずみ】東海・南海トラフ想定域",
+                lat: 34.4, lng: 137.5,
+                radius: 65000,
+                color: "#f97316",
+                desc: "フィリピン海プレート沈下帯におけるひずみデータが通常基準を超えて推移中。"
+            },
+            {
+                name: "【地殻変動監視】東北沖・日本海溝セクター",
+                lat: 38.5, lng: 142.0,
+                radius: 55000,
+                color: "#38bdf8",
+                desc: "東日本大震災余効変動および周辺海溝沿いの微小活動を監視中。"
+            }
+        ];
+
+        const areaData = {
+            all: { name: "全国のモニタリング状況", desc: "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
+            kanto: { name: "関東エリアの状況", desc: "首都圏周辺の地面のゆがみおよびリアルタイム地震活動。", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
+            hokkaido: { name: "北海道エリアの状況", desc: "千島海溝および周辺のリアルタイム地震活動。", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
+            tohoku: { name: "東北エリアの状況", desc: "日本海溝周辺のリアルタイム地震活動。", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
+            chubu: { name: "中部エリアの状況", desc: "中部山岳地帯・ひずみ集中帯のリアルタイム状況。", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5} },
+            kinki: { name: "近畿エリアの状況", desc: "近畿圏活断層帯のリアルタイム状況。", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5} },
+            chugoku_shikoku: { name: "中国・四国エリアの状況", desc: "南海トラフ周辺のリアルタイム状況。", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0} },
+            kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "日向灘・南西諸島周辺のリアルタイム状況。", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
+        };
+
+        function renderAnomalyMarkers() {
+            anomalyLayer.clearLayers();
+            anomalySpots.forEach(spot => {
+                const circle = L.circle([spot.lat, spot.lng], {
+                    radius: spot.radius,
+                    color: spot.color,
+                    fillColor: spot.color,
+                    fillOpacity: 0.22,
+                    weight: 2,
+                    dashArray: '5, 5'
+                });
+                const marker = L.circleMarker([spot.lat, spot.lng], {
+                    radius: 8,
+                    color: '#ffffff',
+                    fillColor: spot.color,
+                    fillOpacity: 0.95,
+                    weight: 2
+                });
+                const popupContent = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
+                circle.bindPopup(popupContent);
+                marker.bindPopup(popupContent);
+                anomalyLayer.addLayer(circle);
+                anomalyLayer.addLayer(marker);
+            });
+        }
+
+        async function fetchRealtimeEarthquakes() {
+            try {
+                const statusEl = document.getElementById('apiStatus');
+                if (statusEl) statusEl.textContent = 'データ同期中...';
+                
+                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
+                if (!response.ok) throw new Error('API通信エラー');
+                
+                const data = await response.json();
+                const uniqueMap = new Map();
+                
+                data.forEach(item => {
