@@ -85,16 +85,6 @@
             color: #fff;
             font-weight: bold;
         }
-        .help-btn {
-            background: #0284c7;
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
         .main-container {
             display: flex;
             height: calc(100vh - 55px);
@@ -250,76 +240,6 @@
             z-index: 1;
         }
 
-        /* モーダル：サイズ調整とボタン確実表示 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-        }
-        .modal-box {
-            background: #1e293b;
-            color: #f8fafc;
-            width: 90%;
-            max-width: 500px;
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-        }
-        .modal-content-scroll {
-            padding: 15px 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        .modal-footer {
-            padding: 12px 20px;
-            background: #111827;
-            border-top: 1px solid #334155;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            text-align: center;
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        .modal-close-btn {
-            flex: 2;
-            background: #0284c7;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .modal-close-btn:hover {
-            background: #0369a1;
-        }
-        .modal-skip-btn {
-            flex: 1;
-            background: #475569;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .modal-skip-btn:hover {
-            background: #334155;
-        }
-
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column-reverse;
@@ -336,38 +256,6 @@
     </style>
 </head>
 <body>
-
-    <div id="welcomeModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-content-scroll">
-                <h2 style="margin-top: 0; font-size: 16px;">リアルタイム地殻変動・地震モニタリング</h2>
-                <h3 style="font-size: 13px;">1．システム名称</h3>
-                <p><span class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</span></p>
-                <h3 style="font-size: 13px;">2．システム開発に向けた思い</h3>
-                <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
-                <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
-                <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
-                <h3 style="font-size: 13px;">3．システム構成と通知について</h3>
-                <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に取得し、マッピングしています。</p>
-                <ul>
-                    <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
-                    <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードを上部のスイッチで絞込可能。</li>
-                </ul>
-                <p><strong>【通知および運用についての補足】</strong></p>
-                <ul>
-                    <li><strong>当システム起動中の場合：</strong>ブラウザで表示している間は、リアルタイムで最新情報を自動更新し、強い地震や警戒レベルの変化を画面上で検知・通知します。</li>
-                    <li><strong>当システムを起動していない時（スリープ時など）：</strong>当システムはバックグラウンドでのプッシュ通知を行わない仕様となっています。そのため、万が一の大きな地震や災害時にスマホ本体で通知を受け取りたい場合は、<strong>「Yahoo!防災速報」</strong>や<strong>「NERV防災アプリ」</strong>などの公式防災アプリをあわせてご活用ください。</li>
-                </ul>
-                <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
-                <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
-                <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-close-btn" id="startBtn">確認してはじめる</button>
-                <button type="button" class="modal-skip-btn" id="closeBtn">閉じる</button>
-            </div>
-        </div>
-    </div>
 
     <header>
         <div class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</div>
@@ -390,7 +278,6 @@
                 <button class="mag-btn active" onclick="setMagFilter('4', this)">M4+</button>
                 <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
             </div>
-            <button type="button" class="help-btn" id="helpBtn">使い方・想い</button>
             <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
         </div>
     </header>
@@ -415,6 +302,14 @@
                         <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測（要警戒）</li>
                         <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
                     </ul>
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px;">
+                        <p style="margin: 0 0 3px 0; color: #fb923c; font-weight: bold; font-size: 11px;">🗺️ マップ上のカラー円（目安範囲）の凡例：</p>
+                        <div style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+                            <span style="color: #a855f7; font-weight: bold;">🟣 紫色の円：</span>電磁波ノイズ・局所ひずみ監視エリア<br>
+                            <span style="color: #f97316; font-weight: bold;">🟠 橙色の円：</span>プレート境界ひずみ想定域<br>
+                            <span style="color: #38bdf8; font-weight: bold;">🔵 青色の円：</span>海溝沿いの余効変動・微小活動監視
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -466,39 +361,8 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        function closeWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        function openWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById('welcomeModal');
-            const startBtn = document.getElementById('startBtn');
-            const closeBtn = document.getElementById('closeBtn');
-            const helpBtn = document.getElementById('helpBtn');
             const accordionToggle = document.getElementById('accordionToggle');
-
-            if (startBtn) startBtn.addEventListener('click', closeWelcomeModal);
-            if (closeBtn) closeBtn.addEventListener('click', closeWelcomeModal);
-            if (helpBtn) helpBtn.addEventListener('click', openWelcomeModal);
-
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeWelcomeModal();
-                    }
-                });
-            }
-
             if (accordionToggle) {
                 accordionToggle.addEventListener('click', () => {
                     const content = document.getElementById('accordionContent');
@@ -602,105 +466,4 @@
                 if (!response.ok) throw new Error('API通信エラー');
                 
                 const data = await response.json();
-                const uniqueMap = new Map();
-                
-                data.forEach(item => {
-                    const hypo = item.earthquake.hypocenter;
-                    if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
-                    
-                    const key = `${hypo.name}_${hypo.magnitude}_${item.time.substring(0, 16)}`;
-                    if (!uniqueMap.has(key)) {
-                        uniqueMap.set(key, {
-                            lat: hypo.latitude,
-                            lng: hypo.longitude,
-                            mag: hypo.magnitude,
-                            depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
-                            title: hypo.name || "震源地詳細不明",
-                            time: item.time,
-                            maxScale: item.earthquake.maxScale
-                        });
-                    }
-                });
-
-                liveQuakes = Array.from(uniqueMap.values());
-                if (statusEl) statusEl.textContent = 'ライブAPI同期完了';
-                
-                updateArea(document.getElementById('targetArea').value);
-            } catch (error) {
-                console.error("地震データの取得に失敗しました:", error);
-                const statusEl = document.getElementById('apiStatus');
-                if (statusEl) statusEl.textContent = 'APIフォールバックモード';
-                updateArea(document.getElementById('targetArea').value);
-            }
-        }
-
-        function setMagFilter(val, btnElement) {
-            currentMagFilter = val;
-            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
-            if (btnElement) btnElement.classList.add('active');
-            updateArea(document.getElementById('targetArea').value);
-        }
-
-        function updateArea(key) {
-            const selected = areaData[key];
-            if (!selected) return;
-
-            map.setView(selected.center, selected.zoom);
-
-            const panelTitle = document.getElementById('panelTitle');
-            const panelDesc = document.getElementById('panelDescription');
-            if (panelTitle) panelTitle.textContent = selected.name;
-            if (panelDesc) panelDesc.textContent = selected.desc;
-
-            markerLayer.clearLayers();
-            
-            let filteredQuakes = liveQuakes;
-            if (selected.bounds) {
-                const b = selected.bounds;
-                filteredQuakes = filteredQuakes.filter(q => 
-                    q.lat >= b.latMin && q.lat <= b.latMax && q.lng >= b.lonMin && q.lng <= b.lonMax
-                );
-            }
-
-            filteredQuakes = filteredQuakes.filter(q => {
-                if (currentMagFilter === '4') return q.mag >= 4.0;
-                if (currentMagFilter === '5') return q.mag >= 5.0;
-                return true;
-            });
-
-            filteredQuakes.forEach(q => {
-                const marker = L.circleMarker([q.lat, q.lng], {
-                    radius: q.mag >= 5 ? 11 : 7,
-                    color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
-                    fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
-                    fillOpacity: 0.9
-                });
-                marker.bindPopup(`
-                    <div style="color: #333;">
-                        <strong>${q.title}</strong><br>
-                        規模: M ${q.mag} / 深さ: ${q.depth}<br>
-                        発生時刻: ${q.time}
-                    </div>
-                `);
-                markerLayer.addLayer(marker);
-            });
-
-            renderAnomalyMarkers();
-        }
-
-        fetchRealtimeEarthquakes();
-        setInterval(fetchRealtimeEarthquakes, 300000);
-
-        const targetAreaEl = document.getElementById('targetArea');
-        if (targetAreaEl) {
-            targetAreaEl.addEventListener('change', (e) => {
-                updateArea(e.target.value);
-            });
-        }
-
-        window.addEventListener('resize', () => {
-            map.invalidateSize();
-        });
-    </script>
-</body>
-</html>
+                const
