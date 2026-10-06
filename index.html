@@ -310,22 +310,31 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            z-index: 99999;
         }
         .modal-box {
             background: #1e293b;
             color: #f8fafc;
             width: 90%;
-            max-width: 540px;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 25px;
+            max-width: 520px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
             border-radius: 10px;
             border: 1px solid #334155;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: left;
-            position: relative;
-            z-index: 10000;
+        }
+        .modal-content-scroll {
+            padding: 20px 20px 10px 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .modal-footer {
+            padding: 12px 20px;
+            background: #111827;
+            border-top: 1px solid #334155;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
         }
         .modal-box h2 {
             margin-top: 0;
@@ -360,9 +369,6 @@
             font-weight: bold;
             cursor: pointer;
             text-align: center;
-            margin-top: 15px;
-            position: relative;
-            z-index: 10001;
         }
         .modal-close-btn:hover {
             background: #0369a1;
@@ -388,32 +394,35 @@
     <!-- ウェルカムモーダル -->
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-box">
-            <h2>リアルタイム地殻変動・地震モニタリング</h2>
-            
-            <h3>1．システム名称</h3>
-            <p><span class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</span></p>
+            <div class="modal-content-scroll">
+                <h2>リアルタイム地殻変動・地震モニタリング</h2>
+                
+                <h3>1．システム名称</h3>
+                <p><span class="system-title">碧AI | 地殻変動・電磁波モニタリングシステム</span></p>
 
-            <h3>2．システム開発に向けた思い</h3>
-            <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
-            <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
-            <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
+                <h3>2．システム開発に向けた思い</h3>
+                <p>このシステムは、1995年1月17日に発生した「阪神・淡路大震災」の数週間前に、当時「日本地震予知クラブ」という大学の先生や民間地震研究の活動に参画していた経験がもとになっています。</p>
+                <p>その時、「もしかしたら」と地震の1週間前に東京から関西の間で震度7クラスの地震の可能性についての連絡があり、東京の友人に連絡したことがありました。</p>
+                <p>その頃から、「出来れば地震予知は出来なくても予測は出来るようになりたい」という思いを抱いていました。そんな中、65歳で退職し再就職しましたが、時間がある今だからこそ、最近のAI技術なども活用して処理できないかとの思いから、たくさんの地震関連情報から命を守る防災ポータルとして、このたびプログラムを構築しました。</p>
 
-            <h3>3．システム構成と通知について</h3>
-            <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に取得し、マッピングしています。</p>
-            <ul>
-                <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
-                <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードを上部のスイッチで絞込可能。</li>
-            </ul>
-            <p><strong>【通知および運用についての補足】</strong></p>
-            <ul>
-                <li><strong>当システム起動中の場合：</strong>ブラウザで表示している間は、リアルタイムで最新情報を自動更新し、強い地震や警戒レベルの変化を画面上で検知・通知します。</li>
-                <li><strong>当システムを起動していない時（スリープ時など）：</strong>当システムはバックグラウンドでのプッシュ通知を行わない仕様となっています。そのため、万が一の大きな地震や災害時にスマホ本体で通知を受け取りたい場合は、<strong>「Yahoo!防災速報」</strong>や<strong>「NERV防災アプリ」</strong>などの公式防災アプリをあわせてご活用ください。（※各アプリの通知許可や自動起動設定を有効にしておくことで確実に受信できます）</li>
-            </ul>
-            <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
-            <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
-            <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
-
-            <button id="closeModalBtn" class="modal-close-btn">確認してはじめる</button>
+                <h3>3．システム構成と通知について</h3>
+                <p>このシステムは、気象庁および外部防災APIから直近の地震発生データを自動的に取得し、マッピングしています。</p>
+                <ul>
+                    <li><strong>完全自動同期：</strong>リアルタイムの震源情報を常時反映。</li>
+                    <li><strong>地域・Mフィルター：</strong>表示エリアおよびマグニチュードを上部のスイッチで絞込可能。</li>
+                </ul>
+                <p><strong>【通知および運用についての補足】</strong></p>
+                <ul>
+                    <li><strong>当システム起動中の場合：</strong>ブラウザで表示している間は、リアルタイムで最新情報を自動更新し、強い地震や警戒レベルの変化を画面上で検知・通知します。</li>
+                    <li><strong>当システムを起動していない時（スリープ時など）：</strong>当システムはバックグラウンドでのプッシュ通知を行わない仕様となっています。そのため、万が一の大きな地震や災害時にスマホ本体で通知を受け取りたい場合は、<strong>「Yahoo!防災速報」</strong>や<strong>「NERV防災アプリ」</strong>などの公式防災アプリをあわせてご活用ください。（※各アプリの通知許可や自動起動設定を有効にしておくことで確実に受信できます）</li>
+                </ul>
+                <p>繰り返しますが、地震を予知することは難しい。でも、地震発生の状況を知ることで、<strong><span>「事前に予測し備える」</span></strong>ことができます。</p>
+                <p>自分や家族、友人、知人の命を守るツールとして、各々参考に活用していただければと思います。<br>
+                <span style="color: #38bdf8; font-weight: bold; display: block; margin-top: 6px;">皆の笑顔が消えないように、きっとまた会おうぜ！という声が絶えない為に…。</span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-close-btn" onclick="closeWelcomeModal()">確認してはじめる</button>
+            </div>
         </div>
     </div>
 
@@ -443,7 +452,7 @@
                 <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
             </div>
 
-            <button id="openModalBtn" class="help-btn">使い方・想い</button>
+            <button type="button" class="help-btn" onclick="openWelcomeModal()">使い方・想い</button>
             <div id="live-clock" style="font-size: 12px; font-family: monospace; color: #38bdf8;">--:--:--</div>
         </div>
     </header>
@@ -540,4 +549,241 @@
                     <p style="margin: 0 0 8px 0; font-size: 12px; color: #f8fafc; line-height: 1.5;">
                         本システムは常時バックグラウンドでプッシュ通知を送る仕組みではありません。画面を開いていない時でも緊急地震速報を確実に受け取るため、以下の公式防災アプリを必ずあわせてご利用ください。
                     </p>
-                    <p style="margin: 0; font-size: 12px
+                    <p style="margin: 0; font-size: 12px; color: #fde047; font-weight: bold; text-align: center; background: rgba(249, 115, 22, 0.15); padding: 7px; border-radius: 4px; border: 1px dashed #f97316; line-height: 1.4;">
+                        📌 推奨アプリ：<br>「Yahoo!防災速報」 ／ 「NERV防災アプリ」
+                    </p>
+                </div>
+
+                <div style="color: #fed7aa; font-weight: bold; font-size: 11.5px; border-top: 1px dashed #9a3412; padding-top: 8px; line-height: 1.4; text-align: center;">
+                    ※各アプリの「通知許可」および「自動起動設定」を有効にすることでスリープ時も確実に受信できます。
+                </div>
+            </div>
+
+            <div class="card" style="text-align: right; padding: 8px 15px;">
+                <div class="footer-credit" style="border: none; padding: 0; font-size: 11px;">
+                    by 林 榮一
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側マップエリア -->
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // モーダル制御用の確実なグローバル関数
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function openWelcomeModal() {
+            const modal = document.getElementById('welcomeModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        // リアルタイム時計
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // アコーディオン開閉トグル
+        function toggleAccordion() {
+            const content = document.getElementById('accordionContent');
+            const icon = document.getElementById('accordionIcon');
+            content.classList.toggle('open');
+            if (content.classList.contains('open')) {
+                icon.textContent = '▲';
+            } else {
+                icon.textContent = '▼';
+            }
+        }
+
+        // マップ初期化
+        const map = L.map('map').setView([36.2, 138.2], 6);
+
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        const markerLayer = L.layerGroup().addTo(map);
+
+        let currentMagFilter = '4';
+        let liveQuakes = [];
+
+        // エリア定義
+        const areaData = {
+            all: { name: "全国のモニタリング状況", desc: "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
+            kanto: { name: "関東エリアの状況", desc: "首都圏周辺の地面のゆがみおよびリアルタイム地震活動。", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
+            hokkaido: { name: "北海道エリアの状況", desc: "千島海溝および周辺のリアルタイム地震活動。", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
+            tohoku: { name: "東北エリアの状況", desc: "日本海溝周辺のリアルタイム地震活動。", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
+            chubu: { name: "中部エリアの状況", desc: "中部山岳地帯・ひずみ集中帯のリアルタイム状況。", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5} },
+            kinki: { name: "近畿エリアの状況", desc: "近畿圏活断層帯のリアルタイム状況。", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5} },
+            chugoku_shikoku: { name: "中国・四国エリアの状況", desc: "南海トラフ周辺のリアルタイム状況。", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0} },
+            kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "日向灘・南西諸島周辺のリアルタイム状況。", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
+        };
+
+        // リアルタイム地震情報フェッチ
+        async function fetchRealtimeEarthquakes() {
+            try {
+                document.getElementById('apiStatus').textContent = 'データ同期中...';
+                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
+                if (!response.ok) throw new Error('API通信エラー');
+                
+                const data = await response.json();
+                
+                const uniqueMap = new Map();
+                data.forEach(item => {
+                    const hypo = item.earthquake.hypocenter;
+                    if (hypo.latitude === -1 || hypo.longitude === -1 || hypo.latitude === 0 || hypo.longitude === 0) return;
+                    
+                    const key = `${hypo.name}_${hypo.magnitude}_${item.time.substring(0, 16)}`;
+                    
+                    if (!uniqueMap.has(key)) {
+                        uniqueMap.set(key, {
+                            lat: hypo.latitude,
+                            lng: hypo.longitude,
+                            mag: hypo.magnitude,
+                            depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                            title: hypo.name || "震源地詳細不明",
+                            time: item.time,
+                            maxScale: item.earthquake.maxScale
+                        });
+                    }
+                });
+
+                liveQuakes = Array.from(uniqueMap.values());
+
+                document.getElementById('apiStatus').textContent = 'ライブAPI同期完了';
+                
+                evaluateSystemStatus(data);
+                updateArea(document.getElementById('targetArea').value);
+            } catch (error) {
+                console.error("地震データの取得に失敗しました:", error);
+                document.getElementById('apiStatus').textContent = 'APIフォールバックモード';
+            }
+        }
+
+        function evaluateSystemStatus(data) {
+            const cardContainer = document.getElementById('alertCardContainer');
+            const cardTitle = document.getElementById('alertCardTitle');
+            const infoText = document.getElementById('emergencyInfoText');
+            const riskLevelEl = document.getElementById('riskLevel');
+            const criteriaDesc = document.getElementById('levelCriteriaDesc');
+            
+            if (!data || data.length === 0) return;
+
+            const latest = data[0];
+            const hypo = latest.earthquake.hypocenter;
+            const maxScale = latest.earthquake.maxScale;
+            
+            let scaleStr = "不明";
+            if (maxScale === 40) scaleStr = "震度4";
+            else if (maxScale === 50) scaleStr = "震度5弱";
+            else if (maxScale === 55) scaleStr = "震度5強";
+            else if (maxScale === 60) scaleStr = "震度6弱";
+            else if (maxScale === 65) scaleStr = "震度6強";
+            else if (maxScale >= 70) scaleStr = "震度7";
+            else if (maxScale > 0) scaleStr = `最大震度${maxScale/10}`;
+
+            if (hypo.magnitude >= 5.0 || maxScale >= 50) {
+                cardContainer.classList.add('alert-active');
+                cardTitle.textContent = "⚠ 強い地震活動の検知（特別警戒）";
+                infoText.textContent = `${latest.time}\n震源地: ${hypo.name}\n規模: M${hypo.magnitude} / ${scaleStr}\n周辺地域では十分注意してください。`;
+                
+                riskLevelEl.textContent = "LEVEL 3（特別警戒）";
+                riskLevelEl.className = "risk-level-high";
+                criteriaDesc.style.color = "#f87171";
+                criteriaDesc.innerHTML = "<strong>【現在の適用基準：LEVEL 3】</strong><br>直近でM5.0以上または震度5弱以上の強い地震を検知した状態。余震や二次災害に警戒してください。";
+            } else {
+                cardContainer.classList.remove('alert-active');
+                cardTitle.textContent = "直近の地震活動情報";
+                infoText.textContent = `直近検知: ${hypo.name} (M${hypo.magnitude} / ${scaleStr})\n発生時刻: ${latest.time}`;
+                
+                riskLevelEl.textContent = "LEVEL 2（総合警戒）";
+                riskLevelEl.className = "risk-level-mid";
+                criteriaDesc.style.color = "#fbbf24";
+                criteriaDesc.innerHTML = "<strong>【現在の適用基準：LEVEL 2】</strong><br>中規模の地震活動が見られ、突発的な事象に備える状態です。<br><span style='color: #38bdf8;'>※平時はLEVEL 1〜2で常時モニタリングを行っています。</span>";
+            }
+        }
+
+        function setMagFilter(val, btnElement) {
+            currentMagFilter = val;
+            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            updateArea(document.getElementById('targetArea').value);
+        }
+
+        function updateArea(key) {
+            const selected = areaData[key];
+            if (!selected) return;
+
+            map.setView(selected.center, selected.zoom);
+
+            document.getElementById('panelTitle').textContent = selected.name;
+            document.getElementById('panelDescription').textContent = selected.desc;
+
+            markerLayer.clearLayers();
+            
+            let filteredQuakes = liveQuakes;
+
+            if (selected.bounds) {
+                const b = selected.bounds;
+                filteredQuakes = filteredQuakes.filter(q => 
+                    q.lat >= b.latMin && q.lat <= b.latMax && q.lng >= b.lonMin && q.lng <= b.lonMax
+                );
+            }
+
+            filteredQuakes = filteredQuakes.filter(q => {
+                if (currentMagFilter === '4') {
+                    return q.mag >= 4.0;
+                }
+                if (currentMagFilter === '5') {
+                    return q.mag >= 5.0;
+                }
+                return true;
+            });
+
+            filteredQuakes.forEach(q => {
+                const marker = L.circleMarker([q.lat, q.lng], {
+                    radius: q.mag >= 5 ? 11 : 7,
+                    color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
+                    fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
+                    fillOpacity: 0.9
+                });
+                marker.bindPopup(`
+                    <div style="color: #333;">
+                        <strong>${q.title}</strong><br>
+                        規模: M ${q.mag > 0 ? q.mag : '不明'} / 深さ: ${q.depth}<br>
+                        発生時刻: ${q.time}<br>
+                        <hr style="margin: 4px 0;">
+                        最大震度換算: ${q.maxScale ? q.maxScale/10 : '不明'}
+                    </div>
+                `);
+                markerLayer.addLayer(marker);
+            });
+        }
+
+        fetchRealtimeEarthquakes();
+        setInterval(fetchRealtimeEarthquakes, 300000);
+
+        document.getElementById('targetArea').addEventListener('change', (e) => {
+            updateArea(e.target.value);
+        });
+
+        window.addEventListener('resize', () => {
+            map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
