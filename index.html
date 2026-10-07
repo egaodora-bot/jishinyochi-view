@@ -380,7 +380,6 @@
     </div>
 
     <script>
-        // 時計の更新
         function updateClock() {
             const now = new Date();
             const clockEl = document.getElementById('live-clock');
@@ -477,24 +476,24 @@
             if (!anomalyLayer) return;
             anomalyLayer.clearLayers();
             anomalySpots.forEach(spot => {
+                // ★ interactive: false を追加し、電磁波の円をクリック不能にして下の地震マーカーを邪魔しないように変更
                 const circle = L.circle([spot.lat, spot.lng], {
                     radius: spot.radius,
                     color: spot.color,
                     fillColor: spot.color,
                     fillOpacity: 0.22,
                     weight: 2,
-                    dashArray: '5, 5'
+                    dashArray: '5, 5',
+                    interactive: false 
                 });
                 const marker = L.circleMarker([spot.lat, spot.lng], {
                     radius: 8,
                     color: '#ffffff',
                     fillColor: spot.color,
                     fillOpacity: 0.95,
-                    weight: 2
+                    weight: 2,
+                    interactive: false
                 });
-                const popupContent = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
-                circle.bindPopup(popupContent);
-                marker.bindPopup(popupContent);
                 anomalyLayer.addLayer(circle);
                 anomalyLayer.addLayer(marker);
             });
@@ -599,9 +598,9 @@
                     radius: q.mag >= 5 ? 11 : 7,
                     color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
                     fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
-                    fillOpacity: 0.9
+                    fillOpacity: 0.9,
+                    interactive: true
                 });
-
                 marker.bindPopup(`
                     <div style="color: #333;">
                         <strong>${q.title}</strong><br>
@@ -609,12 +608,6 @@
                         発生時刻: ${q.time}
                     </div>
                 `);
-
-                // ★追加：クリックされた瞬間に地震マーカーを最前面（トップ）に浮かび上がらせる
-                marker.on('click', function(e) {
-                    this.bringToFront();
-                });
-
                 if (markerLayer) markerLayer.addLayer(marker);
             });
 
