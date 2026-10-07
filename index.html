@@ -303,7 +303,6 @@
                 <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
             </div>
 
-            <!-- 名称を変更し、M4以上の直近情報をここに表示 -->
             <div id="alertCardContainer" class="emergency-alert-card">
                 <h3 id="alertCardTitle">直近の地震活動情報（M4以上）</h3>
                 <div id="emergencyInfoText" class="info-text-box">現在、M4以上の直近データはありません（常時監視中）</div>
@@ -317,7 +316,15 @@
                         <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
                         <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
                     </ul>
-                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 5px; margin-bottom: 4px;">
+                    
+                    <!-- ご指定の解説文を追加 -->
+                    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 6px; padding: 6px; margin-bottom: 6px;">
+                        <p style="margin: 0; color: #e2e8f0; font-size: 10.5px; line-height: 1.4;">
+                            <strong>💡 監視の背景：</strong>地震発生前に岩盤や断層に大きな圧力がかかると、微小なひび割れや摩擦により地下からVLF（超長波）帯の電磁波ノイズや微弱なひずみが発生することが研究されています。当システムではこれらを前兆現象の目安の一つとして捉え、総合的な警戒レベルの参考にしています。
+                        </p>
+                    </div>
+
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 6px; padding: 5px;">
                         <p style="margin: 0 0 2px 0; color: #fb923c; font-weight: bold; font-size: 10.5px;">🗺️ マップ上のカラー円（目安範囲）の凡例：</p>
                         <div style="font-size: 10px; color: #cbd5e1; line-height: 1.3;">
                             <span style="color: #a855f7; font-weight: bold;">🟣 紫色の円：</span>電磁波ノイズ・局所ひずみ監視<br>
@@ -526,9 +533,7 @@
                 liveQuakes = Array.from(uniqueMap.values());
                 if (statusEl) statusEl.textContent = 'ライブAPI同期完了';
                 
-                // M4以上の最新地震を「直近の地震活動情報（M4以上）」カードに反映
                 evaluateLatestM4Earthquake(liveQuakes);
-
                 updateArea(document.getElementById('targetArea').value);
             } catch (error) {
                 console.error("地震データの取得に失敗しました:", error);
@@ -538,17 +543,15 @@
             }
         }
 
-        // M4以上の直近地震をカードに表示する処理
         function evaluateLatestM4Earthquake(quakes) {
             const cardContainer = document.getElementById('alertCardContainer');
             const infoText = document.getElementById('emergencyInfoText');
             if (!cardContainer || !infoText) return;
 
-            // M4.0以上の地震を抽出
             const m4Quakes = quakes.filter(q => q.mag >= 4.0);
 
             if (m4Quakes.length > 0) {
-                const latest = m4Quakes[0]; // 最も新しいもの
+                const latest = m4Quakes[0];
                 cardContainer.classList.add('alert-active');
                 infoText.textContent = `発生時刻: ${latest.time}\n震源地: ${latest.title}\n規模: M${latest.mag} / 深さ: ${latest.depth}`;
             } else {
