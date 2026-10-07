@@ -112,7 +112,7 @@
             left: 380px;
             width: calc(100vw - 380px);
             height: 100%;
-            background-color: #1e293b;
+            background-color: #0f172a;
             z-index: 1;
         }
 
@@ -156,12 +156,20 @@
             padding: 10px 12px;
             margin-bottom: 10px;
         }
+        .emergency-alert-card.alert-active {
+            background: #450a0a;
+            border: 1px solid #ef4444;
+        }
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 11.5px;
             color: #a5b4fc;
             border-bottom: 1px solid #312e81;
             padding-bottom: 3px;
+        }
+        .emergency-alert-card.alert-active h3 {
+            color: #fca5a5;
+            border-bottom: 1px solid #7f1d1d;
         }
         .info-text-box {
             background: #0f172a;
@@ -171,6 +179,11 @@
             border: 1px solid #3730a3;
             font-size: 11px;
             color: #e2e8f0;
+        }
+        .emergency-alert-card.alert-active .info-text-box {
+            border: 1px solid #7f1d1d;
+            color: #f87171;
+            font-weight: bold;
         }
         .risk-item {
             display: flex;
@@ -290,9 +303,10 @@
                 <p>気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
             </div>
 
+            <!-- 名称を変更し、M4以上の直近情報をここに表示 -->
             <div id="alertCardContainer" class="emergency-alert-card">
-                <h3 id="alertCardTitle">直近の地震活動情報</h3>
-                <div id="emergencyInfoText" class="info-text-box">現在、重大な速報値はありません（常時監視中）</div>
+                <h3 id="alertCardTitle">直近の地震活動情報（M4以上）</h3>
+                <div id="emergencyInfoText" class="info-text-box">現在、M4以上の直近データはありません（常時監視中）</div>
             </div>
 
             <div class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
@@ -413,13 +427,10 @@
         function initMap() {
             if (map) return;
             try {
-                const container = document.getElementById('map');
-                if (!container) return;
-
                 map = L.map('map').setView([36.2, 138.2], 6);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>',
                     maxZoom: 18
                 }).addTo(map);
 
@@ -446,7 +457,6 @@
                 });
             }
 
-            // 確実に地図を初期化
             setTimeout(initMap, 200);
 
             const targetAreaEl = document.getElementById('targetArea');
@@ -516,12 +526,34 @@
                 liveQuakes = Array.from(uniqueMap.values());
                 if (statusEl) statusEl.textContent = 'ライブAPI同期完了';
                 
+                // M4以上の最新地震を「直近の地震活動情報（M4以上）」カードに反映
+                evaluateLatestM4Earthquake(liveQuakes);
+
                 updateArea(document.getElementById('targetArea').value);
             } catch (error) {
                 console.error("地震データの取得に失敗しました:", error);
                 const statusEl = document.getElementById('apiStatus');
                 if (statusEl) statusEl.textContent = 'APIフォールバックモード';
                 updateArea(document.getElementById('targetArea').value);
+            }
+        }
+
+        // M4以上の直近地震をカードに表示する処理
+        function evaluateLatestM4Earthquake(quakes) {
+            const cardContainer = document.getElementById('alertCardContainer');
+            const infoText = document.getElementById('emergencyInfoText');
+            if (!cardContainer || !infoText) return;
+
+            // M4.0以上の地震を抽出
+            const m4Quakes = quakes.filter(q => q.mag >= 4.0);
+
+            if (m4Quakes.length > 0) {
+                const latest = m4Quakes[0]; // 最も新しいもの
+                cardContainer.classList.add('alert-active');
+                infoText.textContent = `発生時刻: ${latest.time}\n震源地: ${latest.title}\n規模: M${latest.mag} / 深さ: ${latest.depth}`;
+            } else {
+                cardContainer.classList.remove('alert-active');
+                infoText.textContent = "現在、M4以上の直近データはありません（常時監視中）";
             }
         }
 
