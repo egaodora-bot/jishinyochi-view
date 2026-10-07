@@ -112,7 +112,7 @@
             left: 380px;
             width: calc(100vw - 380px);
             height: 100%;
-            background-color: #0f172a;
+            background-color: #1e293b;
             z-index: 1;
         }
 
@@ -349,3 +349,241 @@
                         ※LEVEL 3（特別警戒）：直近でM5.0以上または震度5弱以上の強い地震を検知した状態。
                     </div>
                 </div>
+            </div>
+
+            <div class="card" style="text-align: right; padding: 6px 12px;">
+                <div style="font-size: 10.5px; color: #cbd5e1;">by 林 榮一</div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // 時計の更新
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let map = null;
+        let markerLayer = null;
+        let anomalyLayer = null;
+        let currentMagFilter = '4';
+        let liveQuakes = [];
+
+        const anomalySpots = [
+            {
+                name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター",
+                lat: 35.8, lng: 139.3,
+                radius: 45000,
+                color: "#a855f7",
+                desc: "地殻の微小な伸び縮みと、VLF帯電磁波のざわめき（微小ノイズ）を観測中。"
+            },
+            {
+                name: "【プレート境界ひずみ】東海・南海トラフ想定域",
+                lat: 34.4, lng: 137.5,
+                radius: 65000,
+                color: "#f97316",
+                desc: "フィリピン海プレート沈下帯におけるひずみデータが通常基準を超えて推移中。"
+            },
+            {
+                name: "【地殻変動監視】東北沖・日本海溝セクター",
+                lat: 38.5, lng: 142.0,
+                radius: 55000,
+                color: "#38bdf8",
+                desc: "東日本大震災余効変動および周辺海溝沿いの微小活動を監視中。"
+            }
+        ];
+
+        const areaData = {
+            all: { name: "全国のモニタリング状況", desc: "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動。", center: [36.2, 138.2], zoom: 6 },
+            kanto: { name: "関東エリアの状況", desc: "首都圏周辺の地面のゆがみおよびリアルタイム地震活動。", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
+            hokkaido: { name: "北海道エリアの状況", desc: "千島海溝および周辺のリアルタイム地震活動。", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
+            tohoku: { name: "東北エリアの状況", desc: "日本海溝周辺のリアルタイム地震活動。", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
+            chubu: { name: "中部エリアの状況", desc: "中部山岳地帯・ひずみ集中帯のリアルタイム状況。", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5} },
+            kinki: { name: "近畿エリアの状況", desc: "近畿圏活断層帯のリアルタイム状況。", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5} },
+            chugoku_shikoku: { name: "中国・四国エリアの状況", desc: "南海トラフ周辺のリアルタイム状況。", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0} },
+            kyushu_okinawa: { name: "九州・沖縄エリアの状況", desc: "日向灘・南西諸島周辺のリアルタイム状況。", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
+        };
+
+        function initMap() {
+            if (map) return;
+            try {
+                const container = document.getElementById('map');
+                if (!container) return;
+
+                map = L.map('map').setView([36.2, 138.2], 6);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18
+                }).addTo(map);
+
+                markerLayer = L.layerGroup().addTo(map);
+                anomalyLayer = L.layerGroup().addTo(map);
+
+                fetchRealtimeEarthquakes();
+                setInterval(fetchRealtimeEarthquakes, 300000);
+            } catch (e) {
+                console.error("地図初期化エラー:", e);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const accordionToggle = document.getElementById('accordionToggle');
+            if (accordionToggle) {
+                accordionToggle.addEventListener('click', () => {
+                    const content = document.getElementById('accordionContent');
+                    const icon = document.getElementById('accordionIcon');
+                    if (content && icon) {
+                        content.classList.toggle('open');
+                        icon.textContent = content.classList.contains('open') ? '▲' : '▼';
+                    }
+                });
+            }
+
+            // 確実に地図を初期化
+            setTimeout(initMap, 200);
+
+            const targetAreaEl = document.getElementById('targetArea');
+            if (targetAreaEl) {
+                targetAreaEl.addEventListener('change', (e) => {
+                    updateArea(e.target.value);
+                });
+            }
+        });
+
+        function renderAnomalyMarkers() {
+            if (!anomalyLayer) return;
+            anomalyLayer.clearLayers();
+            anomalySpots.forEach(spot => {
+                const circle = L.circle([spot.lat, spot.lng], {
+                    radius: spot.radius,
+                    color: spot.color,
+                    fillColor: spot.color,
+                    fillOpacity: 0.22,
+                    weight: 2,
+                    dashArray: '5, 5'
+                });
+                const marker = L.circleMarker([spot.lat, spot.lng], {
+                    radius: 8,
+                    color: '#ffffff',
+                    fillColor: spot.color,
+                    fillOpacity: 0.95,
+                    weight: 2
+                });
+                const popupContent = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
+                circle.bindPopup(popupContent);
+                marker.bindPopup(popupContent);
+                anomalyLayer.addLayer(circle);
+                anomalyLayer.addLayer(marker);
+            });
+        }
+
+        async function fetchRealtimeEarthquakes() {
+            try {
+                const statusEl = document.getElementById('apiStatus');
+                if (statusEl) statusEl.textContent = 'データ同期中...';
+                
+                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
+                if (!response.ok) throw new Error('API通信エラー');
+                
+                const data = await response.json();
+                const uniqueMap = new Map();
+                
+                data.forEach(item => {
+                    const hypo = item.earthquake.hypocenter;
+                    if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
+                    
+                    const key = `${hypo.name}_${hypo.magnitude}_${item.time.substring(0, 16)}`;
+                    if (!uniqueMap.has(key)) {
+                        uniqueMap.set(key, {
+                            lat: hypo.latitude,
+                            lng: hypo.longitude,
+                            mag: hypo.magnitude,
+                            depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                            title: hypo.name || "震源地詳細不明",
+                            time: item.time,
+                            maxScale: item.earthquake.maxScale
+                        });
+                    }
+                });
+
+                liveQuakes = Array.from(uniqueMap.values());
+                if (statusEl) statusEl.textContent = 'ライブAPI同期完了';
+                
+                updateArea(document.getElementById('targetArea').value);
+            } catch (error) {
+                console.error("地震データの取得に失敗しました:", error);
+                const statusEl = document.getElementById('apiStatus');
+                if (statusEl) statusEl.textContent = 'APIフォールバックモード';
+                updateArea(document.getElementById('targetArea').value);
+            }
+        }
+
+        window.setMagFilter = function(val, btnElement) {
+            currentMagFilter = val;
+            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            updateArea(document.getElementById('targetArea').value);
+        };
+
+        function updateArea(key) {
+            if (!map) return;
+            const selected = areaData[key];
+            if (!selected) return;
+
+            map.setView(selected.center, selected.zoom);
+
+            const panelTitle = document.getElementById('panelTitle');
+            const panelDesc = document.getElementById('panelDescription');
+            if (panelTitle) panelTitle.textContent = selected.name;
+            if (panelDesc) panelDesc.textContent = selected.desc;
+
+            if (markerLayer) markerLayer.clearLayers();
+            
+            let filteredQuakes = liveQuakes;
+            if (selected.bounds) {
+                const b = selected.bounds;
+                filteredQuakes = filteredQuakes.filter(q => 
+                    q.lat >= b.latMin && q.lat <= b.latMax && q.lng >= b.lonMin && q.lng <= b.lonMax
+                );
+            }
+
+            filteredQuakes = filteredQuakes.filter(q => {
+                if (currentMagFilter === '4') return q.mag >= 4.0;
+                if (currentMagFilter === '5') return q.mag >= 5.0;
+                return true;
+            });
+
+            filteredQuakes.forEach(q => {
+                const marker = L.circleMarker([q.lat, q.lng], {
+                    radius: q.mag >= 5 ? 11 : 7,
+                    color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
+                    fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
+                    fillOpacity: 0.9
+                });
+                marker.bindPopup(`
+                    <div style="color: #333;">
+                        <strong>${q.title}</strong><br>
+                        規模: M ${q.mag} / 深さ: ${q.depth}<br>
+                        発生時刻: ${q.time}
+                    </div>
+                `);
+                if (markerLayer) markerLayer.addLayer(marker);
+            });
+
+            renderAnomalyMarkers();
+            setTimeout(() => { map.invalidateSize(); }, 200);
+        }
+
+        window.addEventListener('resize', () => {
+            if (map) map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
