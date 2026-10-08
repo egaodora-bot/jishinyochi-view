@@ -188,14 +188,26 @@
         .risk-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 11px;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             border-bottom: 1px dashed #334155;
-            padding-bottom: 2px;
+            padding-bottom: 3px;
         }
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
+        
+        /* 総合警戒レベルをより目立たせるためのスタイル */
+        .risk-level-alert-prominent {
+            color: #f87171;
+            font-size: 13px;
+            font-weight: bold;
+            background: rgba(239, 68, 68, 0.15);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
 
         .accordion-wrapper {
             margin-top: 6px;
@@ -341,7 +353,7 @@
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span id="riskStrain" class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span id="riskEM" class="risk-level-mid">一部微小ノイズ</span></div>
                     <div class="risk-item"><span>過去１週間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">マーカー表示中</span></div>
-                    <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-mid">LEVEL 2（総合警戒）</span></div>
+                    <div class="risk-item"><span>総合警戒レベル:</span> <span id="riskLevel" class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
                 </div>
 
                 <div class="accordion-wrapper">
@@ -476,7 +488,6 @@
             if (!anomalyLayer) return;
             anomalyLayer.clearLayers();
             anomalySpots.forEach(spot => {
-                // 電磁波の円（クリック可能・手のマークになります）
                 const circle = L.circle([spot.lat, spot.lng], {
                     radius: spot.radius,
                     color: spot.color,
@@ -578,10 +589,8 @@
             if (panelTitle) panelTitle.textContent = selected.name;
             if (panelDesc) panelDesc.textContent = selected.desc;
 
-            // 1. まず電磁波の円を配置（下層）
             renderAnomalyMarkers();
 
-            // 2. 次に地震マーカーを配置（上層）
             if (markerLayer) markerLayer.clearLayers();
             
             let filteredQuakes = liveQuakes;
