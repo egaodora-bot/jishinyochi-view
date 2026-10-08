@@ -439,8 +439,8 @@
                     maxZoom: 18
                 }).addTo(map);
 
-                markerLayer = L.layerGroup().addTo(map);
                 anomalyLayer = L.layerGroup().addTo(map);
+                markerLayer = L.layerGroup().addTo(map);
 
                 fetchRealtimeEarthquakes();
                 setInterval(fetchRealtimeEarthquakes, 300000);
@@ -476,24 +476,25 @@
             if (!anomalyLayer) return;
             anomalyLayer.clearLayers();
             anomalySpots.forEach(spot => {
-                // ★ interactive: false を追加し、電磁波の円をクリック不能にして下の地震マーカーを邪魔しないように変更
+                // 電磁波の円（クリック可能・手のマークになります）
                 const circle = L.circle([spot.lat, spot.lng], {
                     radius: spot.radius,
                     color: spot.color,
                     fillColor: spot.color,
                     fillOpacity: 0.22,
                     weight: 2,
-                    dashArray: '5, 5',
-                    interactive: false 
+                    dashArray: '5, 5'
                 });
                 const marker = L.circleMarker([spot.lat, spot.lng], {
                     radius: 8,
                     color: '#ffffff',
                     fillColor: spot.color,
                     fillOpacity: 0.95,
-                    weight: 2,
-                    interactive: false
+                    weight: 2
                 });
+                const popupContent = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
+                circle.bindPopup(popupContent);
+                marker.bindPopup(popupContent);
                 anomalyLayer.addLayer(circle);
                 anomalyLayer.addLayer(marker);
             });
@@ -577,6 +578,10 @@
             if (panelTitle) panelTitle.textContent = selected.name;
             if (panelDesc) panelDesc.textContent = selected.desc;
 
+            // 1. まず電磁波の円を配置（下層）
+            renderAnomalyMarkers();
+
+            // 2. 次に地震マーカーを配置（上層）
             if (markerLayer) markerLayer.clearLayers();
             
             let filteredQuakes = liveQuakes;
@@ -598,8 +603,7 @@
                     radius: q.mag >= 5 ? 11 : 7,
                     color: q.mag >= 5 ? '#f59e0b' : '#ef4444',
                     fillColor: q.mag >= 5 ? '#f59e0b' : '#ef4444',
-                    fillOpacity: 0.9,
-                    interactive: true
+                    fillOpacity: 0.9
                 });
                 marker.bindPopup(`
                     <div style="color: #333;">
@@ -611,7 +615,6 @@
                 if (markerLayer) markerLayer.addLayer(marker);
             });
 
-            renderAnomalyMarkers();
             setTimeout(() => { map.invalidateSize(); }, 200);
         }
 
