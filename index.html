@@ -522,14 +522,7 @@
                 const data = await response.json();
                 const uniqueMap = new Map();
                 
-                // 3日前（72時間前）のタイムスタンプを計算
-                const threeDaysAgo = new Date().getTime() - (3 * 24 * 60 * 60 * 1000);
-                
                 data.forEach(item => {
-                    const quakeTime = new Date(item.time).getTime();
-                    // 3日以内のデータのみを対象にする
-                    if (quakeTime < threeDaysAgo) return;
-
                     const hypo = item.earthquake.hypocenter;
                     if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
                     
@@ -542,15 +535,17 @@
                             depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
                             title: hypo.name || "震源地詳細不明",
                             time: item.time,
-                            maxScale: item.earthquake.maxScale
+                            maxScale: item.earthquake.maxScale,
+                            timestamp: new Date(item.time).getTime()
                         });
                     }
                 });
 
-                liveQuakes = Array.from(uniqueMap.values());
-                if (statusEl) statusEl.textContent = 'ライブAPI同期完了（過去3日）';
+                // 配列に変換し、日付の新しい順（降順）に必ずソートする
+                liveQuakes = Array.from(uniqueMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+
+                if (statusEl) statusEl.textContent = 'ライブAPI同期完了';
                 
-                // カードおよび発生件数の更新
                 evaluateLatestEarthquake(liveQuakes);
                 updateArea(document.getElementById('targetArea').value);
             } catch (error) {
@@ -567,10 +562,15 @@
             const countEl = document.getElementById('weekQuakeCount');
             if (!cardContainer || !infoText) return;
 
+            // 過去3日以内の件数をカウント
+            const threeDaysAgo = new Date().getTime() - (3 * 24 * 60 * 60 * 1000);
+            const recentQuakes = quakes.filter(q => q.timestamp >= threeDaysAgo);
+
             if (countEl) {
-                countEl.textContent = `${quakes.length}件（過去3日）`;
+                countEl.textContent = `${recentQuakes.length}件（過去3日）`;
             }
 
+            // タイムスタンプ判定に関わらず、取得できた最新の地震データを必ず表示する
             if (quakes.length > 0) {
                 const latest = quakes[0]; // 最も新しい地震
                 cardContainer.classList.add('alert-active');
@@ -579,7 +579,7 @@
                 infoText.textContent = `【直近の検知】\n発生時刻: ${latest.time}\n震源地: ${latest.title}\n規模: ${magText} / 深さ: ${latest.depth}`;
             } else {
                 cardContainer.classList.remove('alert-active');
-                infoText.textContent = "現在、過去3日以内の検知データはありません（正常稼働中・常時監視）";
+                infoText.textContent = "現在、直近の検知データはありません";
             }
         }
 
