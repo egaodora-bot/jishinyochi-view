@@ -205,11 +205,6 @@
             color: #e2e8f0;
             white-space: pre-line;
         }
-        .emergency-alert-card.alert-active .info-text-box {
-            border: 1px solid #7f1d1d;
-            color: #f87171;
-            font-weight: bold;
-        }
         .risk-item {
             display: flex;
             justify-content: space-between;
@@ -301,7 +296,7 @@
                 </div>
             </div>
 
-            <!-- 補助解説カード -->
+            <!-- 補助解説カード（モードに応じて中身が入れ替わります） -->
             <div id="subInfoCard" class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
                 <h3 style="color: #fb923c;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
@@ -447,13 +442,19 @@
                 evaluateLatestEarthquake(liveQuakes);
             } else {
                 apiStatusEl.textContent = '気象庁データ連動中';
-                modeStatusDesc.textContent = '気象庁キキクル（危険度分布）および河川水位情報を監視中。';
+                modeStatusDesc.textContent = '気象庁キキクル（危険度分布）および台風・河川水位情報を監視中。';
+                
+                // ★気象・水害モードのときだけ出現する「台風・大雨警戒カード」を含む構成
                 dynamicCardContainer.innerHTML = `
-                    <div class="emergency-alert-card alert-active">
-                        <h3>🌧️ 気象警報・大雨警戒情報</h3>
-                        <div class="info-text-box">現在、主要河川および土砂災害警戒エリアに特異な警報発令はありません（通常警戒）</div>
+                    <div class="emergency-alert-card alert-active" style="border-color: #f97316; background: #2a1208;">
+                        <h3 style="color: #fb923c; border-color: #7c2d12;">🌀 台風・大雨特別警戒情報</h3>
+                        <div class="info-text-box" style="border-color: #7c2d12; color: #ffedd5;">
+                            【接近中の台風・気象状況】
+                            現在、日本近海および主要航路上における台風・熱帯低気圧の動向、および線状降水帯発生リスクを常時監視しています。最新の進路情報にご注意ください。
+                        </div>
                     </div>
                 `;
+
                 subCardTitle.textContent = "🌊 キキクル・河川水位モニタリング";
                 subCardContent.innerHTML = `
                     <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【水害・土砂災害リスク箇所】</p>
