@@ -386,7 +386,7 @@
         let map = null;
         let markerLayer = null;
         let anomalyLayer = null;
-        let weatherRiskLayer = null; // 水害・台風・津波・火山を一元管理するレイヤー
+        let weatherRiskLayer = null;
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
 
@@ -414,7 +414,7 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀🌊🌋 気象・災害RISKデータ（台風・大雨・津波・火山をワン画面で一元管理）
+        // 🌀🌊🌋 気象・災害RISKデータ（台風・大雨・津波・火山を一元管理）
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -607,18 +607,19 @@
                     }
                     evaluateLatestEarthquake(liveQuakes);
                 } else {
+                    // 🌀 気象・災害RISKモード（一番上に接近中の台風情報を大きく表示）
                     if (apiStatusEl) apiStatusEl.textContent = '気象・災害RISK統合監視中';
                     if (modeStatusDesc) modeStatusDesc.textContent = '台風・大雨・津波・火山噴火の各警報情報を一元管理しています。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
-                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀🌊🌋 気象・災害RISK総合情報</h3>
+                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀 接近中の台風・大雨特別警戒情報</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
-                                    【一元管理中の監視項目】
-                                    • 台風・大雨（土砂・河川）
-                                    • 津波警報・注意報
-                                    • 火山噴火警報・予報
-                                    地図上の各マーカーをクリックすると詳細な警戒パラメータを確認できます。
+                                    【台風パラメータ】
+                                    • 中心気圧: 955 hPa
+                                    • 最大風速: 40 m/s
+                                    • 進行方向: 北北西 (時速 25km)
+                                    非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。
                                 </div>
                             </div>
                         `;
@@ -732,7 +733,6 @@
                     });
 
                 } else {
-                    // 🌀🌊🌋 気象・災害RISKモード（台風・水害・津波・火山を一元管理してマップに描画）
                     weatherRiskDataList.forEach(item => {
                         const circle = L.circle([item.lat, item.lng], { radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.22, weight: 2, dashArray: '4, 4' });
                         const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: item.color, fillOpacity: 0.95, weight: 2 });
