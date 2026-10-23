@@ -415,14 +415,14 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 台風データ（勢力や最大風速に基づきリアルタイムに円の大きさが連動）
+        // 🌀 気象・災害リスクデータ（津波の警戒レベル連動対応）
         const weatherRiskDataList = [
             {
                 type: "typhoon",
                 name: "🌀 台風警戒情報（非常に強い勢力）",
                 lat: 27.5, lng: 131.5,
-                maxWindSpeed: 40, // m/s (この数値や勢力に応じて円サイズが自動可変)
-                pressure: 955,    // hPa
+                maxWindSpeed: 40,
+                pressure: 955,
                 color: "#ef4444",
                 details: "【気象データ】\n• 中心気圧: 955 hPa\n• 最大風速: 40 m/s\n• 進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
             },
@@ -435,8 +435,10 @@
             {
                 type: "tsunami",
                 name: "🌊 津波情報監視（太平洋側沿岸）",
-                lat: 34.0, lng: 141.5, radius: 90000, color: "#06b6d4",
-                details: "【海洋データ】\n沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。現在、日本沿岸への異常津波警報はありません。"
+                lat: 34.0, lng: 141.5, radius: 90000,
+                status: "normal", // "normal" (正常/水色) または "warning" (注意報/黄色) または "alert" (警報/赤色)
+                color: "#06b6d4",
+                details: "【海洋データ】\n沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。\n• 状態: 異常なし（通常監視中）\n• 予想高さ: なし\n• 到達予想時刻: -"
             },
             {
                 type: "volcano",
@@ -762,18 +764,43 @@
 
                 } else {
                     weatherRiskDataList.forEach(item => {
-                        // 🌀 台風の勢力（最大風速など）に連動して円の大きさを自動計算（例: 最大風速40m/sなら半径約140km）
                         let radiusVal = item.radius;
+                        let circleColor = item.color;
+                        let weightVal = 2;
+                        let dashVal = '4, 4';
+
                         if (item.type === 'typhoon' && item.maxWindSpeed) {
-                            radiusVal = item.maxWindSpeed * 3500; // 風速に応じてリアルタイムに半径（m）を拡大縮小
+                            radiusVal = item.maxWindSpeed * 3500;
                         }
 
-                        const circle = L.circle([item.lat, item.lng], { radius: radiusVal, color: item.color, fillColor: item.color, fillOpacity: 0.22, weight: 2, dashArray: '4, 4' });
-                        const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: item.color, fillOpacity: 0.95, weight: 2 });
+                        // 🌊 津波データの警戒レベル連動（setStyleによる超軽量な色・スタイル切り替え）
+                        if (item.type === 'tsunami') {
+                            if (item.status === 'warning') {
+                                circleColor = '#eab308'; // 注意報発令時：黄色
+                                weightVal = 3;
+                                dashVal = ''; // 実線
+                            } else if (item.status === 'alert') {
+                                circleColor = '#ef4444'; // 警報発令時：赤色
+                                weightVal = 4;
+                                dashVal = ''; // 太い実線
+                            } else {
+                                circleColor = '#06b6d4'; // 通常時：水色点線
+                            }
+                        }
+
+                        const circle = L.circle([item.lat, item.lng], { 
+                            radius: radiusVal, 
+                            color: circleColor, 
+                            fillColor: circleColor, 
+                            fillOpacity: 0.22, 
+                            weight: weightVal, 
+                            dashArray: dashVal 
+                        });
+                        const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: circleColor, fillOpacity: 0.95, weight: 2 });
 
                         const popupContent = `
-                            <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 190px;">
-                                <strong style="color: #c2410c; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
+                            <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 200px;">
+                                <strong style="color: ${circleColor}; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
                                 • <strong>詳細情報:</strong><br>${item.details.replace(/\n/g, '<br>')}
                             </div>
                         `;
@@ -787,12 +814,10 @@
                         // 🌀 台風アイテムの場合：上向き基準の鋭い先端を持つ矢印アイコン＋進路ベクトル
                         if (item.type === 'typhoon') {
                             const startPoint = [item.lat, item.lng];
-                            const endPoint = [item.lat + 1.2, item.lng - 0.6]; // 北北西方向
+                            const endPoint = [item.lat + 1.2, item.lng - 0.6];
 
-                            // 1. 予測進路の点線ライン
                             const arrowLine = L.polyline([startPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
                             
-                            // 2. 正確な方位角の計算（北を0度とした回転角度）
                             const dLng = (endPoint[1] - startPoint[1]) * Math.PI / 180;
                             const lat1 = startPoint[0] * Math.PI / 180;
                             const lat2 = endPoint[0] * Math.PI / 180;
@@ -801,7 +826,6 @@
                             let brng = Math.atan2(y, x) * 180 / Math.PI;
                             brng = (brng + 360) % 360;
                             
-                            // 上向きに尖った美しい矢印SVG
                             const arrowHeadIcon = L.divIcon({
                                 className: 'custom-arrow-head',
                                 html: `<div style="transform: rotate(${brng}deg); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
