@@ -356,7 +356,7 @@
                 <div style="margin-top: 6px;" id="statusListContainer">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">同期中</span></div>
+                    <div class="risk-item"><span>過去３日間の地震数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">同期中</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
                 </div>
             </div>
@@ -451,13 +451,11 @@
                 waterLayer = L.layerGroup().addTo(map);
                 typhoonLayer = L.layerGroup().addTo(map);
 
-                // 初回描画
                 updateViewMode();
                 evaluateLatestEarthquake(liveQuakes);
 
-                // 🌐 リアルタイムAPIの自動取得を実行
                 fetchRealtimeEarthquakes();
-                setInterval(fetchRealtimeEarthquakes, 60000); // 1分ごとに最新に更新
+                setInterval(fetchRealtimeEarthquakes, 60000);
 
                 setTimeout(() => { if(map) map.invalidateSize(); }, 100);
                 setTimeout(() => { if(map) map.invalidateSize(); }, 500);
@@ -471,7 +469,7 @@
             setTimeout(initSystem, 150);
         });
 
-        // 🌐 リアルタイム地震データ（P2P地震情報API）自動取得・結合処理
+        // 🌐 M1.0以上・過去72時間以内（過去3日間）に厳密フィルタリングするAPI取得処理
         async function fetchRealtimeEarthquakes() {
             try {
                 const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=100');
@@ -479,6 +477,8 @@
 
                 const data = await response.json();
                 const uniqueMap = new Map();
+                const now = new Date().getTime();
+                const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000); // 過去72時間のタイムスタンプ
 
                 if (Array.isArray(data) && data.length > 0) {
                     data.forEach(item => {
@@ -486,24 +486,33 @@
                         const hypo = item.earthquake.hypocenter;
                         if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
 
-                        const key = `${hypo.name}_${hypo.magnitude}_${item.time.substring(0, 16)}`;
-                        if (!uniqueMap.has(key)) {
-                            uniqueMap.set(key, {
-                                lat: hypo.latitude,
-                                lng: hypo.longitude,
-                                mag: hypo.magnitude,
-                                depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
-                                title: hypo.name || "震源地詳細不明",
-                                time: item.time,
-                                timestamp: new Date(item.time).getTime()
-                            });
+                        const itemTime = new Date(item.time).getTime();
+                        const mag = hypo.magnitude;
+
+                        // 🎯 条件1: M1.0以上であること
+                        // 🎯 条件2: 過去72時間（3日間）以内の発生であること
+                        if (mag >= 1.0 && itemTime >= threeDaysAgo) {
+                            const key = `${hypo.name}_${mag}_${item.time.substring(0, 16)}`;
+                            if (!uniqueMap.has(key)) {
+                                uniqueMap.set(key, {
+                                    lat: hypo.latitude,
+                                    lng: hypo.longitude,
+                                    mag: mag,
+                                    depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                                    title: hypo.name || "震源地詳細不明",
+                                    time: item.time,
+                                    timestamp: itemTime
+                                });
+                            }
                         }
                     });
 
                     const apiQuakes = Array.from(uniqueMap.values());
                     
-                    // 遠地地震（中国西部M7.0等）も含めて結合・ソート
-                    const mergedQuakes = [...apiQuakes, ...safeMasterQuakes];
+                    // 遠地重要地震（中国西部M7.0等）も同様に72時間以内かつM1.0以上のものを結合
+                    const filteredSafeQuakes = safeMasterQuakes.filter(q => q.mag >= 1.0 && q.timestamp >= threeDaysAgo);
+                    const mergedQuakes = [...apiQuakes, ...filteredSafeQuakes];
+                    
                     const finalMap = new Map();
                     mergedQuakes.forEach(q => {
                         const uniqueKey = `${q.title}_${q.time}`;
@@ -574,7 +583,7 @@
                         statusListContainer.innerHTML = `
                             <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                             <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                            <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
+                            <div class="risk-item"><span>過去３日間の地震数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
                         `;
                     }
@@ -630,7 +639,7 @@
                 const targetQuakes = (Array.isArray(quakes) && quakes.length > 0) ? quakes : safeMasterQuakes;
                 const displayCount = targetQuakes.length;
 
-                if (countEl) countEl.textContent = `${displayCount}件（自動同期）`;
+                if (countEl) countEl.textContent = `${displayCount}件（過去3日/M1.0+）`;
 
                 if (cardContainer && infoText) {
                     if (targetQuakes.length > 0) {
