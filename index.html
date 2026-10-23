@@ -168,6 +168,7 @@
         .card ul {
             padding-left: 14px;
         }
+        /* ステータスバッジ（緑背景に完全な白文字で視認性を最大化） */
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -175,7 +176,7 @@
             font-size: 11px;
             font-weight: bold;
             background: #065f46;
-            color: #34d399;
+            color: #ffffff;
             margin-bottom: 6px;
             border: 1px solid #059669;
         }
@@ -330,7 +331,7 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #34d399; border-color: #059669;">自動同期システム稼働中</div>
+                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">自動同期システム稼働中</div>
                 <p id="modeStatusDesc">最新の地震・地殻変動データをリアルタイム自動同期中。</p>
             </div>
 
@@ -496,7 +497,7 @@
                 if (statusBadge) {
                     statusBadge.textContent = 'リアルタイム同期中...';
                     statusBadge.style.background = '#1e3a8a';
-                    statusBadge.style.color = '#93c5fd';
+                    statusBadge.style.color = '#ffffff';
                     statusBadge.style.borderColor = '#3b82f6';
                 }
 
@@ -547,7 +548,7 @@
                     if (statusBadge) {
                         statusBadge.textContent = `自動同期完了 (${liveQuakes.length}件)`;
                         statusBadge.style.background = '#065f46';
-                        statusBadge.style.color = '#34d399';
+                        statusBadge.style.color = '#ffffff';
                         statusBadge.style.borderColor = '#059669';
                     }
 
@@ -562,7 +563,7 @@
                 if (statusBadge) {
                     statusBadge.textContent = '同期完了 (安定モード)';
                     statusBadge.style.background = '#065f46';
-                    statusBadge.style.color = '#34d399';
+                    statusBadge.style.color = '#ffffff';
                     statusBadge.style.borderColor = '#059669';
                 }
             }
@@ -592,7 +593,7 @@
                     if (apiStatusEl) {
                         apiStatusEl.textContent = '自動同期システム稼働中';
                         apiStatusEl.style.background = '#065f46';
-                        apiStatusEl.style.color = '#34d399';
+                        apiStatusEl.style.color = '#ffffff';
                         apiStatusEl.style.borderColor = '#059669';
                     }
                     if (modeStatusDesc) modeStatusDesc.textContent = 'タイムアウト保護付きで最新の地震データを自動取得中。';
@@ -629,7 +630,7 @@
                     if (apiStatusEl) {
                         apiStatusEl.textContent = '気象・災害RISK統合監視中';
                         apiStatusEl.style.background = '#065f46';
-                        apiStatusEl.style.color = '#34d399';
+                        apiStatusEl.style.color = '#ffffff';
                         apiStatusEl.style.borderColor = '#059669';
                     }
                     if (modeStatusDesc) modeStatusDesc.textContent = '台風・大雨・津波・火山噴火の各警報情報を一元管理しています。';
