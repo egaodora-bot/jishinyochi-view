@@ -774,7 +774,7 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 🌀 台風アイテムの場合：先端に本格的な矢印（アローヘッド）を配置
+                        // 🌀 台風アイテムの場合：正しい進行方向（北北西）へ尖るように矢印を修正
                         if (item.type === 'typhoon') {
                             const startPoint = [item.lat, item.lng];
                             const endPoint = [item.lat + 1.2, item.lng - 0.6]; // 北北西方向
@@ -782,13 +782,15 @@
                             // 1. 予測進路の点線ライン
                             const arrowLine = L.polyline([startPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
                             
-                            // 2. 矢印の先端（三角ヘッド）を作成するための方位計算
-                            const angle = Math.atan2(endPoint[1] - startPoint[1], endPoint[0] - startPoint[0]) * 180 / Math.PI;
+                            // 2. 正しい向き（北西方向）に尖る回転角度の調整
+                            const latDiff = endPoint[0] - startPoint[0];
+                            const lngDiff = endPoint[1] - startPoint[1];
+                            const angle = Math.atan2(lngDiff, latDiff) * (180 / Math.PI);
                             
-                            // SVGを使った鮮明でシャープな矢印アイコン
+                            // SVGを使ったシャープな矢印アイコン
                             const arrowHeadIcon = L.divIcon({
                                 className: 'custom-arrow-head',
-                                html: `<div style="transform: rotate(${-angle}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                html: `<div style="transform: rotate(${ -angle + 90 }deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.6));">
                                         <polygon points="0,0 24,12 0,24 6,12" />
                                     </svg>
