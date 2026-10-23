@@ -773,6 +773,17 @@
 
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
+
+                        // 🌀 台風アイテムの場合のみ、進行方向を示す予測進路ベクトル（矢印ライン）を追加
+                        if (item.type === 'typhoon') {
+                            const arrowLine = L.polyline([
+                                [item.lat, item.lng],
+                                [item.lat + 1.2, item.lng - 0.6] // 北北西方向へのベクトル
+                            ], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
+                            
+                            arrowLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 予測進路ベクトル</strong><br>北北西へ時速25kmで進行中</div>`);
+                            weatherRiskLayer.addLayer(arrowLine);
+                        }
                     });
                 }
 
