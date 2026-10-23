@@ -19,13 +19,13 @@
         }
         header {
             height: 55px;
-            background: #1e293b;
+            background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);
             color: #fff;
             padding: 0 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #334155;
+            border-bottom: 2px solid #ef4444;
             box-sizing: border-box;
             position: relative;
             z-index: 1000;
@@ -33,23 +33,23 @@
         .system-title {
             font-size: 14px;
             font-weight: bold;
-            color: #38bdf8;
+            color: #fca5a5;
             letter-spacing: 0.5px;
-            text-shadow: 0 1px 3px rgba(56, 189, 248, 0.4);
+            text-shadow: 0 1px 4px rgba(239, 68, 68, 0.6);
             white-space: nowrap;
         }
         .header-center {
             display: flex;
             gap: 6px;
-            background: #0f172a;
+            background: #180808;
             padding: 3px;
             border-radius: 8px;
-            border: 1px solid #475569;
+            border: 1px solid #7f1d1d;
         }
         .mode-btn {
             background: transparent;
             border: none;
-            color: #94a3b8;
+            color: #cbd5e1;
             padding: 5px 10px;
             font-size: 11.5px;
             font-weight: bold;
@@ -59,9 +59,9 @@
             white-space: nowrap;
         }
         .mode-btn.active {
-            background: #0284c7;
+            background: #dc2626;
             color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5);
         }
         .header-right {
             display: flex;
@@ -70,8 +70,8 @@
             font-size: 13px;
         }
         .area-selector-wrapper {
-            background: #0f172a;
-            border: 2px solid #f97316;
+            background: #180808;
+            border: 2px solid #ef4444;
             border-radius: 6px;
             padding: 2px 6px;
             display: flex;
@@ -81,13 +81,13 @@
         .area-selector-wrapper label {
             font-size: 11px;
             font-weight: bold;
-            color: #fb923c;
+            color: #fca5a5;
         }
         .area-selector {
             padding: 3px 4px;
             border-radius: 4px;
             border: none;
-            background: #1e293b;
+            background: #2a0808;
             color: #fff;
             font-size: 11.5px;
             font-weight: bold;
@@ -95,8 +95,8 @@
         }
         .mag-filter-group {
             display: flex;
-            background: #0f172a;
-            border: 1px solid #475569;
+            background: #180808;
+            border: 1px solid #7f1d1d;
             border-radius: 6px;
             overflow: hidden;
         }
@@ -109,7 +109,7 @@
             cursor: pointer;
         }
         .mag-btn.active {
-            background: #0284c7;
+            background: #dc2626;
             color: #fff;
             font-weight: bold;
         }
@@ -125,10 +125,10 @@
             left: 0;
             width: 380px;
             height: 100%;
-            background: #1e293b;
+            background: #1e1b4b;
             padding: 12px;
             box-sizing: border-box;
-            border-right: 1px solid #334155;
+            border-right: 1px solid #7f1d1d;
             overflow-y: auto;
             z-index: 10;
         }
@@ -144,7 +144,7 @@
 
         .card {
             background: #0f172a;
-            border: 1px solid #334155;
+            border: 1px solid #7f1d1d;
             border-radius: 8px;
             padding: 10px 12px;
             margin-bottom: 10px;
@@ -152,8 +152,8 @@
         .card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
-            color: #38bdf8;
-            border-bottom: 1px solid #334155;
+            color: #fca5a5;
+            border-bottom: 1px solid #7f1d1d;
             padding-bottom: 4px;
         }
         .card p, .card ul {
@@ -171,40 +171,42 @@
             border-radius: 4px;
             font-size: 10.5px;
             font-weight: bold;
-            background: #064e3b;
-            color: #34d399;
+            background: #7f1d1d;
+            color: #fca5a5;
             margin-bottom: 6px;
+            border: 1px solid #ef4444;
         }
         .emergency-alert-card {
-            background: #1e1b4b;
-            border: 1px solid #3730a3;
+            background: #2a0808;
+            border: 1px solid #ef4444;
             border-radius: 8px;
             padding: 10px 12px;
             margin-bottom: 10px;
         }
         .emergency-alert-card.alert-active {
             background: #450a0a;
-            border: 1px solid #ef4444;
+            border: 1px solid #f87171;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 11.5px;
-            color: #a5b4fc;
-            border-bottom: 1px solid #312e81;
+            color: #fca5a5;
+            border-bottom: 1px solid #7f1d1d;
             padding-bottom: 3px;
         }
         .emergency-alert-card.alert-active h3 {
-            color: #fca5a5;
-            border-bottom: 1px solid #7f1d1d;
+            color: #fecaca;
+            border-bottom: 1px solid #991b1b;
         }
         .info-text-box {
             background: #0f172a;
             border-radius: 4px;
             padding: 6px;
             margin-top: 4px;
-            border: 1px solid #3730a3;
+            border: 1px solid #7f1d1d;
             font-size: 11px;
-            color: #e2e8f0;
+            color: #fecaca;
             white-space: pre-line;
         }
         .risk-item {
@@ -213,7 +215,7 @@
             align-items: center;
             font-size: 11px;
             margin-bottom: 4px;
-            border-bottom: 1px dashed #334155;
+            border-bottom: 1px dashed #7f1d1d;
             padding-bottom: 3px;
         }
         .risk-level-low { color: #34d399; font-weight: bold; }
@@ -221,13 +223,14 @@
         .risk-level-high { color: #f87171; font-weight: bold; }
         
         .risk-level-alert-prominent {
-            color: #f87171;
-            font-size: 13px;
+            color: #ffffff;
+            font-size: 12.5px;
             font-weight: bold;
-            background: rgba(239, 68, 68, 0.15);
-            padding: 1px 6px;
+            background: #dc2626;
+            padding: 2px 8px;
             border-radius: 4px;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid #f87171;
+            box-shadow: 0 0 5px rgba(220, 38, 38, 0.6);
         }
 
         @media (max-width: 768px) {
@@ -289,7 +292,7 @@
 <body>
 
     <header>
-        <div class="system-title">地殻変動地震リスク危機管理</div>
+        <div class="system-title">🚨 自然RISK 危機管理情報</div>
         
         <!-- モード切り替えタブ -->
         <div class="header-center">
@@ -317,15 +320,15 @@
                 <button class="mag-btn" onclick="setMagFilter('4', this)">M4+</button>
                 <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
             </div>
-            <div id="live-clock" style="font-size: 11px; font-family: monospace; color: #38bdf8;">--:--:--</div>
+            <div id="live-clock" style="font-size: 11px; font-family: monospace; color: #fca5a5;">--:--:--</div>
         </div>
     </header>
 
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus">全端末完全同期中</div>
-                <p id="modeStatusDesc">統合防災データベースから直近の地震検知データを全端末同一表示中。</p>
+                <div class="status-badge" id="apiStatus">自然RISK 警戒稼働中</div>
+                <p id="modeStatusDesc">統合防災データベースから直近の自然災害・地震リスクデータを全端末同一表示中。</p>
             </div>
 
             <!-- 動的に切り替わるメインカード -->
@@ -337,10 +340,10 @@
             </div>
 
             <!-- 補助解説カード -->
-            <div id="subInfoCard" class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
-                <h3 style="color: #fb923c;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+            <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
+                <h3 style="color: #fca5a5;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
-                    <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+                    <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
                     <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
                         <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
                         <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
@@ -350,13 +353,13 @@
 
             <!-- ステータスパネル -->
             <div class="card">
-                <h3 id="panelTitle">全国のモニタリング状況</h3>
-                <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動の状況。</p>
+                <h3 id="panelTitle">全国の自然RISK状況</h3>
+                <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動のリスク状況。</p>
                 <div style="margin-top: 6px;" id="statusListContainer">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
                     <div class="risk-item"><span>過去３日間の地震数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">22件</span></div>
-                    <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
+                    <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                 </div>
             </div>
 
@@ -414,14 +417,14 @@
         let liveQuakes = [...unifiedMasterQuakes];
 
         const anomalySpots = [
-            { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#a855f7", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
-            { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#f97316", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" },
-            { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#38bdf8", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
+            { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#f87171", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
+            { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" },
+            { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
         const waterSpots = [
-            { name: "【土砂災害警戒・キキクル】関東山地エリア", lat: 35.6, lng: 139.1, radius: 40000, color: "#eab308", desc: "大雨による土砂災害リスクが高まる可能性を注視中。" },
-            { name: "【河川氾濫警戒】利根川・江戸川流域", lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6", desc: "上流からの雨量増加に伴う水位上昇に警戒。" }
+            { name: "【土砂災害警戒・キキクル】関東山地エリア", lat: 35.6, lng: 139.1, radius: 40000, color: "#f59e0b", desc: "大雨による土砂災害リスクが高まる可能性を注視中。" },
+            { name: "【河川氾濫警戒】利根川・江戸川流域", lat: 36.1, lng: 139.8, radius: 50000, color: "#ef4444", desc: "上流からの雨量増加に伴う水位上昇に警戒。" }
         ];
 
         const typhoonDataList = [
@@ -429,7 +432,7 @@
                 name: "🌀 台風警戒情報（非常に強い勢力）",
                 lat: 27.5, lng: 131.5,
                 radius: 140000,
-                color: "#f97316",
+                color: "#ef4444",
                 pressure: "955 hPa",
                 maxWind: "40 m/s",
                 direction: "北北西 (時速 25km)",
@@ -502,8 +505,8 @@
                 const statusListContainer = document.getElementById('statusListContainer');
 
                 if (mode === 'earthquake') {
-                    if (apiStatusEl) apiStatusEl.textContent = '全端末完全同期中';
-                    if (modeStatusDesc) modeStatusDesc.textContent = '統合防災データベースから直近の地震検知データを全端末同一表示中。';
+                    if (apiStatusEl) apiStatusEl.textContent = '自然RISK 警戒稼働中';
+                    if (modeStatusDesc) modeStatusDesc.textContent = '統合防災データベースから直近の自然災害・地震リスクデータを全端末同一表示中。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div id="alertCardContainer" class="emergency-alert-card">
@@ -515,32 +518,32 @@
                     if (subCardTitle) subCardTitle.textContent = "⚡ 電磁波・地殻ひずみ異常検知速報";
                     if (subCardContent) {
                         subCardContent.innerHTML = `
-                            <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
                             <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
                                 <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
                                 <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
                             </ul>
                         `;
                     }
-                    if (panelTitle) panelTitle.textContent = "全国のモニタリング状況";
-                    if (panelDescription) panelDescription.textContent = "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動の状況。";
+                    if (panelTitle) panelTitle.textContent = "全国の自然RISK状況";
+                    if (panelDescription) panelDescription.textContent = "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動のリスク状況。";
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
                             <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                             <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
                             <div class="risk-item"><span>過去３日間の地震数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
-                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
                     }
                     evaluateLatestEarthquake(liveQuakes);
                 } else {
-                    if (apiStatusEl) apiStatusEl.textContent = '気象庁データ連動中';
+                    if (apiStatusEl) apiStatusEl.textContent = '気象災害RISK連動中';
                     if (modeStatusDesc) modeStatusDesc.textContent = '気象庁キキクル（危険度分布）および台風・河川水位情報を監視中。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
-                            <div class="emergency-alert-card alert-active" style="border-color: #f97316; background: #2a1208;">
-                                <h3 style="color: #fb923c; border-color: #7c2d12;">🌀 台風・大雨特別警戒情報</h3>
-                                <div class="info-text-box" style="border-color: #7c2d12; color: #ffedd5;">
+                            <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
+                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀 台風・大雨特別警戒情報</h3>
+                                <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
                                     【接近中の台風・気象状況】
                                     中心気圧 955hPa / 非常に強い勢力で北上中。地図上の台風アイコン・警戒円をクリックすると詳細な気象パラメータを確認できます。
                                 </div>
@@ -550,14 +553,14 @@
                     if (subCardTitle) subCardTitle.textContent = "🌊 キキクル・河川水位モニタリング";
                     if (subCardContent) {
                         subCardContent.innerHTML = `
-                            <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【水害・土砂災害リスク箇所】</p>
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【水害・土砂災害リスク箇所】</p>
                             <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
                                 <li><strong>関東山地周辺：</strong> 土砂災害キキクル危険度を常時監視</li>
                                 <li><strong>主要水系流域：</strong> 氾濫注意水位の推移を監視中</li>
                             </ul>
                         `;
                     }
-                    if (panelTitle) panelTitle.textContent = "気象・水害モニタリング状況";
+                    if (panelTitle) panelTitle.textContent = "気象・水害RISK状況";
                     if (panelDescription) panelDescription.textContent = "日本全国の大雨危険度（キキクル）および水防状況。";
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
@@ -624,9 +627,9 @@
 
                 if (currentMode === 'earthquake') {
                     anomalySpots.forEach(spot => {
-                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.22, weight: 2, dashArray: '5, 5' });
+                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5' });
                         const marker = L.circleMarker([spot.lat, spot.lng], { radius: 8, color: '#ffffff', fillColor: spot.color, fillOpacity: 0.95, weight: 2 });
-                        const content = `<div style="color: #333; font-size: 12px;"><strong>⚡ ${spot.name}</strong><br>${spot.desc}</div>`;
+                        const content = `<div style="color: #333; font-size: 12px;"><strong>🚨 ${spot.name}</strong><br>${spot.desc}</div>`;
                         circle.bindPopup(content);
                         marker.bindPopup(content);
                         anomalyLayer.addLayer(circle);
@@ -658,7 +661,7 @@
 
                 } else {
                     waterSpots.forEach(spot => {
-                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2 });
+                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.28, weight: 2 });
                         const marker = L.circleMarker([spot.lat, spot.lng], { radius: 8, color: '#ffffff', fillColor: spot.color, fillOpacity: 0.95, weight: 2 });
                         const content = `<div style="color: #333; font-size: 12px;"><strong>🌊 ${spot.name}</strong><br>${spot.desc}</div>`;
                         circle.bindPopup(content);
@@ -668,7 +671,7 @@
                     });
 
                     typhoonDataList.forEach(t => {
-                        const circle = L.circle([t.lat, t.lng], { radius: t.radius, color: t.color, fillColor: t.color, fillOpacity: 0.18, weight: 2, dashArray: '4, 4' });
+                        const circle = L.circle([t.lat, t.lng], { radius: t.radius, color: t.color, fillColor: t.color, fillOpacity: 0.2, weight: 2, dashArray: '4, 4' });
                         const marker = L.circleMarker([t.lat, t.lng], { radius: 11, color: '#ffffff', fillColor: t.color, fillOpacity: 0.95, weight: 2 });
 
                         const popupContent = `
@@ -690,7 +693,7 @@
                         const arrowLine = L.polyline([
                             [t.lat, t.lng],
                             [t.lat + 1.2, t.lng - 0.6]
-                        ], { color: '#f97316', weight: 3, dashArray: '6, 6' });
+                        ], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
                         arrowLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>予測進路ベクトル</strong><br>この矢印の方向へ進行中</div>`);
                         typhoonLayer.addLayer(arrowLine);
                     });
