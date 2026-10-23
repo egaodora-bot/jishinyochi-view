@@ -420,25 +420,25 @@
                 type: "typhoon",
                 name: "🌀 台風警戒情報（非常に強い勢力）",
                 lat: 27.5, lng: 131.5, radius: 140000, color: "#ef4444",
-                details: "中心気圧: 955hPa / 最大風速: 40 m/s\n進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
+                details: "【気象データ】\n• 中心気圧: 955 hPa\n• 最大風速: 40 m/s\n• 進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
             },
             {
                 type: "water",
                 name: "🌊 土砂・河川氾濫警戒（関東山地・利根川流域）",
                 lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6",
-                details: "土砂災害キキクルおよび利根川水系の水位上昇を監視中。警戒レベル1（平時・注意継続）。"
+                details: "【水防データ】\n土砂災害キキクルおよび利根川水系の水位上昇を監視中。警戒レベル1（平時・注意継続）。"
             },
             {
                 type: "tsunami",
                 name: "🌊 津波情報監視（太平洋側沿岸）",
                 lat: 34.0, lng: 141.5, radius: 90000, color: "#06b6d4",
-                details: "沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。現在、日本沿岸への異常津波警報はありません。"
+                details: "【海洋データ】\n沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。現在、日本沿岸への異常津波警報はありません。"
             },
             {
                 type: "volcano",
                 name: "🌋 火山噴火警戒（桜島・阿蘇山セクター）",
                 lat: 31.58, lng: 130.65, radius: 35000, color: "#f97316",
-                details: "火口周辺警報（噴火警戒レベル3: 入山規制等）。火山活動の推移を常時モニタリング中。"
+                details: "【火山データ】\n火口周辺警報（噴火警戒レベル3: 入山規制等）。火山活動の推移を常時モニタリング中。"
             }
         ];
 
@@ -639,7 +639,7 @@
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
                                 <h3 style="color: #ffffff; border-color: #991b1b;">🌀 接近中の台風・大雨特別警戒情報</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
-                                    【台風パラメータ】
+                                    【気象データ】
                                     • 中心気圧: 955 hPa
                                     • 最大風速: 40 m/s
                                     • 進行方向: 北北西 (時速 25km)
@@ -764,7 +764,7 @@
                         const popupContent = `
                             <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 190px;">
                                 <strong style="color: #c2410c; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
-                                • <strong>状況詳細:</strong><br>${item.details.replace(/\n/g, '<br>')}
+                                • <strong>詳細情報:</strong><br>${item.details.replace(/\n/g, '<br>')}
                             </div>
                         `;
 
