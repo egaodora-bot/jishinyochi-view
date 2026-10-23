@@ -155,7 +155,7 @@
         .card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
-            color: #fca5a5;
+            color: #ffffff;
             border-bottom: 1px solid #7f1d1d;
             padding-bottom: 4px;
         }
@@ -168,7 +168,6 @@
         .card ul {
             padding-left: 14px;
         }
-        /* ステータスバッジ（緑背景に完全な白文字で視認性を最大化） */
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -224,7 +223,7 @@
         }
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
-        .risk-level-high { color: #f87171; font-weight: bold; } /* 要警戒などの赤色強調 */
+        .risk-level-high { color: #f87171; font-weight: bold; }
         
         .risk-level-alert-prominent {
             color: #ffffff;
@@ -318,7 +317,6 @@
                     <option value="all" selected>全国</option>
                 </select>
             </div>
-            <!-- 地震モード時のみ表示するマグニチュードフィルター -->
             <div id="magFilterContainer" class="mag-filter-group">
                 <button class="mag-btn active" onclick="setMagFilter('all', this)">全て</button>
                 <button class="mag-btn" onclick="setMagFilter('4', this)">M4+</button>
@@ -415,7 +413,7 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 気象・災害リスクデータ（津波の警戒レベル連動対応）
+        // 🌊 主要沿岸の複数エリアで津波を監視（実用性と視認性を向上）
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -434,11 +432,27 @@
             },
             {
                 type: "tsunami",
-                name: "🌊 津波情報監視（太平洋側沿岸）",
-                lat: 34.0, lng: 141.5, radius: 90000,
-                status: "normal", // "normal" (正常/水色) または "warning" (注意報/黄色) または "alert" (警報/赤色)
+                name: "🌊 津波監視：関東・伊豆諸島沖",
+                lat: 34.0, lng: 141.5, radius: 85000,
+                status: "normal", // "normal"(水色/正常), "warning"(黄色/注意報), "alert"(赤/警報)
                 color: "#06b6d4",
-                details: "【海洋データ】\n沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。\n• 状態: 異常なし（通常監視中）\n• 予想高さ: なし\n• 到達予想時刻: -"
+                details: "【海洋津波レーダーデータ】\n関東・伊豆諸島沿岸を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
+            },
+            {
+                type: "tsunami",
+                name: "🌊 津波監視：東北・三陸沖",
+                lat: 38.3, lng: 142.5, radius: 95000,
+                status: "normal",
+                color: "#06b6d4",
+                details: "【海洋津波レーダーデータ】\n三陸沖および東北沿岸部を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
+            },
+            {
+                type: "tsunami",
+                name: "🌊 津波監視：南海トラフ・四国沖",
+                lat: 32.8, lng: 134.2, radius: 90000,
+                status: "normal",
+                color: "#06b6d4",
+                details: "【海洋津波レーダーデータ】\n四国・紀伊半島沖の水位変動を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
             },
             {
                 type: "volcano",
@@ -659,17 +673,31 @@
                         subCardContent.innerHTML = `
                             <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【海洋・火山セクター状況】</p>
                             <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
-                                <li><strong>沿岸津波監視：</strong> 太平洋側・日本海側の水位変化を常時追跡</li>
+                                <li><strong>沿岸津波監視：</strong> 太平洋側（伊豆・三陸・四国沖）の潮位変化を多地点常時追跡</li>
                                 <li><strong>火山活動監視：</strong> 桜島・阿蘇山等の噴火警戒レベルを連動中</li>
                             </ul>
                         `;
                     }
                     if (panelTitle) panelTitle.textContent = "気象・災害RISK状況";
                     if (panelDescription) panelDescription.textContent = "日本全国の台風・水害・津波・火山の一元化された警戒状況。";
+                    
+                    // 津波の各観測ポイントの状態から、左側パネルの要約ステータスを自動判定
+                    const activeTsunamis = weatherRiskDataList.filter(item => item.type === 'tsunami' && item.status !== 'normal');
+                    let tsunamiStatusHTML = '<span class="risk-level-low">全沿岸で正常（発表なし）</span>';
+                    
+                    if (activeTsunamis.length > 0) {
+                        const hasAlert = activeTsunamis.some(t => t.status === 'alert');
+                        if (hasAlert) {
+                            tsunamiStatusHTML = '<span class="risk-level-high">🚨 津波警報発表中（沿岸警戒）</span>';
+                        } else {
+                            tsunamiStatusHTML = '<span class="risk-level-mid">⚠️ 津波注意報発表中</span>';
+                        }
+                    }
+
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
                             <div class="risk-item"><span>台風・大雨警戒度:</span> <span class="risk-level-high">要警戒</span></div>
-                            <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">なし（正常）</span></div>
+                            <div class="risk-item"><span>津波警報発令:</span> ${tsunamiStatusHTML}</div>
                             <div class="risk-item"><span>火山噴火警戒:</span> <span class="risk-level-mid">一部レベル3</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
@@ -773,18 +801,18 @@
                             radiusVal = item.maxWindSpeed * 3500;
                         }
 
-                        // 🌊 津波データの警戒レベル連動（setStyleによる超軽量な色・スタイル切り替え）
+                        // 🌊 津波警戒レベルに応じたカラー・枠線切り替え（setStyle同様の動的デザイン）
                         if (item.type === 'tsunami') {
                             if (item.status === 'warning') {
-                                circleColor = '#eab308'; // 注意報発令時：黄色
+                                circleColor = '#eab308'; // 津波注意報：鮮やかな黄色
                                 weightVal = 3;
-                                dashVal = ''; // 実線
+                                dashVal = ''; 
                             } else if (item.status === 'alert') {
-                                circleColor = '#ef4444'; // 警報発令時：赤色
+                                circleColor = '#ef4444'; // 津波警報：警戒の赤色
                                 weightVal = 4;
-                                dashVal = ''; // 太い実線
+                                dashVal = ''; 
                             } else {
-                                circleColor = '#06b6d4'; // 通常時：水色点線
+                                circleColor = '#06b6d4'; // 正常時：穏やかな水色（点線）
                             }
                         }
 
@@ -800,7 +828,8 @@
 
                         const popupContent = `
                             <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 200px;">
-                                <strong style="color: ${circleColor}; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
+                                <strong style="color: ${circleColor === '#06b6d4' ? '#0284c7' : circleColor}; font-size: 13px;">${item.name}</strong>
+                                <hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
                                 • <strong>詳細情報:</strong><br>${item.details.replace(/\n/g, '<br>')}
                             </div>
                         `;
@@ -811,7 +840,7 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 🌀 台風アイテムの場合：上向き基準の鋭い先端を持つ矢印アイコン＋進路ベクトル
+                        // 🌀 台風の予測進路ベクトル（先端矢印）
                         if (item.type === 'typhoon') {
                             const startPoint = [item.lat, item.lng];
                             const endPoint = [item.lat + 1.2, item.lng - 0.6];
