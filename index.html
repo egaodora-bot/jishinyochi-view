@@ -774,7 +774,7 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 🌀 台風アイテムの場合：正しい進行方向（北北西）へ尖るように矢印を修正
+                        // 🌀 台風アイテムの場合：上向き基準の鋭い先端を持つ矢印アイコン
                         if (item.type === 'typhoon') {
                             const startPoint = [item.lat, item.lng];
                             const endPoint = [item.lat + 1.2, item.lng - 0.6]; // 北北西方向
@@ -782,21 +782,25 @@
                             // 1. 予測進路の点線ライン
                             const arrowLine = L.polyline([startPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
                             
-                            // 2. 正しい向き（北西方向）に尖る回転角度の調整
-                            const latDiff = endPoint[0] - startPoint[0];
-                            const lngDiff = endPoint[1] - startPoint[1];
-                            const angle = Math.atan2(lngDiff, latDiff) * (180 / Math.PI);
+                            // 2. 正確な方位角（ベアリング）の計算（北を0度とした回転角度）
+                            const dLng = (endPoint[1] - startPoint[1]) * Math.PI / 180;
+                            const lat1 = startPoint[0] * Math.PI / 180;
+                            const lat2 = endPoint[0] * Math.PI / 180;
+                            const y = Math.sin(dLng) * Math.cos(lat2);
+                            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+                            let brng = Math.atan2(y, x) * 180 / Math.PI;
+                            brng = (brng + 360) % 360; // 0〜360度
                             
-                            // SVGを使ったシャープな矢印アイコン
+                            // 上向きに尖った美しい矢印SVG（ポリゴン座標: 先端が真上 12,0）
                             const arrowHeadIcon = L.divIcon({
                                 className: 'custom-arrow-head',
-                                html: `<div style="transform: rotate(${ -angle + 90 }deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.6));">
-                                        <polygon points="0,0 24,12 0,24 6,12" />
+                                html: `<div style="transform: rotate(${brng}deg); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.7));">
+                                        <polygon points="12,0 24,22 12,16 0,22" />
                                     </svg>
                                 </div>`,
-                                iconSize: [24, 24],
-                                iconAnchor: [12, 12]
+                                iconSize: [26, 26],
+                                iconAnchor: [13, 13]
                             });
 
                             const arrowHeadMarker = L.marker(endPoint, { icon: arrowHeadIcon });
