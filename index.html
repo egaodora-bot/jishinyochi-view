@@ -148,4 +148,213 @@
             margin-bottom: 10px;
         }
         .card h3 {
-            margin: 0 0 6px 0
+            margin: 0 0 6px 0;
+            font-size: 12px;
+            color: #38bdf8;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 4px;
+        }
+        .card p, .card ul {
+            margin: 0 0 6px 0;
+            font-size: 11px;
+            color: #f1f5f9; 
+            line-height: 1.4;
+        }
+        .card ul {
+            padding-left: 14px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: bold;
+            background: #064e3b;
+            color: #34d399;
+            margin-bottom: 6px;
+        }
+        .emergency-alert-card {
+            background: #1e1b4b;
+            border: 1px solid #3730a3;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+        .emergency-alert-card.alert-active {
+            background: #450a0a;
+            border: 1px solid #ef4444;
+        }
+        .emergency-alert-card h3 {
+            margin: 0 0 4px 0;
+            font-size: 11.5px;
+            color: #a5b4fc;
+            border-bottom: 1px solid #312e81;
+            padding-bottom: 3px;
+        }
+        .emergency-alert-card.alert-active h3 {
+            color: #fca5a5;
+            border-bottom: 1px solid #7f1d1d;
+        }
+        .info-text-box {
+            background: #0f172a;
+            border-radius: 4px;
+            padding: 6px;
+            margin-top: 4px;
+            border: 1px solid #3730a3;
+            font-size: 11px;
+            color: #e2e8f0;
+            white-space: pre-line;
+        }
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 3px;
+        }
+        .risk-level-low { color: #34d399; font-weight: bold; }
+        .risk-level-mid { color: #fbbf24; font-weight: bold; }
+        .risk-level-high { color: #f87171; font-weight: bold; }
+        
+        .risk-level-alert-prominent {
+            color: #f87171;
+            font-size: 13px;
+            font-weight: bold;
+            background: rgba(239, 68, 68, 0.15);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 45%;
+                bottom: 0;
+                top: auto;
+            }
+            #map {
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 55%;
+            }
+        }
+    </style>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="system-title">地殻変動地震リスク危機管理リアル情報</div>
+        
+        <!-- モード切り替えタブ -->
+        <div class="header-center">
+            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震・地殻変動モード</button>
+            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('water')">🌊 気象・水害（キキクル）モード</button>
+        </div>
+
+        <div class="header-right">
+            <div class="area-selector-wrapper">
+                <label for="targetArea">表示地域:</label>
+                <select id="targetArea" class="area-selector" onchange="updateViewMode()">
+                    <option value="kanto">関東（首都圏）</option>
+                    <option value="hokkaido">北海道</option>
+                    <option value="tohoku">東北</option>
+                    <option value="chubu">中部</option>
+                    <option value="kinki">近畿（関西）</option>
+                    <option value="chugoku_shikoku">中国・四国</option>
+                    <option value="kyushu_okinawa">九州・沖縄</option>
+                    <option value="all" selected>全国表示</option>
+                </select>
+            </div>
+            <!-- 地震モード時のみ表示するマグニチュードフィルター -->
+            <div id="magFilterContainer" class="mag-filter-group">
+                <button class="mag-btn active" onclick="setMagFilter('all', this)">全て</button>
+                <button class="mag-btn" onclick="setMagFilter('4', this)">M4+</button>
+                <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
+            </div>
+            <div id="live-clock" style="font-size: 11px; font-family: monospace; color: #38bdf8;">--:--:--</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="status-badge" id="apiStatus">ライブAPI接続中...</div>
+                <p id="modeStatusDesc">気象庁・防災情報APIから最新の地震検知データを自動取得して統合解析中。</p>
+            </div>
+
+            <!-- 動的に切り替わるメインカード -->
+            <div id="dynamicCardContainer">
+                <div id="alertCardContainer" class="emergency-alert-card">
+                    <h3 id="alertCardTitle">直近の地震活動情報</h3>
+                    <div id="emergencyInfoText" class="info-text-box">直近のデータを同期中...</div>
+                </div>
+            </div>
+
+            <!-- 補助解説カード -->
+            <div id="subInfoCard" class="card" style="border: 1px solid #f97316; background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%);">
+                <h3 style="color: #fb923c;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+                <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
+                    <p style="margin: 0 0 4px 0; color: #38bdf8; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+                    <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
+                        <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
+                        <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ステータスパネル -->
+            <div class="card">
+                <h3 id="panelTitle">全国のモニタリング状況</h3>
+                <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動の状況。</p>
+                <div style="margin-top: 6px;" id="statusListContainer">
+                    <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
+                    <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
+                    <div class="risk-item"><span>過去３日間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">読込中...</span></div>
+                    <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
+                </div>
+            </div>
+
+            <div class="card" style="text-align: right; padding: 6px 12px;">
+                <div style="font-size: 10.5px; color: #cbd5e1;">by 林 榮一</div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let map = null;
+        let markerLayer = null;
+        let anomalyLayer = null;
+        let waterLayer = null;
+        let typhoonLayer = null;
+        let currentMode = 'earthquake';
+        let currentMagFilter = 'all';
+        let liveQuakes = [];
+
+        const anomalySpots = [
+            { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#a855f7", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
+            { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#f97316", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" },
+            { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#38bdf8", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
+        ];
+
+        const waterSpots = [
+            { name: "【土砂災害警戒・キキクル】関東山地エリア", lat: 35.6, lng: 139.1, radius: 40000, color: "#eab308", desc: "大雨による土砂災害リスクが高まる可能性を注視中。" },
+            { name: "【河川氾濫警戒】利根川・江戸川流域", lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6", desc: "上流からの雨量増加に伴う水位上昇に警戒。" }
+        ];
+
+        const typhoonDataList =
