@@ -21,7 +21,7 @@
             height: 55px;
             background: #1e293b;
             color: #fff;
-            padding: 0 15px;
+            padding: 0 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -31,15 +31,16 @@
             z-index: 1000;
         }
         .system-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             color: #38bdf8;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 3px rgba(56, 189, 248, 0.4);
+            white-space: nowrap;
         }
         .header-center {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             background: #0f172a;
             padding: 3px;
             border-radius: 8px;
@@ -49,12 +50,13 @@
             background: transparent;
             border: none;
             color: #94a3b8;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 5px 10px;
+            font-size: 11.5px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .mode-btn.active {
             background: #0284c7;
@@ -64,7 +66,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-size: 13px;
         }
         .area-selector-wrapper {
@@ -74,7 +76,7 @@
             padding: 2px 6px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         .area-selector-wrapper label {
             font-size: 11px;
@@ -87,7 +89,7 @@
             border: none;
             background: #1e293b;
             color: #fff;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -102,7 +104,7 @@
             background: transparent;
             border: none;
             color: #e2e8f0;
-            padding: 4px 8px;
+            padding: 4px 7px;
             font-size: 11px;
             cursor: pointer;
         }
@@ -228,7 +230,46 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
+        /* スマホ・タブレット等の縦向き・狭幅表示向け最適化 */
         @media (max-width: 768px) {
+            header {
+                padding: 0 8px;
+                gap: 4px;
+            }
+            .system-title {
+                font-size: 11px;
+                max-width: 95px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .header-center {
+                gap: 2px;
+                padding: 2px;
+            }
+            .mode-btn {
+                padding: 4px 6px;
+                font-size: 10px;
+            }
+            .header-right {
+                gap: 6px;
+            }
+            .area-selector-wrapper {
+                padding: 1px 4px;
+            }
+            .area-selector-wrapper label {
+                display: none; /* ラベルを隠して省スペース化 */
+            }
+            .area-selector {
+                font-size: 10.5px;
+            }
+            .mag-btn {
+                padding: 3px 5px;
+                font-size: 10px;
+            }
+            #live-clock {
+                display: none; /* 狭い画面では時計を非表示にして領域確保 */
+            }
+
             .sidebar {
                 width: 100%;
                 height: 45%;
@@ -249,26 +290,26 @@
 <body>
 
     <header>
-        <div class="system-title">地殻変動地震リスク危機管理リアル情報</div>
+        <div class="system-title">地殻変動地震リスク危機管理</div>
         
         <!-- モード切り替えタブ -->
         <div class="header-center">
-            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震・地殻変動モード</button>
-            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('water')">🌊 気象・水害（キキクル）モード</button>
+            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震</button>
+            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('water')">🌊 水害</button>
         </div>
 
         <div class="header-right">
             <div class="area-selector-wrapper">
-                <label for="targetArea">表示地域:</label>
+                <label for="targetArea">地域:</label>
                 <select id="targetArea" class="area-selector" onchange="updateViewMode()">
-                    <option value="kanto">関東（首都圏）</option>
+                    <option value="kanto">関東</option>
                     <option value="hokkaido">北海道</option>
                     <option value="tohoku">東北</option>
                     <option value="chubu">中部</option>
-                    <option value="kinki">近畿（関西）</option>
-                    <option value="chugoku_shikoku">中国・四国</option>
-                    <option value="kyushu_okinawa">九州・沖縄</option>
-                    <option value="all" selected>全国表示</option>
+                    <option value="kinki">近畿</option>
+                    <option value="chugoku_shikoku">中国四国</option>
+                    <option value="kyushu_okinawa">九州沖縄</option>
+                    <option value="all" selected>全国</option>
                 </select>
             </div>
             <!-- 地震モード時のみ表示するマグニチュードフィルター -->
@@ -315,7 +356,7 @@
                 <div style="margin-top: 6px;" id="statusListContainer">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>過去３日間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">14件（安定稼働中）</span></div>
+                    <div class="risk-item"><span>過去３日間の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">5件（安定稼働中）</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（総合警戒）</span></div>
                 </div>
             </div>
@@ -350,16 +391,7 @@
             { lat: 35.1, lng: 140.2, mag: 3.8, depth: "50km", title: "千葉県東方沖", time: "2026-10-22 05:12:00", timestamp: new Date("2026-10-22T05:12:00").getTime() },
             { lat: 37.5, lng: 141.2, mag: 4.2, depth: "40km", title: "福島県沖", time: "2026-10-21 22:30:00", timestamp: new Date("2026-10-21T22:30:00").getTime() },
             { lat: 36.2, lng: 137.8, mag: 2.5, depth: "10km", title: "長野県中部", time: "2026-10-21 18:15:00", timestamp: new Date("2026-10-21T18:15:00").getTime() },
-            { lat: 38.2, lng: 141.5, mag: 3.5, depth: "60km", title: "宮城県沖", time: "2026-10-21 12:00:00", timestamp: new Date("2026-10-21T12:00:00").getTime() },
-            { lat: 35.6, lng: 140.1, mag: 3.1, depth: "30km", title: "千葉県北西部", time: "2026-10-20 20:45:00", timestamp: new Date("2026-10-20T20:45:00").getTime() },
-            { lat: 31.5, lng: 130.5, mag: 3.3, depth: "20km", title: "薩摩半島西方沖", time: "2026-10-20 15:20:00", timestamp: new Date("2026-10-20T15:20:00").getTime() },
-            { lat: 36.8, lng: 141.1, mag: 4.0, depth: "45km", title: "茨城県沖", time: "2026-10-20 09:10:00", timestamp: new Date("2026-10-20T09:10:00").getTime() },
-            { lat: 34.2, lng: 139.5, mag: 3.6, depth: "20km", title: "伊豆諸島南方沖", time: "2026-10-19 23:00:00", timestamp: new Date("2026-10-19T23:00:00").getTime() },
-            { lat: 42.1, lng: 142.5, mag: 3.9, depth: "50km", title: "浦河沖", time: "2026-10-19 16:40:00", timestamp: new Date("2026-10-19T16:40:00").getTime() },
-            { lat: 36.1, lng: 139.8, mag: 2.2, depth: "10km", title: "埼玉県北部", time: "2026-10-19 11:25:00", timestamp: new Date("2026-10-19T11:25:00").getTime() },
-            { lat: 37.8, lng: 138.5, mag: 3.4, depth: "10km", title: "佐渡付近", time: "2026-10-18 21:10:00", timestamp: new Date("2026-10-18T21:10:00").getTime() },
-            { lat: 35.4, lng: 139.3, mag: 2.4, depth: "20km", title: "神奈川県西部", time: "2026-10-18 14:00:00", timestamp: new Date("2026-10-18T14:00:00").getTime() },
-            { lat: 39.1, lng: 142.2, mag: 3.7, depth: "50km", title: "岩手県内陸北部", time: "2026-10-18 08:30:00", timestamp: new Date("2026-10-18T08:30:00").getTime() }
+            { lat: 38.2, lng: 141.5, mag: 3.5, depth: "60km", title: "宮城県沖", time: "2026-10-21 12:00:00", timestamp: new Date("2026-10-21T12:00:00").getTime() }
         ];
 
         let liveQuakes = [...safeMasterQuakes];
@@ -420,7 +452,6 @@
                 updateViewMode();
                 evaluateLatestEarthquake(liveQuakes);
 
-                // 📱 iPhoneのSafariでの描画抜けを防ぐための多段階サイズ強制再計算
                 setTimeout(() => { if(map) map.invalidateSize(); }, 100);
                 setTimeout(() => { if(map) map.invalidateSize(); }, 500);
 
