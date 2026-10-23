@@ -243,7 +243,7 @@
             }
             .system-title {
                 font-size: 12px;
-                max-width: 140px;
+                max-width: 130px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -297,10 +297,10 @@
     <header>
         <div class="system-title">地殻変動地震リスク危機管理リアル情報</div>
         
-        <!-- モード切り替えタブ -->
+        <!-- モード切り替え（2モード統合型） -->
         <div class="header-center">
-            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震</button>
-            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('water')">🌊 水害</button>
+            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震モード</button>
+            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('weather_risk')">🌀 気象・災害RISK</button>
         </div>
 
         <div class="header-right">
@@ -331,7 +331,7 @@
         <div class="sidebar">
             <div class="card">
                 <div class="status-badge" id="apiStatus">自動同期システム稼働中</div>
-                <p id="modeStatusDesc">タイムアウト保護付きで最新の地震データを自動取得中。</p>
+                <p id="modeStatusDesc">最新の地震・地殻変動データをリアルタイム自動同期中。</p>
             </div>
 
             <!-- 動的に切り替わるメインカード -->
@@ -386,12 +386,10 @@
         let map = null;
         let markerLayer = null;
         let anomalyLayer = null;
-        let waterLayer = null;
-        let typhoonLayer = null;
+        let weatherRiskLayer = null; // 水害・台風・津波・火山を一元管理するレイヤー
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
 
-        // 🛡️ API通信が遅延・失敗した際のセーフティフォールバック用マスターデータ（浦河沖・千葉沖含む最新版）
         const fallbackQuakes = [
             { lat: 42.2, lng: 142.3, mag: 3.7, depth: "90km", title: "浦河沖", time: "2026-10-24 02:34:27", timestamp: new Date("2026-10-24T02:34:27").getTime() },
             { lat: 35.1, lng: 140.3, mag: 3.5, depth: "40km", title: "千葉県東方沖", time: "2026-10-24 02:15:00", timestamp: new Date("2026-10-24T02:15:00").getTime() },
@@ -416,21 +414,31 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        const waterSpots = [
-            { name: "【土砂災害警戒・キキクル】関東山地エリア", lat: 35.6, lng: 139.1, radius: 40000, color: "#f59e0b", desc: "大雨による土砂災害リスクが高まる可能性を注視中。" },
-            { name: "【河川氾濫警戒】利根川・江戸川流域", lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6", desc: "上流からの雨量増加に伴う水位上昇に警戒。" }
-        ];
-
-        const typhoonDataList = [
+        // 🌀🌊🌋 気象・災害RISKデータ（台風・大雨・津波・火山をワン画面で一元管理）
+        const weatherRiskDataList = [
             {
+                type: "typhoon",
                 name: "🌀 台風警戒情報（非常に強い勢力）",
-                lat: 27.5, lng: 131.5,
-                radius: 140000,
-                color: "#ef4444",
-                pressure: "955 hPa",
-                maxWind: "40 m/s",
-                direction: "北北西 (時速 25km)",
-                desc: "中心気圧955hPa、非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
+                lat: 27.5, lng: 131.5, radius: 140000, color: "#ef4444",
+                details: "中心気圧: 955hPa / 最大風速: 40 m/s\n進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
+            },
+            {
+                type: "water",
+                name: "🌊 土砂・河川氾濫警戒（関東山地・利根川流域）",
+                lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6",
+                details: "土砂災害キキクルおよび利根川水系の水位上昇を監視中。警戒レベル1（平時・注意継続）。"
+            },
+            {
+                type: "tsunami",
+                name: "🌊 津波情報監視（太平洋側沿岸）",
+                lat: 34.0, lng: 141.5, radius: 90000, color: "#06b6d4",
+                details: "沿岸部における津波監視レーダーおよび気象庁発表の津波情報を常時連動監視中。現在、日本沿岸への異常津波警報はありません。"
+            },
+            {
+                type: "volcano",
+                name: "🌋 火山噴火警戒（桜島・阿蘇山セクター）",
+                lat: 31.58, lng: 130.65, radius: 35000, color: "#f97316",
+                details: "火口周辺警報（噴火警戒レベル3: 入山規制等）。火山活動の推移を常時モニタリング中。"
             }
         ];
 
@@ -460,14 +468,11 @@
 
                 anomalyLayer = L.layerGroup().addTo(map);
                 markerLayer = L.layerGroup().addTo(map);
-                waterLayer = L.layerGroup().addTo(map);
-                typhoonLayer = L.layerGroup().addTo(map);
+                weatherRiskLayer = L.layerGroup().addTo(map);
 
-                // 初回描画を即座に実行（フリーズ防止）
                 evaluateLatestEarthquake(liveQuakes);
                 updateViewMode();
 
-                // バックグラウンドで最新APIの取得を試みる（タイムアウト付き）
                 fetchRealtimeEarthquakesWithTimeout();
                 setInterval(fetchRealtimeEarthquakesWithTimeout, 60000);
 
@@ -483,10 +488,9 @@
             setTimeout(initSystem, 150);
         });
 
-        // ⏱️ タイムアウト保護付きAPI取得関数（データ取得が終わらない現象を完全に防止）
         async function fetchRealtimeEarthquakesWithTimeout() {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000); // 4秒でタイムアウト
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
 
             try {
                 const statusBadge = document.getElementById('apiStatus');
@@ -545,7 +549,6 @@
                 }
             } catch (err) {
                 clearTimeout(timeoutId);
-                console.log("API接続タイムアウトまたはオフライン: セーフティデータで稼働継続します");
                 const statusBadge = document.getElementById('apiStatus');
                 if (statusBadge) statusBadge.textContent = '同期完了 (安定モード)';
             }
@@ -555,11 +558,11 @@
             try {
                 currentMode = mode;
                 const btnEq = document.getElementById('btnEarthquakeMode');
-                const btnWater = document.getElementById('btnWaterMode');
+                const btnWeather = document.getElementById('btnWaterMode');
                 const magContainer = document.getElementById('magFilterContainer');
 
                 if (btnEq) btnEq.classList.toggle('active', mode === 'earthquake');
-                if (btnWater) btnWater.classList.toggle('active', mode === 'water');
+                if (btnWeather) btnWeather.classList.toggle('active', mode === 'weather_risk');
                 if (magContainer) magContainer.style.display = mode === 'earthquake' ? 'flex' : 'none';
 
                 const apiStatusEl = document.getElementById('apiStatus');
@@ -604,37 +607,40 @@
                     }
                     evaluateLatestEarthquake(liveQuakes);
                 } else {
-                    if (apiStatusEl) apiStatusEl.textContent = '気象災害RISK連動中';
-                    if (modeStatusDesc) modeStatusDesc.textContent = '気象庁キキクル（危険度分布）および台風・河川水位情報を監視中。';
+                    if (apiStatusEl) apiStatusEl.textContent = '気象・災害RISK統合監視中';
+                    if (modeStatusDesc) modeStatusDesc.textContent = '台風・大雨・津波・火山噴火の各警報情報を一元管理しています。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
-                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀 台風・大雨特別警戒情報</h3>
+                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀🌊🌋 気象・災害RISK総合情報</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
-                                    【接近中の台風・気象状況】
-                                    中心気圧 955hPa / 非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。
+                                    【一元管理中の監視項目】
+                                    • 台風・大雨（土砂・河川）
+                                    • 津波警報・注意報
+                                    • 火山噴火警報・予報
+                                    地図上の各マーカーをクリックすると詳細な警戒パラメータを確認できます。
                                 </div>
                             </div>
                         `;
                     }
-                    if (subCardTitle) subCardTitle.textContent = "🌊 キキクル・河川水位モニタリング";
+                    if (subCardTitle) subCardTitle.textContent = "🌊🌋 津波・火山モニタリング";
                     if (subCardContent) {
                         subCardContent.innerHTML = `
-                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【水害・土砂災害リスク箇所】</p>
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【海洋・火山セクター状況】</p>
                             <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
-                                <li><strong>関東山地周辺：</strong> 土砂災害キキクル危険度を常時監視</li>
-                                <li><strong>主要水系流域：</strong> 氾濫注意水位の推移を監視中</li>
+                                <li><strong>沿岸津波監視：</strong> 太平洋側・日本海側の水位変化を常時追跡</li>
+                                <li><strong>火山活動監視：</strong> 桜島・阿蘇山等の噴火警戒レベルを連動中</li>
                             </ul>
                         `;
                     }
-                    if (panelTitle) panelTitle.textContent = "気象・水害RISK状況";
-                    if (panelDescription) panelDescription.textContent = "日本全国の大雨危険度（キキクル）および水防状況。";
+                    if (panelTitle) panelTitle.textContent = "気象・災害RISK状況";
+                    if (panelDescription) panelDescription.textContent = "日本全国の台風・水害・津波・火山の一元化された警戒状況。";
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
-                            <div class="risk-item"><span>土砂災害危険度:</span> <span class="risk-level-low">平常</span></div>
-                            <div class="risk-item"><span>浸水害リスク:</span> <span class="risk-level-low">平常</span></div>
-                            <div class="risk-item"><span>河川氾濫警戒度:</span> <span class="risk-level-low">通常範囲</span></div>
-                            <div class="risk-item"><span>水害警戒レベル:</span> <span class="risk-level-mid"> LEVEL 1（平時・注意）</span></div>
+                            <div class="risk-item"><span>台風・大雨警戒度:</span> <span class="risk-level-mid">要警戒</span></div>
+                            <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">なし（正常）</span></div>
+                            <div class="risk-item"><span>火山噴火警戒:</span> <span class="risk-level-mid">一部レベル3</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
                     }
                 }
@@ -689,8 +695,7 @@
 
                 if (anomalyLayer) anomalyLayer.clearLayers();
                 if (markerLayer) markerLayer.clearLayers();
-                if (waterLayer) waterLayer.clearLayers();
-                if (typhoonLayer) typhoonLayer.clearLayers();
+                if (weatherRiskLayer) weatherRiskLayer.clearLayers();
 
                 if (currentMode === 'earthquake') {
                     anomalySpots.forEach(spot => {
@@ -727,42 +732,23 @@
                     });
 
                 } else {
-                    waterSpots.forEach(spot => {
-                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.28, weight: 2 });
-                        const marker = L.circleMarker([spot.lat, spot.lng], { radius: 8, color: '#ffffff', fillColor: spot.color, fillOpacity: 0.95, weight: 2 });
-                        const content = `<div style="color: #333; font-size: 12px;"><strong>🌊 ${spot.name}</strong><br>${spot.desc}</div>`;
-                        circle.bindPopup(content);
-                        marker.bindPopup(content);
-                        waterLayer.addLayer(circle);
-                        waterLayer.addLayer(marker);
-                    });
-
-                    typhoonDataList.forEach(t => {
-                        const circle = L.circle([t.lat, t.lng], { radius: t.radius, color: t.color, fillColor: t.color, fillOpacity: 0.2, weight: 2, dashArray: '4, 4' },);
-                        const marker = L.circleMarker([t.lat, t.lng], { radius: 11, color: '#ffffff', fillColor: t.color, fillOpacity: 0.95, weight: 2 });
+                    // 🌀🌊🌋 気象・災害RISKモード（台風・水害・津波・火山を一元管理してマップに描画）
+                    weatherRiskDataList.forEach(item => {
+                        const circle = L.circle([item.lat, item.lng], { radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.22, weight: 2, dashArray: '4, 4' });
+                        const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: item.color, fillOpacity: 0.95, weight: 2 });
 
                         const popupContent = `
-                            <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 180px;">
-                                <strong style="color: #c2410c; font-size: 13px;">${t.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
-                                • <strong>中心気圧:</strong> ${t.pressure}<br>
-                                • <strong>最大風速:</strong> ${t.maxWind}<br>
-                                • <strong>進行方向:</strong> ↗ ${t.direction}<br>
-                                • <strong>状況概要:</strong> ${t.desc}
+                            <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 190px;">
+                                <strong style="color: #c2410c; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
+                                • <strong>状況詳細:</strong><br>${item.details.replace(/\n/g, '<br>')}
                             </div>
                         `;
 
                         circle.bindPopup(popupContent);
                         marker.bindPopup(popupContent);
 
-                        typhoonLayer.addLayer(circle);
-                        typhoonLayer.addLayer(marker);
-
-                        const arrowLine = L.polyline([
-                            [t.lat, t.lng],
-                            [t.lat + 1.2, t.lng - 0.6]
-                        ], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
-                        arrowLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>予測進路ベクトル</strong><br>この矢印の方向へ進行中</div>`);
-                        typhoonLayer.addLayer(arrowLine);
+                        weatherRiskLayer.addLayer(circle);
+                        weatherRiskLayer.addLayer(marker);
                     });
                 }
 
