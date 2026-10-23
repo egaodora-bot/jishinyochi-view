@@ -415,11 +415,15 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
+        // 🌀 台風データ（勢力や最大風速に基づきリアルタイムに円の大きさが連動）
         const weatherRiskDataList = [
             {
                 type: "typhoon",
                 name: "🌀 台風警戒情報（非常に強い勢力）",
-                lat: 27.5, lng: 131.5, radius: 140000, color: "#ef4444",
+                lat: 27.5, lng: 131.5,
+                maxWindSpeed: 40, // m/s (この数値や勢力に応じて円サイズが自動可変)
+                pressure: 955,    // hPa
+                color: "#ef4444",
                 details: "【気象データ】\n• 中心気圧: 955 hPa\n• 最大風速: 40 m/s\n• 進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
             },
             {
@@ -758,7 +762,13 @@
 
                 } else {
                     weatherRiskDataList.forEach(item => {
-                        const circle = L.circle([item.lat, item.lng], { radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.22, weight: 2, dashArray: '4, 4' });
+                        // 🌀 台風の勢力（最大風速など）に連動して円の大きさを自動計算（例: 最大風速40m/sなら半径約140km）
+                        let radiusVal = item.radius;
+                        if (item.type === 'typhoon' && item.maxWindSpeed) {
+                            radiusVal = item.maxWindSpeed * 3500; // 風速に応じてリアルタイムに半径（m）を拡大縮小
+                        }
+
+                        const circle = L.circle([item.lat, item.lng], { radius: radiusVal, color: item.color, fillColor: item.color, fillOpacity: 0.22, weight: 2, dashArray: '4, 4' });
                         const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: item.color, fillOpacity: 0.95, weight: 2 });
 
                         const popupContent = `
@@ -774,7 +784,7 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 🌀 台風アイテムの場合：上向き基準の鋭い先端を持つ矢印アイコン
+                        // 🌀 台風アイテムの場合：上向き基準の鋭い先端を持つ矢印アイコン＋進路ベクトル
                         if (item.type === 'typhoon') {
                             const startPoint = [item.lat, item.lng];
                             const endPoint = [item.lat + 1.2, item.lng - 0.6]; // 北北西方向
@@ -782,16 +792,16 @@
                             // 1. 予測進路の点線ライン
                             const arrowLine = L.polyline([startPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
                             
-                            // 2. 正確な方位角（ベアリング）の計算（北を0度とした回転角度）
+                            // 2. 正確な方位角の計算（北を0度とした回転角度）
                             const dLng = (endPoint[1] - startPoint[1]) * Math.PI / 180;
                             const lat1 = startPoint[0] * Math.PI / 180;
                             const lat2 = endPoint[0] * Math.PI / 180;
                             const y = Math.sin(dLng) * Math.cos(lat2);
                             const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
                             let brng = Math.atan2(y, x) * 180 / Math.PI;
-                            brng = (brng + 360) % 360; // 0〜360度
+                            brng = (brng + 360) % 360;
                             
-                            // 上向きに尖った美しい矢印SVG（ポリゴン座標: 先端が真上 12,0）
+                            // 上向きに尖った美しい矢印SVG
                             const arrowHeadIcon = L.divIcon({
                                 className: 'custom-arrow-head',
                                 html: `<div style="transform: rotate(${brng}deg); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
