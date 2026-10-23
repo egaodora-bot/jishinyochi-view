@@ -170,14 +170,14 @@
         }
         .status-badge {
             display: inline-block;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: bold;
-            background: #7f1d1d;
-            color: #fca5a5;
+            background: #065f46;
+            color: #34d399;
             margin-bottom: 6px;
-            border: 1px solid #ef4444;
+            border: 1px solid #059669;
         }
         .emergency-alert-card {
             background: #2a0808;
@@ -193,13 +193,13 @@
         }
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
-            font-size: 11.5px;
-            color: #fca5a5;
+            font-size: 12px;
+            color: #ffffff;
             border-bottom: 1px solid #7f1d1d;
             padding-bottom: 3px;
         }
         .emergency-alert-card.alert-active h3 {
-            color: #fecaca;
+            color: #ffffff;
             border-bottom: 1px solid #991b1b;
         }
         .info-text-box {
@@ -223,7 +223,7 @@
         }
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
-        .risk-level-high { color: #f87171; font-weight: bold; }
+        .risk-level-high { color: #f87171; font-weight: bold; } /* 要警戒などの赤色強調 */
         
         .risk-level-alert-prominent {
             color: #ffffff;
@@ -330,7 +330,7 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus">自動同期システム稼働中</div>
+                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #34d399; border-color: #059669;">自動同期システム稼働中</div>
                 <p id="modeStatusDesc">最新の地震・地殻変動データをリアルタイム自動同期中。</p>
             </div>
 
@@ -344,7 +344,7 @@
 
             <!-- 補助解説カード -->
             <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
-                <h3 style="color: #fca5a5;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+                <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
                     <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
                     <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
@@ -414,7 +414,6 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀🌊🌋 気象・災害RISKデータ（台風・大雨・津波・火山を一元管理）
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -494,7 +493,12 @@
 
             try {
                 const statusBadge = document.getElementById('apiStatus');
-                if (statusBadge) statusBadge.textContent = 'リアルタイム同期中...';
+                if (statusBadge) {
+                    statusBadge.textContent = 'リアルタイム同期中...';
+                    statusBadge.style.background = '#1e3a8a';
+                    statusBadge.style.color = '#93c5fd';
+                    statusBadge.style.borderColor = '#3b82f6';
+                }
 
                 const cacheBuster = `_cb=${new Date().getTime()}`;
                 const response = await fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=100&${cacheBuster}`, {
@@ -540,7 +544,12 @@
                         liveQuakes = apiQuakes.sort((a, b) => b.timestamp - a.timestamp);
                     }
 
-                    if (statusBadge) statusBadge.textContent = `自動同期完了 (${liveQuakes.length}件)`;
+                    if (statusBadge) {
+                        statusBadge.textContent = `自動同期完了 (${liveQuakes.length}件)`;
+                        statusBadge.style.background = '#065f46';
+                        statusBadge.style.color = '#34d399';
+                        statusBadge.style.borderColor = '#059669';
+                    }
 
                     if (currentMode === 'earthquake') {
                         evaluateLatestEarthquake(liveQuakes);
@@ -550,7 +559,12 @@
             } catch (err) {
                 clearTimeout(timeoutId);
                 const statusBadge = document.getElementById('apiStatus');
-                if (statusBadge) statusBadge.textContent = '同期完了 (安定モード)';
+                if (statusBadge) {
+                    statusBadge.textContent = '同期完了 (安定モード)';
+                    statusBadge.style.background = '#065f46';
+                    statusBadge.style.color = '#34d399';
+                    statusBadge.style.borderColor = '#059669';
+                }
             }
         }
 
@@ -575,7 +589,12 @@
                 const statusListContainer = document.getElementById('statusListContainer');
 
                 if (mode === 'earthquake') {
-                    if (apiStatusEl) apiStatusEl.textContent = '自動同期システム稼働中';
+                    if (apiStatusEl) {
+                        apiStatusEl.textContent = '自動同期システム稼働中';
+                        apiStatusEl.style.background = '#065f46';
+                        apiStatusEl.style.color = '#34d399';
+                        apiStatusEl.style.borderColor = '#059669';
+                    }
                     if (modeStatusDesc) modeStatusDesc.textContent = 'タイムアウト保護付きで最新の地震データを自動取得中。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
@@ -607,13 +626,17 @@
                     }
                     evaluateLatestEarthquake(liveQuakes);
                 } else {
-                    // 🌀 気象・災害RISKモード（一番上に接近中の台風情報を大きく表示）
-                    if (apiStatusEl) apiStatusEl.textContent = '気象・災害RISK統合監視中';
+                    if (apiStatusEl) {
+                        apiStatusEl.textContent = '気象・災害RISK統合監視中';
+                        apiStatusEl.style.background = '#065f46';
+                        apiStatusEl.style.color = '#34d399';
+                        apiStatusEl.style.borderColor = '#059669';
+                    }
                     if (modeStatusDesc) modeStatusDesc.textContent = '台風・大雨・津波・火山噴火の各警報情報を一元管理しています。';
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
-                                <h3 style="color: #fecaca; border-color: #991b1b;">🌀 接近中の台風・大雨特別警戒情報</h3>
+                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 接近中の台風・大雨特別警戒情報</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
                                     【台風パラメータ】
                                     • 中心気圧: 955 hPa
@@ -638,7 +661,7 @@
                     if (panelDescription) panelDescription.textContent = "日本全国の台風・水害・津波・火山の一元化された警戒状況。";
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
-                            <div class="risk-item"><span>台風・大雨警戒度:</span> <span class="risk-level-mid">要警戒</span></div>
+                            <div class="risk-item"><span>台風・大雨警戒度:</span> <span class="risk-level-high">要警戒</span></div>
                             <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">なし（正常）</span></div>
                             <div class="risk-item"><span>火山噴火警戒:</span> <span class="risk-level-mid">一部レベル3</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
