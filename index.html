@@ -145,13 +145,13 @@
             z-index: 1;
         }
 
-        /* 🌤️ マップ右端に浮かぶ天気予報オーバーレイパネル */
+        /* 🌤️ マップ右端に浮かぶ都道府県別・天気予報ウィジェット */
         .map-weather-widget {
             position: absolute;
             top: 15px;
             right: 15px;
-            width: 240px;
-            background: rgba(15, 23, 42, 0.9);
+            width: 250px;
+            background: rgba(15, 23, 42, 0.92);
             border: 1px solid #38bdf8;
             border-radius: 8px;
             padding: 10px;
@@ -326,7 +326,7 @@
             .map-weather-widget {
                 top: 5px;
                 right: 5px;
-                width: 190px;
+                width: 195px;
                 padding: 6px;
             }
         }
@@ -356,7 +356,7 @@
                     <option value="kinki">近畿</option>
                     <option value="chugoku_shikoku">中国四国</option>
                     <option value="kyushu_okinawa">九州沖縄</option>
-                    <option value="all" selected>全国</option>
+                    <option value="all" selected>全国 (主要都市)</option>
                 </select>
             </div>
             <div id="magFilterContainer" class="mag-filter-group">
@@ -419,12 +419,12 @@
         </div>
 
         <div id="map">
-            <!-- 🌤️ 地図画面右端の天気予報ウィジェット -->
+            <!-- 🌤️ 地図画面右端の都道府県別天気予報ウィジェット -->
             <div class="map-weather-widget">
-                <h4 id="widgetAreaTitle">🌤️ ピンポイント天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
+                <h4 id="widgetAreaTitle">🌤️ 都道府県・天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
                 <div class="weather-content" id="widgetWeatherContent">
-                    <div class="weather-row"><span>天候状態:</span> <strong style="color: #38bdf8;">曇り時々雨</strong></div>
-                    <div class="weather-row"><span>気温 / 降水:</span> <strong>19.2℃ / 60%</strong></div>
+                    <div class="weather-row"><span>対象地域:</span> <strong style="color: #38bdf8;">全国 (東京・大阪など)</strong></div>
+                    <div class="weather-row"><span>天気・気温:</span> <strong>曇り時々雨 / 19.2℃</strong></div>
                     <div class="weather-row"><span>風向・風速:</span> <strong>北東 6 m/s</strong></div>
                     <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;" id="widgetTyphoonNote">
                         🌀 台風第30・31号周辺の気圧傾度により沿岸部で強風注意。
@@ -527,15 +527,56 @@
             }
         ];
 
+        // 🗺️ 地域エリアごとの都道府県詳細データ（プルダウン連動）
         const areaData = {
-            all: { name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, weather: { title: "全国主要都市 (東京)", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" } },
-            kanto: { name: "関東エリアの状況", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0}, weather: { title: "関東エリア (東京・茨城)", cond: "曇り / 降雨あり", temp: "18.5℃", rain: "70%", wind: "北東 7m/s", note: "関東山地周辺で降水傾向" } },
-            hokkaido: { name: "北海道エリアの状況", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5}, weather: { title: "北海道エリア (札幌)", cond: "晴れ時々曇り", temp: "14.0℃", rain: "10%", wind: "西 3m/s", note: "高気圧に覆われ比較的安定" } },
-            tohoku: { name: "東北エリアの状況", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5}, weather: { title: "東北エリア (仙台)", cond: "曇り", temp: "16.2℃", rain: "30%", wind: "東 4m/s", note: "太平洋側で雲が広がる" } },
-            chubu: { name: "中部エリアの状況", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5}, weather: { title: "中部エリア (名古屋)", cond: "曇り時々晴れ", temp: "20.1℃", rain: "20%", wind: "東 3m/s", note: "大きな荒天の心配なし" } },
-            kinki: { name: "近畿エリアの状況", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5}, weather: { title: "近畿エリア (大阪)", cond: "曇り", temp: "21.0℃", rain: "40%", wind: "北東 5m/s", note: "台風周辺の湿った空気流入" } },
-            chugoku_shikoku: { name: "中国・四国エリアの状況", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0}, weather: { title: "中国四国エリア (広島・高知)", cond: "雨勝ち", temp: "19.8℃", rain: "80%", wind: "東 6m/s", note: "四国南岸で雨脚強まるおそれ" } },
-            kyushu_okinawa: { name: "九州・沖縄エリアの状況", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0}, weather: { title: "九州沖縄エリア (福岡・那覇)", cond: "雨・風強まる", temp: "24.5℃", rain: "90%", wind: "北東 12m/s", note: "台風第30号の強風域に注意" } }
+            all: { 
+                name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, 
+                weather: { 
+                    pref: "全国主要都市", detail: "東京 / 大阪 / 福岡", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" 
+                } 
+            },
+            kanto: { 
+                name: "関東エリアの状況", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0}, 
+                weather: { 
+                    pref: "【関東地方】東京都・茨城県・神奈川県等", detail: "水戸市・古河市・さいたま市", cond: "曇り / 一部降雨", temp: "18.5℃", rain: "70%", wind: "北東 7m/s", note: "関東山地周辺で降水傾向。強風注意。" 
+                } 
+            },
+            hokkaido: { 
+                name: "北海道エリアの状況", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5}, 
+                weather: { 
+                    pref: "【北海道】道央・道南・道北・道東", detail: "札幌市・函館市・旭川市", cond: "晴れ時々曇り", temp: "14.0℃", rain: "10%", wind: "西 3m/s", note: "高気圧に覆われ比較的安定した天気。" 
+                } 
+            },
+            tohoku: { 
+                name: "東北エリアの状況", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5}, 
+                weather: { 
+                    pref: "【東北地方】宮城県・福島県・岩手県等", detail: "仙台市・盛岡市・福島市", cond: "曇り", temp: "16.2℃", rain: "30%", wind: "東 4m/s", note: "太平洋側を中心に雲が広がる。" 
+                } 
+            },
+            chubu: { 
+                name: "中部エリアの状況", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5}, 
+                weather: { 
+                    pref: "【中部地方】愛知県・静岡県・新潟県等", detail: "名古屋市・新潟市・静岡市", cond: "曇り時々晴れ", temp: "20.1℃", rain: "20%", wind: "東 3m/s", note: "大きな荒天の心配なし。" 
+                } 
+            },
+            kinki: { 
+                name: "近畿エリアの状況", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5}, 
+                weather: { 
+                    pref: "【近畿地方】大阪府・京都府・兵庫県等", detail: "大阪市・京都市・神戸市", cond: "曇り", temp: "21.0℃", rain: "40%", wind: "北東 5m/s", note: "台風周辺からの湿った空気が流入。" 
+                } 
+            },
+            chugoku_shikoku: { 
+                name: "中国・四国エリアの状況", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0}, 
+                weather: { 
+                    pref: "【中国・四国】広島県・高知県・愛媛県等", detail: "広島市・高知市・松山市", cond: "雨勝ち", temp: "19.8℃", rain: "80%", wind: "東 6m/s", note: "四国南岸を中心に雨脚が強まるおそれ。" 
+                } 
+            },
+            kyushu_okinawa: { 
+                name: "九州・沖縄エリアの状況", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0}, 
+                weather: { 
+                    pref: "【九州・沖縄】福岡県・鹿児島県・沖縄県", detail: "福岡市・鹿児島市・那覇市", cond: "雨・風強まる", temp: "24.5℃", rain: "90%", wind: "北東 12m/s", note: "台風第30号の強風域に伴い暴風に警戒。" 
+                } 
+            }
         };
 
         function initSystem() {
@@ -790,14 +831,15 @@
 
                 map.setView(selected.center, selected.zoom);
 
-                // 🌤️ 上部の地域選択プルダウンに連動して、右上の天気予報ウィジェットの内容を動的に更新
+                // 🗺️ 地域プルダウンと連動して右上の天気予報ウィジェットに都道府県名・都市名を表示
                 if (selected.weather) {
                     const w = selected.weather;
-                    document.getElementById('widgetAreaTitle').innerHTML = `🌤️ ${w.title} <span style="font-size: 9.5px; color: #94a3b8;">10/26現在</span>`;
+                    document.getElementById('widgetAreaTitle').innerHTML = `🌤️ 都道府県・天気予報 <span style="font-size: 9px; color: #94a3b8;">10/26現在</span>`;
                     document.getElementById('widgetWeatherContent').innerHTML = `
-                        <div class="weather-row"><span>天候状態:</span> <strong style="color: #38bdf8;">${w.cond}</strong></div>
-                        <div class="weather-row"><span>気温 / 降水:</span> <strong>${w.temp} / ${w.rain}</strong></div>
-                        <div class="weather-row"><span>風向・風速:</span> <strong>${w.wind}</strong></div>
+                        <div class="weather-row"><span>対象エリア:</span> <strong style="color: #38bdf8; font-size: 10.5px;">${w.pref}</strong></div>
+                        <div class="weather-row"><span>主要都市:</span> <strong style="color: #e2e8f0;">${w.detail}</strong></div>
+                        <div class="weather-row"><span>天気 / 気温:</span> <strong>${w.cond} / ${w.temp}</strong></div>
+                        <div class="weather-row"><span>降水 / 風速:</span> <strong>${w.rain} / ${w.wind}</strong></div>
                         <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;">
                             ${w.note}
                         </div>
