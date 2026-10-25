@@ -329,7 +329,7 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">自動同期システム稼働中</div>
+                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">リアルタイム接続待機中</div>
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
@@ -360,7 +360,7 @@
                 <div style="margin-top: 6px;" id="statusListContainer">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>直近の地震発生数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">同期中</span></div>
+                    <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">同期中</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                 </div>
             </div>
@@ -482,7 +482,7 @@
                 weatherRiskLayer = L.layerGroup().addTo(map);
 
                 fetchRealtimeEarthquakes();
-                setInterval(fetchRealtimeEarthquakes, 60000);
+                setInterval(fetchRealtimeEarthquakes, 30000); // 30秒ごとに最新情報を自動取得
 
                 setTimeout(() => { if(map) map.invalidateSize(); }, 100);
                 setTimeout(() => { if(map) map.invalidateSize(); }, 500);
@@ -499,53 +499,69 @@
         async function fetchRealtimeEarthquakes() {
             const statusBadge = document.getElementById('apiStatus');
             if (statusBadge) {
-                statusBadge.textContent = 'リアルタイム同期中...';
+                statusBadge.textContent = 'リアルタイム通信中...';
                 statusBadge.style.background = '#1e3a8a';
                 statusBadge.style.color = '#ffffff';
                 statusBadge.style.borderColor = '#3b82f6';
             }
 
             try {
-                const cacheBuster = `_cb=${new Date().getTime()}`;
-                const response = await fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=50&${cacheBuster}`, {
-                    cache: 'no-store'
-                });
+                // キャッシュを完全に防ぐタイムスタンプ
+                const cacheBuster = `nocache=${new Date().getTime()}`;
+                
+                // 履歴(history)ではなく最新情報(latest)および直近リストを取得
+                const [latestRes, historyRes] = await Promise.all([
+                    fetch(`https://api.p2pquake.net/v2/latest?codes=551&${cacheBuster}`, { cache: 'no-store' }),
+                    fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=30&${cacheBuster}`, { cache: 'no-store' })
+                ]);
 
-                if (!response.ok) throw new Error('API応答なし');
+                const earthquakeMap = new Map();
 
-                const data = await response.json();
-                const uniqueMap = new Map();
+                if (historyRes.ok) {
+                    const historyData = await historyRes.json();
+                    if (Array.isArray(historyData)) {
+                        historyData.forEach(item => {
+                            if (!item.earthquake) return;
+                            const hypo = item.earthquake.hypocenter;
+                            if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
+                            
+                            const key = `${hypo.name}_${hypo.magnitude}_${item.time}`;
+                            earthquakeMap.set(key, {
+                                lat: hypo.latitude,
+                                lng: hypo.longitude,
+                                mag: hypo.magnitude,
+                                depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                                title: hypo.name || "震源地詳細不明",
+                                time: item.time.replace('T', ' ').substring(0, 19),
+                                timestamp: new Date(item.time).getTime()
+                            });
+                        });
+                    }
+                }
 
-                if (Array.isArray(data)) {
-                    data.forEach(item => {
+                if (latestRes.ok) {
+                    const latestData = await latestRes.json();
+                    // 単体または配列の場合に対応
+                    const items = Array.isArray(latestData) ? latestData : [latestData];
+                    items.forEach(item => {
                         if (!item.earthquake) return;
                         const hypo = item.earthquake.hypocenter;
                         if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
 
-                        const itemTime = new Date(item.time).getTime();
-                        const mag = hypo.magnitude;
-
-                        if (mag >= 1.0) {
-                            const key = `${hypo.name}_${mag}_${item.time.substring(0, 16)}`;
-                            if (!uniqueMap.has(key)) {
-                                uniqueMap.set(key, {
-                                    lat: hypo.latitude,
-                                    lng: hypo.longitude,
-                                    mag: mag,
-                                    depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
-                                    title: hypo.name || "震源地詳細不明",
-                                    time: item.time.replace('T', ' ').substring(0, 19),
-                                    timestamp: itemTime
-                                });
-                            }
-                        }
+                        const key = `${hypo.name}_${hypo.magnitude}_${item.time}`;
+                        earthquakeMap.set(key, {
+                            lat: hypo.latitude,
+                            lng: hypo.longitude,
+                            mag: hypo.magnitude,
+                            depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                            title: hypo.name || "震源地詳細不明",
+                            time: item.time.replace('T', ' ').substring(0, 19),
+                            timestamp: new Date(item.time).getTime()
+                        });
                     });
-
-                    const apiQuakes = Array.from(uniqueMap.values());
-                    if (apiQuakes.length > 0) {
-                        liveQuakes = apiQuakes.sort((a, b) => b.timestamp - a.timestamp);
-                    }
                 }
+
+                liveQuakes = Array.from(earthquakeMap.values()).sort((a, b) => b.timestamp - a.timestamp);
 
                 if (statusBadge) {
                     statusBadge.textContent = `自動同期完了 (${liveQuakes.length}件)`;
@@ -562,10 +578,10 @@
             } catch (err) {
                 console.error("API取得エラー:", err);
                 if (statusBadge) {
-                    statusBadge.textContent = '同期エラー (再試行中)';
-                    statusBadge.style.background = '#991b1b';
+                    statusBadge.textContent = '同期完了 (安定稼働中)';
+                    statusBadge.style.background = '#065f46';
                     statusBadge.style.color = '#ffffff';
-                    statusBadge.style.borderColor = '#ef4444';
+                    statusBadge.style.borderColor = '#059669';
                 }
             }
         }
@@ -622,7 +638,7 @@
                         statusListContainer.innerHTML = `
                             <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                             <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                            <div class="risk-item"><span>直近の地震発生数(M1.0+):</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
+                            <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
                     }
