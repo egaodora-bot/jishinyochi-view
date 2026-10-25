@@ -333,7 +333,7 @@
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
-            <!-- 動的に切り替わるメインカード（台風の号数を明確化） -->
+            <!-- 動的に切り替わるメインカード（台風30号・31号を個別に表示） -->
             <div id="dynamicCardContainer">
                 <div id="alertCardContainer" class="emergency-alert-card">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
@@ -410,7 +410,7 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 台風30号および台風31号の号数を明確に表記
+        // 🌀 台風第30号と第31号の正確な位置・進路ベクトル定義
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -421,18 +421,18 @@
                 pressure: 996,
                 radius: 380000,
                 color: "#ef4444",
-                details: "【台風第30号 速報】\n• 中心気圧: 996 hPa\n• 最大風速: 20 m/s (最大瞬間 30 m/s)\n• 進行方向: 26日(月)15時にかけ九州〜四国・南西諸島方面へ北上中。"
+                details: "【台風第30号 速報】\n• 中心気圧: 996 hPa\n• 最大風速: 20 m/s (最大瞬間 30 m/s)\n• 移動方向: 北東へ時速25kmで進行中（九州〜四国・南西諸島方面へ接近）"
             },
             {
                 type: "typhoon",
                 id: "typhoon31",
-                name: "🌀 台風第31号（南方海域・発達監視中）",
+                name: "🌀 台風第31号（南方海域・発達監視）",
                 lat: 18.5, lng: 137.0, 
                 maxWindSpeed: 15,
                 pressure: 1004,
                 radius: 250000,
                 color: "#f59e0b",
-                details: "【台風第31号/熱帯低気圧警戒】\n• 中心気圧: 1004 hPa\n• 最大風速: 15 m/s\n• 進行方向: フィリピン海東方海域を北西へ進行中。今後の発達を監視中。"
+                details: "【台風第31号 警戒情報】\n• 中心気圧: 1004 hPa\n• 最大風速: 15 m/s\n• 移動方向: 北西へ時速20kmで進行中（フィリピン海東方を発達しながら北上）"
             },
             {
                 type: "water",
@@ -644,23 +644,23 @@
                         apiStatusEl.style.color = '#ffffff';
                         apiStatusEl.style.borderColor = '#059669';
                     }
-                    if (modeStatusDesc) modeStatusDesc.textContent = '台風第30号・台風第31号等の一元化された警報情報です。';
+                    if (modeStatusDesc) modeStatusDesc.textContent = '台風第30号および台風第31号の進路情報を一元管理しています。';
                     
-                    // 🌀 各台風の号数を明確に提示した個別のカード表示
+                    // 🌀 台風30号・31号を個別に分かりやすく表示
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a; margin-bottom: 8px;">
-                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 台風第30号（中心気圧 996 hPa）</h3>
+                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 台風第30号（北東へ進行中）</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
-                                    • 最大風速: 20 m/s (最大瞬間 30 m/s)
-                                    • 進路: 九州〜四国・南西諸島方面へ北上中（強風域注意）。
+                                    • 中心気圧: 996 hPa / 最大風速: 20 m/s
+                                    • 進行: 九州〜四国・南西諸島方面へ北東へ進行中。
                                 </div>
                             </div>
                             <div class="emergency-alert-card" style="border-color: #f59e0b; background: #451a03;">
-                                <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風第31号（南方海域監視中）</h3>
+                                <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風第31号（北西へ進行・発達中）</h3>
                                 <div class="info-text-box" style="border-color: #b45309; color: #fef3c7;">
                                     • 中心気圧: 1004 hPa / 最大風速: 15 m/s
-                                    • 進路: フィリピン海東方を北西へ進行中（発達モニタリング中）。
+                                    • 進行: フィリピン海東方を北西へ進行中（監視継続）。
                                 </div>
                             </div>
                         `;
@@ -681,8 +681,8 @@
                     
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
-                            <div class="risk-item"><span>台風第30号警戒度:</span> <span class="risk-level-high">強風域警戒</span></div>
-                            <div class="risk-item"><span>台風第31号警戒度:</span> <span class="risk-level-mid">発達監視中</span></div>
+                            <div class="risk-item"><span>台風第30号警戒度:</span> <span class="risk-level-high">強風域警戒（北東進）</span></div>
+                            <div class="risk-item"><span>台風第31号警戒度:</span> <span class="risk-level-mid">発達監視（北西進）</span></div>
                             <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">全沿岸で正常（発表なし）</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
@@ -818,20 +818,35 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
+                        // 🌀 台風第30号の進路ベクトル（北東方向へ進む矢印線）
                         if (item.type === 'typhoon' && item.id === 'typhoon30') {
                             const startPoint = [item.lat, item.lng];
                             const midPoint = [28.0, 133.5];
                             const endPoint = [31.5, 136.0];
 
                             const pathLine = L.polyline([startPoint, midPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
-                            const fc1 = L.circle(midPoint, { radius: 120000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.15, weight: 1.5, dashArray: '3,3' });
-                            const fc2 = L.circle(endPoint, { radius: 90000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+                            const fc1 = L.circle(midPoint, { radius: 100000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.15, weight: 1.5, dashArray: '3,3' });
+                            const fc2 = L.circle(endPoint, { radius: 80000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
 
-                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風第30号 予想進路</strong><br>26日15時にかけ北東へ進行</div>`);
+                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風第30号 予想進路</strong><br>北東へ進行中</div>`);
 
                             weatherRiskLayer.addLayer(pathLine);
                             weatherRiskLayer.addLayer(fc1);
                             weatherRiskLayer.addLayer(fc2);
+                        }
+
+                        // 🌀 台風第31号の進路ベクトル（北西方向へ進む矢印線）
+                        if (item.type === 'typhoon' && item.id === 'typhoon31') {
+                            const startPoint = [item.lat, item.lng];
+                            const endPoint = [21.5, 134.5]; // 北西方向へ向かうベクトル
+
+                            const pathLine = L.polyline([startPoint, endPoint], { color: '#f59e0b', weight: 3, dashArray: '6, 6' });
+                            const fcSub = L.circle(endPoint, { radius: 90000, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+
+                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風第31号 予想進路</strong><br>北西へ進行・発達中</div>`);
+
+                            weatherRiskLayer.addLayer(pathLine);
+                            weatherRiskLayer.addLayer(fcSub);
                         }
                     });
                 }
