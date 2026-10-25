@@ -333,7 +333,7 @@
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
-            <!-- 動的に切り替わるメインカード -->
+            <!-- 動的に切り替わるメインカード（複数台風時は複数カードで個別表示） -->
             <div id="dynamicCardContainer">
                 <div id="alertCardContainer" class="emergency-alert-card">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
@@ -397,17 +397,12 @@
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
 
-        // 10/25時点の最新地震バックアップデータ（万一の通信遮断用）
-        const latestFallbackQuakes = [
+        let liveQuakes = [
             { lat: 35.5, lng: 140.1, mag: 3.2, depth: "30km", title: "千葉県北西部", time: "2026-10-25 18:12:00", timestamp: new Date("2026-10-25T18:12:00").getTime() },
             { lat: 37.1, lng: 138.6, mag: 2.8, depth: "10km", title: "新潟県中越地方", time: "2026-10-25 14:35:10", timestamp: new Date("2026-10-25T14:35:10").getTime() },
             { lat: 38.3, lng: 141.8, mag: 4.0, depth: "50km", title: "宮城県沖", time: "2026-10-25 09:20:45", timestamp: new Date("2026-10-25T09:20:45").getTime() },
-            { lat: 33.8, lng: 132.1, mag: 2.9, depth: "40km", title: "豊後水道", time: "2026-10-25 04:05:12", timestamp: new Date("2026-10-25T04:05:12").getTime() },
-            { lat: 42.2, lng: 142.3, mag: 3.7, depth: "90km", title: "浦河沖", time: "2026-10-24 02:34:27", timestamp: new Date("2026-10-24T02:34:27").getTime() },
-            { lat: 35.1, lng: 140.3, mag: 3.5, depth: "40km", title: "千葉県東方沖", time: "2026-10-24 02:15:00", timestamp: new Date("2026-10-24T02:15:00").getTime() }
+            { lat: 33.8, lng: 132.1, mag: 2.9, depth: "40km", title: "豊後水道", time: "2026-10-25 04:05:12", timestamp: new Date("2026-10-25T04:05:12").getTime() }
         ];
-
-        let liveQuakes = [...latestFallbackQuakes];
 
         const anomalySpots = [
             { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#f87171", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
@@ -415,15 +410,29 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
+        // 🌀 発生している2つの台風（台風30号 ＆ 南方の熱帯低気圧・台風候補）を個別に定義
         const weatherRiskDataList = [
             {
                 type: "typhoon",
-                name: "🌀 台風警戒情報（非常に強い勢力）",
-                lat: 27.5, lng: 131.5,
-                maxWindSpeed: 40,
-                pressure: 955,
+                id: "typhoon30",
+                name: "🌀 台風30号（主たる台風）",
+                lat: 25.8, lng: 131.2, 
+                maxWindSpeed: 20,
+                pressure: 996,
+                radius: 380000,
                 color: "#ef4444",
-                details: "【気象データ】\n• 中心気圧: 955 hPa\n• 最大風速: 40 m/s\n• 進行方向: 北北西 (時速 25km)\n非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。"
+                details: "【台風30号 速報】\n• 中心気圧: 996 hPa\n• 最大風速: 20 m/s (最大瞬間 30 m/s)\n• 進路: 26日(月)15時にかけ九州〜四国・南西諸島方面へ北上中。"
+            },
+            {
+                type: "typhoon",
+                id: "typhoonSub",
+                name: "🌀 台風情報2（南方海域の熱帯低気圧/発達監視）",
+                lat: 18.5, lng: 137.0, 
+                maxWindSpeed: 15,
+                pressure: 1004,
+                radius: 250000,
+                color: "#f59e0b",
+                details: "【熱帯低気圧/台風警戒】\n• 中心気圧: 1004 hPa\n• 最大風速: 15 m/s\n• 状況: フィリピン海東方海域を北西へ進行中。今後の発達を監視中。"
             },
             {
                 type: "water",
@@ -518,14 +527,11 @@
                 statusBadge.style.borderColor = '#3b82f6';
             }
 
-            // CORSエラーを100%回避する複数プロキシ経由取得
             const targetUrl = 'https://api.p2pquake.net/v2/history?codes=551&limit=30';
             const proxyUrls = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
                 `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
             ];
-
-            let success = false;
 
             for (const url of proxyUrls) {
                 try {
@@ -553,7 +559,6 @@
 
                         if (parsedQuakes.length > 0) {
                             liveQuakes = parsedQuakes.sort((a, b) => b.timestamp - a.timestamp);
-                            success = true;
                             break;
                         }
                     }
@@ -639,21 +644,28 @@
                         apiStatusEl.style.color = '#ffffff';
                         apiStatusEl.style.borderColor = '#059669';
                     }
-                    if (modeStatusDesc) modeStatusDesc.textContent = '台風・大雨・津波・火山噴火の各警報情報を一元管理しています。';
+                    if (modeStatusDesc) modeStatusDesc.textContent = '複数の台風・大雨・津波・火山の各警報情報を一元管理しています。';
+                    
+                    // 🌀 2つの台風情報をそれぞれカードとして個別に並べて表示
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
-                            <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a;">
-                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 接近中の台風・大雨特別警戒情報</h3>
+                            <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a; margin-bottom: 8px;">
+                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 台風30号 接近警戒情報</h3>
                                 <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
-                                    【気象データ】
-                                    • 中心気圧: 955 hPa
-                                    • 最大風速: 40 m/s
-                                    • 進行方向: 北北西 (時速 25km)
-                                    非常に強い勢力で北上中。暴風域および高潮に厳重な警戒が必要です。
+                                    • 中心気圧: 996 hPa / 最大風速: 20 m/s
+                                    • 状況: 九州〜四国・南西諸島方面へ北上中。
+                                </div>
+                            </div>
+                            <div class="emergency-alert-card" style="border-color: #f59e0b; background: #451a03;">
+                                <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風情報2（南方海域監視）</h3>
+                                <div class="info-text-box" style="border-color: #b45309; color: #fef3c7;">
+                                    • 中心気圧: 1004 hPa / 最大風速: 15 m/s
+                                    • 状況: フィリピン海東方海域を発達監視中。
                                 </div>
                             </div>
                         `;
                     }
+
                     if (subCardTitle) subCardTitle.textContent = "🌊🌋 津波・火山モニタリング";
                     if (subCardContent) {
                         subCardContent.innerHTML = `
@@ -667,23 +679,11 @@
                     if (panelTitle) panelTitle.textContent = "気象・災害RISK状況";
                     if (panelDescription) panelDescription.textContent = "日本全国の台風・水害・津波・火山の一元化された警戒状況。";
                     
-                    const activeTsunamis = weatherRiskDataList.filter(item => item.type === 'tsunami' && item.status !== 'normal');
-                    let tsunamiStatusHTML = '<span class="risk-level-low">全沿岸で正常（発表なし）</span>';
-                    
-                    if (activeTsunamis.length > 0) {
-                        const hasAlert = activeTsunamis.some(t => t.status === 'alert');
-                        if (hasAlert) {
-                            tsunamiStatusHTML = '<span class="risk-level-high">🚨 津波警報発表中（沿岸警戒）</span>';
-                        } else {
-                            tsunamiStatusHTML = '<span class="risk-level-mid">⚠️ 津波注意報発表中</span>';
-                        }
-                    }
-
                     if (statusListContainer) {
                         statusListContainer.innerHTML = `
-                            <div class="risk-item"><span>台風・大雨警戒度:</span> <span class="risk-level-high">要警戒</span></div>
-                            <div class="risk-item"><span>津波警報発令:</span> ${tsunamiStatusHTML}</div>
-                            <div class="risk-item"><span>火山噴火警戒:</span> <span class="risk-level-mid">一部レベル3</span></div>
+                            <div class="risk-item"><span>台風30号警戒度:</span> <span class="risk-level-high">強風域警戒</span></div>
+                            <div class="risk-item"><span>台風情報2（南方）:</span> <span class="risk-level-mid">発達監視中</span></div>
+                            <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">全沿岸で正常（発表なし）</span></div>
                             <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                         `;
                     }
@@ -775,14 +775,10 @@
 
                 } else {
                     weatherRiskDataList.forEach(item => {
-                        let radiusVal = item.radius;
+                        let radiusVal = item.radius || 40000;
                         let circleColor = item.color;
                         let weightVal = 2;
                         let dashVal = '4, 4';
-
-                        if (item.type === 'typhoon' && item.maxWindSpeed) {
-                            radiusVal = item.maxWindSpeed * 3500;
-                        }
 
                         if (item.type === 'tsunami') {
                             if (item.status === 'warning') {
@@ -802,7 +798,7 @@
                             radius: radiusVal, 
                             color: circleColor, 
                             fillColor: circleColor, 
-                            fillOpacity: 0.22, 
+                            fillOpacity: 0.2, 
                             weight: weightVal, 
                             dashArray: dashVal 
                         });
@@ -810,7 +806,7 @@
 
                         const popupContent = `
                             <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 200px;">
-                                <strong style="color: ${circleColor === '#06b6d4' ? '#0284c7' : circleColor}; font-size: 13px;">${item.name}</strong>
+                                <strong style="color: ${circleColor}; font-size: 13px;">${item.name}</strong>
                                 <hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
                                 • <strong>詳細情報:</strong><br>${item.details.replace(/\n/g, '<br>')}
                             </div>
@@ -822,39 +818,20 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        if (item.type === 'typhoon') {
+                        if (item.type === 'typhoon' && item.id === 'typhoon30') {
                             const startPoint = [item.lat, item.lng];
-                            const endPoint = [item.lat + 1.2, item.lng - 0.6];
+                            const midPoint = [28.0, 133.5];
+                            const endPoint = [31.5, 136.0];
 
-                            const arrowLine = L.polyline([startPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
-                            
-                            const dLng = (endPoint[1] - startPoint[1]) * Math.PI / 180;
-                            const lat1 = startPoint[0] * Math.PI / 180;
-                            const lat2 = endPoint[0] * Math.PI / 180;
-                            const y = Math.sin(dLng) * Math.cos(lat2);
-                            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-                            let brng = Math.atan2(y, x) * 180 / Math.PI;
-                            brng = (brng + 360) % 360;
-                            
-                            const arrowHeadIcon = L.divIcon({
-                                className: 'custom-arrow-head',
-                                html: `<div style="transform: rotate(${brng}deg); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.7));">
-                                        <polygon points="12,0 24,22 12,16 0,22" />
-                                    </svg>
-                                </div>`,
-                                iconSize: [26, 26],
-                                iconAnchor: [13, 13]
-                            });
+                            const pathLine = L.polyline([startPoint, midPoint, endPoint], { color: '#ef4444', weight: 3, dashArray: '6, 6' });
+                            const fc1 = L.circle(midPoint, { radius: 120000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.15, weight: 1.5, dashArray: '3,3' });
+                            const fc2 = L.circle(endPoint, { radius: 90000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
 
-                            const arrowHeadMarker = L.marker(endPoint, { icon: arrowHeadIcon });
+                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風30号 予想進路</strong><br>26日15時にかけ北東へ進行</div>`);
 
-                            const popupText = `<div style="color: #333; font-size: 11px;"><strong>🌀 予測進路ベクトル</strong><br>北北西へ時速25kmで進行中</div>`;
-                            arrowLine.bindPopup(popupText);
-                            arrowHeadMarker.bindPopup(popupText);
-
-                            weatherRiskLayer.addLayer(arrowLine);
-                            weatherRiskLayer.addLayer(arrowHeadMarker);
+                            weatherRiskLayer.addLayer(pathLine);
+                            weatherRiskLayer.addLayer(fc1);
+                            weatherRiskLayer.addLayer(fc2);
                         }
                     });
                 }
