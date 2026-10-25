@@ -145,6 +145,42 @@
             z-index: 1;
         }
 
+        /* 🌤️ マップ右端に浮かぶ天気予報オーバーレイパネル */
+        .map-weather-widget {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 240px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #38bdf8;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            pointer-events: auto;
+        }
+        .map-weather-widget h4 {
+            margin: 0 0 6px 0;
+            font-size: 11.5px;
+            color: #38bdf8;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .weather-content {
+            font-size: 11px;
+            line-height: 1.4;
+            color: #f1f5f9;
+        }
+        .weather-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+
         .card {
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -287,6 +323,12 @@
                 width: 100vw;
                 height: 55%;
             }
+            .map-weather-widget {
+                top: 5px;
+                right: 5px;
+                width: 190px;
+                padding: 6px;
+            }
         }
     </style>
     <!-- Leaflet CSS -->
@@ -333,7 +375,7 @@
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
-            <!-- 動的に切り替わるメインカード（台風第30号・第31号の個別詳細） -->
+            <!-- 動的に切り替わるメインカード -->
             <div id="dynamicCardContainer">
                 <div id="alertCardContainer" class="emergency-alert-card">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
@@ -376,7 +418,20 @@
             </div>
         </div>
 
-        <div id="map"></div>
+        <div id="map">
+            <!-- 🌤️ 地図画面右端の天気予報ウィジェット -->
+            <div class="map-weather-widget">
+                <h4 id="widgetAreaTitle">🌤️ ピンポイント天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
+                <div class="weather-content" id="widgetWeatherContent">
+                    <div class="weather-row"><span>天候状態:</span> <strong style="color: #38bdf8;">曇り時々雨</strong></div>
+                    <div class="weather-row"><span>気温 / 降水:</span> <strong>19.2℃ / 60%</strong></div>
+                    <div class="weather-row"><span>風向・風速:</span> <strong>北東 6 m/s</strong></div>
+                    <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;" id="widgetTyphoonNote">
+                        🌀 台風第30・31号周辺の気圧傾度により沿岸部で強風注意。
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Leaflet JS -->
@@ -410,7 +465,7 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 台風第30号と第31号のタイムライン（日付・時間付き）
+        // 🌀 台風第30号と第31号のタイムライン
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -473,14 +528,14 @@
         ];
 
         const areaData = {
-            all: { name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6 },
-            kanto: { name: "関東エリアの状況", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0} },
-            hokkaido: { name: "北海道エリアの状況", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5} },
-            tohoku: { name: "東北エリアの状況", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5} },
-            chubu: { name: "中部エリアの状況", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5} },
-            kinki: { name: "近畿エリアの状況", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5} },
-            chugoku_shikoku: { name: "中国・四国エリアの状況", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0} },
-            kyushu_okinawa: { name: "九州・沖縄エリアの状況", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0} }
+            all: { name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, weather: { title: "全国主要都市 (東京)", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" } },
+            kanto: { name: "関東エリアの状況", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0}, weather: { title: "関東エリア (東京・茨城)", cond: "曇り / 降雨あり", temp: "18.5℃", rain: "70%", wind: "北東 7m/s", note: "関東山地周辺で降水傾向" } },
+            hokkaido: { name: "北海道エリアの状況", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5}, weather: { title: "北海道エリア (札幌)", cond: "晴れ時々曇り", temp: "14.0℃", rain: "10%", wind: "西 3m/s", note: "高気圧に覆われ比較的安定" } },
+            tohoku: { name: "東北エリアの状況", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5}, weather: { title: "東北エリア (仙台)", cond: "曇り", temp: "16.2℃", rain: "30%", wind: "東 4m/s", note: "太平洋側で雲が広がる" } },
+            chubu: { name: "中部エリアの状況", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5}, weather: { title: "中部エリア (名古屋)", cond: "曇り時々晴れ", temp: "20.1℃", rain: "20%", wind: "東 3m/s", note: "大きな荒天の心配なし" } },
+            kinki: { name: "近畿エリアの状況", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5}, weather: { title: "近畿エリア (大阪)", cond: "曇り", temp: "21.0℃", rain: "40%", wind: "北東 5m/s", note: "台風周辺の湿った空気流入" } },
+            chugoku_shikoku: { name: "中国・四国エリアの状況", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0}, weather: { title: "中国四国エリア (広島・高知)", cond: "雨勝ち", temp: "19.8℃", rain: "80%", wind: "東 6m/s", note: "四国南岸で雨脚強まるおそれ" } },
+            kyushu_okinawa: { name: "九州・沖縄エリアの状況", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0}, weather: { title: "九州沖縄エリア (福岡・那覇)", cond: "雨・風強まる", temp: "24.5℃", rain: "90%", wind: "北東 12m/s", note: "台風第30号の強風域に注意" } }
         };
 
         function initSystem() {
@@ -646,7 +701,6 @@
                     }
                     if (modeStatusDesc) modeStatusDesc.textContent = '台風第30号および台風第31号のタイムライン進路情報を管理しています。';
                     
-                    // 🌀 台風30号・31号のタイムライン情報をサイドバーに明示
                     if (dynamicCardContainer) {
                         dynamicCardContainer.innerHTML = `
                             <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a; margin-bottom: 8px;">
@@ -736,6 +790,20 @@
 
                 map.setView(selected.center, selected.zoom);
 
+                // 🌤️ 上部の地域選択プルダウンに連動して、右上の天気予報ウィジェットの内容を動的に更新
+                if (selected.weather) {
+                    const w = selected.weather;
+                    document.getElementById('widgetAreaTitle').innerHTML = `🌤️ ${w.title} <span style="font-size: 9.5px; color: #94a3b8;">10/26現在</span>`;
+                    document.getElementById('widgetWeatherContent').innerHTML = `
+                        <div class="weather-row"><span>天候状態:</span> <strong style="color: #38bdf8;">${w.cond}</strong></div>
+                        <div class="weather-row"><span>気温 / 降水:</span> <strong>${w.temp} / ${w.rain}</strong></div>
+                        <div class="weather-row"><span>風向・風速:</span> <strong>${w.wind}</strong></div>
+                        <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;">
+                            ${w.note}
+                        </div>
+                    `;
+                }
+
                 if (anomalyLayer) anomalyLayer.clearLayers();
                 if (markerLayer) markerLayer.clearLayers();
                 if (weatherRiskLayer) weatherRiskLayer.clearLayers();
@@ -819,20 +887,15 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 🌀 台風第30号：【タイムライン進路（25日15時 → 26日03時 → 26日15時）】
                         if (item.type === 'typhoon' && item.id === 'typhoon30') {
-                            const p0 = [item.lat, item.lng];                 // 25日15時（現在地）
-                            const p1 = [27.2, 133.0];                       // 26日03時
-                            const p2 = [29.5, 135.2];                       // 26日15時
+                            const p0 = [item.lat, item.lng];
+                            const p1 = [27.2, 133.0];
+                            const p2 = [29.5, 135.2];
 
-                            // 進路ライン
                             const pathLine = L.polyline([p0, p1, p2], { color: '#ef4444', weight: 4, dashArray: '6, 6' });
-                            
-                            // 予報円（各時間帯）
                             const fc1 = L.circle(p1, { radius: 100000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.15, weight: 1.5, dashArray: '3,3' });
                             const fc2 = L.circle(p2, { radius: 80000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
 
-                            // 時間ラベル（26日03時・26日15時）
                             const label03 = L.divIcon({
                                 className: 'time-label',
                                 html: `<div style="background: rgba(69,10,10,0.85); color: #ffedd5; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444; white-space: nowrap;">26日(月)03時</div>`,
@@ -856,11 +919,10 @@
                             weatherRiskLayer.addLayer(marker15);
                         }
 
-                        // 🌀 台風第31号：【タイムライン進路（北西へ進行）】
                         if (item.type === 'typhoon' && item.id === 'typhoon31') {
-                            const p0 = [item.lat, item.lng];                 // 25日15時
-                            const p1 = [19.5, 135.8];                       // 26日03時
-                            const p2 = [21.0, 134.5];                       // 26日15時
+                            const p0 = [item.lat, item.lng];
+                            const p1 = [19.5, 135.8];
+                            const p2 = [21.0, 134.5];
 
                             const pathLine = L.polyline([p0, p1, p2], { color: '#f59e0b', weight: 4, dashArray: '6, 6' });
                             const fcSub = L.circle(p2, { radius: 90000, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
