@@ -431,9 +431,12 @@
 
             <!-- 動的に切り替わるメインカード -->
             <div id="dynamicCardContainer">
-                <div id="alertCardContainer" class="emergency-alert-card">
+                <div id="alertCardContainer" class="emergency-alert-card alert-active">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
-                    <div id="emergencyInfoText" class="info-text-box">直近のデータを読み込み中...</div>
+                    <div id="emergencyInfoText" class="info-text-box">【直近の検知】
+発生時刻: 2026-10-25 19:14:00
+震源地: 茨城県北部
+規模: M3.8 / 深さ: 50km</div>
                 </div>
             </div>
 
@@ -456,7 +459,7 @@
                 <div style="margin-top: 6px;" id="statusListContainer">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">同期中</span></div>
+                    <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">4件</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
                 </div>
             </div>
@@ -477,7 +480,7 @@
             <div class="map-weather-widget">
                 <h4 id="widgetAreaTitle">🌤️ 都道府県・天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
                 <div class="weather-content" id="widgetWeatherContent">
-                    <div class="weather-row"><span>対象都道府県:</span> <strong style="color: #38bdf8; font-size: 10.5px;">全国表示</strong></div>
+                    <div class="weather-row"><span>選択地域:</span> <strong style="color: #38bdf8; font-size: 10.5px;">全国表示</strong></div>
                     <div class="weather-row"><span>天気 / 気温:</span> <strong>曇り時々雨 / 19.2℃</strong></div>
                     <div class="weather-row"><span>降水確率 / 風:</span> <strong>60% / 北東 6m/s</strong></div>
                     <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;" id="widgetTyphoonNote">
@@ -506,11 +509,12 @@
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
 
+        // 🎯 10月25日の最新地震データ（茨城県北部 19:14 M3.8 を最上位に確実に同期）
         let liveQuakes = [
-            { lat: 35.5, lng: 140.1, mag: 3.2, depth: "30km", title: "千葉県北西部", time: "2026-10-25 18:12:00", timestamp: new Date("2026-10-25T18:12:00").getTime() },
-            { lat: 37.1, lng: 138.6, mag: 2.8, depth: "10km", title: "新潟県中越地方", time: "2026-10-25 14:35:10", timestamp: new Date("2026-10-25T14:35:10").getTime() },
-            { lat: 38.3, lng: 141.8, mag: 4.0, depth: "50km", title: "宮城県沖", time: "2026-10-25 09:20:45", timestamp: new Date("2026-10-25T09:20:45").getTime() },
-            { lat: 33.8, lng: 132.1, mag: 2.9, depth: "40km", title: "豊後水道", time: "2026-10-25 04:05:12", timestamp: new Date("2026-10-25T04:05:12").getTime() }
+            { lat: 36.6, lng: 140.6, mag: 3.8, depth: "50km", title: "茨城県北部", time: "2026-10-25 19:14:00", timestamp: new Date("2026-10-25T19:14:00").getTime() },
+            { lat: 37.3, lng: 141.5, mag: 4.2, depth: "40km", title: "福島県沖", time: "2026-10-25 15:04:00", timestamp: new Date("2026-10-25T15:04:00").getTime() },
+            { lat: 42.5, lng: 141.8, mag: 3.7, depth: "30km", title: "苫小牧沖", time: "2026-10-25 12:23:00", timestamp: new Date("2026-10-25T12:23:00").getTime() },
+            { lat: 35.5, lng: 140.1, mag: 3.2, depth: "30km", title: "千葉県北西部", time: "2026-10-25 18:12:00", timestamp: new Date("2026-10-25T18:12:00").getTime() }
         ];
 
         const anomalySpots = [
@@ -564,7 +568,6 @@
             }
         ];
 
-        // 🗾 全47都道府県ごとの詳細データ（中心座標・ズーム・天気情報）
         const areaData = {
             all: { name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, weather: { pref: "全国表示", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" } },
             
@@ -880,7 +883,6 @@
 
                 map.setView(selected.center, selected.zoom);
 
-                // 🗾 都道府県プルダウンと連動して右上の天気予報ウィジェットを更新
                 if (selected.weather) {
                     const w = selected.weather;
                     document.getElementById('widgetAreaTitle').innerHTML = `🌤️ 都道府県・天気予報 <span style="font-size: 9px; color: #94a3b8;">10/26現在</span>`;
