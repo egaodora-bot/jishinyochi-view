@@ -34,7 +34,7 @@
             z-index: 1000;
         }
         .system-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 900;
             color: #ffffff;
             letter-spacing: 0.5px;
@@ -69,7 +69,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-size: 13px;
         }
         .area-selector-wrapper {
@@ -145,7 +145,7 @@
             z-index: 1;
         }
 
-        /* 🌤️ マップ右端に浮かぶ都道府県別・天気予報ウィジェット */
+        /* 🌤️ マップ右端の都道府県別天気予報ウィジェット */
         .map-weather-widget {
             position: absolute;
             top: 15px;
@@ -278,8 +278,8 @@
                 gap: 3px;
             }
             .system-title {
-                font-size: 12px;
-                max-width: 130px;
+                font-size: 11px;
+                max-width: 110px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -289,23 +289,23 @@
             }
             .mode-btn {
                 padding: 4px 6px;
-                font-size: 10px;
+                font-size: 9.5px;
             }
             .header-right {
-                gap: 5px;
+                gap: 4px;
             }
             .area-selector-wrapper {
-                padding: 1px 4px;
+                padding: 1px 3px;
             }
             .area-selector-wrapper label {
                 display: none;
             }
             .area-selector {
-                font-size: 10.5px;
+                font-size: 10px;
             }
             .mag-btn {
-                padding: 3px 5px;
-                font-size: 10px;
+                padding: 3px 4px;
+                font-size: 9.5px;
             }
             #live-clock {
                 display: none;
@@ -349,14 +349,68 @@
             <div class="area-selector-wrapper">
                 <label for="targetArea">地域:</label>
                 <select id="targetArea" class="area-selector" onchange="updateViewMode()">
-                    <option value="kanto">関東</option>
-                    <option value="hokkaido">北海道</option>
-                    <option value="tohoku">東北</option>
-                    <option value="chubu">中部</option>
-                    <option value="kinki">近畿</option>
-                    <option value="chugoku_shikoku">中国四国</option>
-                    <option value="kyushu_okinawa">九州沖縄</option>
-                    <option value="all" selected>全国 (主要都市)</option>
+                    <optgroup label="全域・主要">
+                        <option value="all" selected>全国表示</option>
+                    </optgroup>
+                    <optgroup label="北海道・東北">
+                        <option value="hokkaido">北海道</option>
+                        <option value="aomori">青森県</option>
+                        <option value="iwate">岩手県</option>
+                        <option value="miyagi">宮城県</option>
+                        <option value="akita">秋田県</option>
+                        <option value="yamagata">山形県</option>
+                        <option value="fukushima">福島県</option>
+                    </optgroup>
+                    <optgroup label="関東">
+                        <option value="ibaraki">茨城県</option>
+                        <option value="tochigi">栃木県</option>
+                        <option value="gunma">群馬県</option>
+                        <option value="saitama">埼玉県</option>
+                        <option value="chiba">千葉県</option>
+                        <option value="tokyo">東京都</option>
+                        <option value="kanagawa">神奈川県</option>
+                    </optgroup>
+                    <optgroup label="中部・信越・北陸">
+                        <option value="niigata">新潟県</option>
+                        <option value="toyama">富山県</option>
+                        <option value="ishikawa">石川県</option>
+                        <option value="fukui">福井県</option>
+                        <option value="yamanashi">山梨県</option>
+                        <option value="nagano">長野県</option>
+                        <option value="gifu">岐阜県</option>
+                        <option value="shizuoka">静岡県</option>
+                        <option value="aichi">愛知県</option>
+                    </optgroup>
+                    <optgroup label="近畿">
+                        <option value="mie">三重県</option>
+                        <option value="shiga">滋賀県</option>
+                        <option value="kyoto">京都府</option>
+                        <option value="osaka">大阪府</option>
+                        <option value="hyogo">兵庫県</option>
+                        <option value="nara">奈良県</option>
+                        <option value="wakayama">和歌山県</option>
+                    </optgroup>
+                    <optgroup label="中国・四国">
+                        <option value="tottori">鳥取県</option>
+                        <option value="shimane">島根県</option>
+                        <option value="okayama">岡山県</option>
+                        <option value="hiroshima">広島県</option>
+                        <option value="yamaguchi">山口県</option>
+                        <option value="tokushima">徳島県</option>
+                        <option value="kagawa">香川県</option>
+                        <option value="ehime">愛媛県</option>
+                        <option value="kochi">高知県</option>
+                    </optgroup>
+                    <optgroup label="九州・沖縄">
+                        <option value="fukuoka">福岡県</option>
+                        <option value="saga">佐賀県</option>
+                        <option value="nagasaki">長崎県</option>
+                        <option value="kumamoto">熊本県</option>
+                        <option value="oita">大分県</option>
+                        <option value="miyazaki">宮崎県</option>
+                        <option value="kagoshima">鹿児島県</option>
+                        <option value="okinawa">沖縄県</option>
+                    </optgroup>
                 </select>
             </div>
             <div id="magFilterContainer" class="mag-filter-group">
@@ -423,11 +477,11 @@
             <div class="map-weather-widget">
                 <h4 id="widgetAreaTitle">🌤️ 都道府県・天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
                 <div class="weather-content" id="widgetWeatherContent">
-                    <div class="weather-row"><span>対象地域:</span> <strong style="color: #38bdf8;">全国 (東京・大阪など)</strong></div>
-                    <div class="weather-row"><span>天気・気温:</span> <strong>曇り時々雨 / 19.2℃</strong></div>
-                    <div class="weather-row"><span>風向・風速:</span> <strong>北東 6 m/s</strong></div>
+                    <div class="weather-row"><span>対象都道府県:</span> <strong style="color: #38bdf8; font-size: 10.5px;">全国表示</strong></div>
+                    <div class="weather-row"><span>天気 / 気温:</span> <strong>曇り時々雨 / 19.2℃</strong></div>
+                    <div class="weather-row"><span>降水確率 / 風:</span> <strong>60% / 北東 6m/s</strong></div>
                     <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;" id="widgetTyphoonNote">
-                        🌀 台風第30・31号周辺の気圧傾度により沿岸部で強風注意。
+                        🌀 台風第30・31号周辺の影響に注意
                     </div>
                 </div>
             </div>
@@ -465,7 +519,6 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 台風第30号と第31号のタイムライン
         const weatherRiskDataList = [
             {
                 type: "typhoon",
@@ -487,96 +540,92 @@
                 pressure: 1004,
                 radius: 250000,
                 color: "#f59e0b",
-                details: "【台風第31号 進路タイムライン】\n• 現在地(25日15時): 18.5°N, 137.0°E (1004 hPa)\n• 26日(月) 03時: フィリピン海東方\n• 26日(月) 15時: 北西方向へ発達しながら進行\n• 最大風速: 15 m/s"
+                details: "【台風第31号 警戒情報】\n• 中心気圧: 1004 hPa\n• 最大風速: 15 m/s\n• 移動方向: 北西へ時速20kmで進行中"
             },
             {
                 type: "water",
                 name: "🌊 土砂・河川氾濫警戒（関東山地・利根川流域）",
                 lat: 36.1, lng: 139.8, radius: 50000, color: "#3b82f6",
-                details: "【水防データ】\n土砂災害キキクルおよび利根川水系の水位上昇を監視中。警戒レベル1（平時・注意継続）。"
+                details: "【水防データ】\n土砂災害キキクルおよび利根川水系の水位上昇を監視中。警戒レベル1。"
             },
             {
                 type: "tsunami",
-                name: "🌊 津波監視：関東・伊豆諸島沖",
+                name: "🌊 津波監視：太平洋沿岸",
                 lat: 34.0, lng: 141.5, radius: 85000,
                 status: "normal",
                 color: "#06b6d4",
-                details: "【海洋津波レーダーデータ】\n関東・伊豆諸島沿岸を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
-            },
-            {
-                type: "tsunami",
-                name: "🌊 津波監視：東北・三陸沖",
-                lat: 38.3, lng: 142.5, radius: 95000,
-                status: "normal",
-                color: "#06b6d4",
-                details: "【海洋津波レーダーデータ】\n三陸沖および東北沿岸部を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
-            },
-            {
-                type: "tsunami",
-                name: "🌊 津波監視：南海トラフ・四国沖",
-                lat: 32.8, lng: 134.2, radius: 90000,
-                status: "normal",
-                color: "#06b6d4",
-                details: "【海洋津波レーダーデータ】\n四国・紀伊半島沖の水位変動を常時監視中。\n• 現在の状態: 正常（津波の発表なし）\n• 潮位変動: 平常範囲内"
+                details: "【海洋津波レーダー】\n• 現在の状態: 正常（津波発表なし）"
             },
             {
                 type: "volcano",
-                name: "🌋 火山噴火警戒（桜島・阿蘇山セクター）",
+                name: "🌋 火山噴火警戒（桜島・阿蘇山）",
                 lat: 31.58, lng: 130.65, radius: 35000, color: "#f97316",
-                details: "【火山データ】\n火口周辺警報（噴火警戒レベル3: 入山規制等）。火山活動の推移を常時モニタリング中。"
+                details: "【火山データ】\n火口周辺警報（噴火警戒レベル3）。"
             }
         ];
 
-        // 🗺️ 地域エリアごとの都道府県詳細データ（プルダウン連動）
+        // 🗾 全47都道府県ごとの詳細データ（中心座標・ズーム・天気情報）
         const areaData = {
-            all: { 
-                name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, 
-                weather: { 
-                    pref: "全国主要都市", detail: "東京 / 大阪 / 福岡", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" 
-                } 
-            },
-            kanto: { 
-                name: "関東エリアの状況", center: [35.8, 139.5], zoom: 8, bounds: {latMin: 34.5, latMax: 37.0, lonMin: 138.5, lonMax: 141.0}, 
-                weather: { 
-                    pref: "【関東地方】東京都・茨城県・神奈川県等", detail: "水戸市・古河市・さいたま市", cond: "曇り / 一部降雨", temp: "18.5℃", rain: "70%", wind: "北東 7m/s", note: "関東山地周辺で降水傾向。強風注意。" 
-                } 
-            },
-            hokkaido: { 
-                name: "北海道エリアの状況", center: [42.8, 143.5], zoom: 7, bounds: {latMin: 41.0, latMax: 46.0, lonMin: 139.0, lonMax: 146.5}, 
-                weather: { 
-                    pref: "【北海道】道央・道南・道北・道東", detail: "札幌市・函館市・旭川市", cond: "晴れ時々曇り", temp: "14.0℃", rain: "10%", wind: "西 3m/s", note: "高気圧に覆われ比較的安定した天気。" 
-                } 
-            },
-            tohoku: { 
-                name: "東北エリアの状況", center: [39.0, 141.0], zoom: 7, bounds: {latMin: 36.8, latMax: 41.5, lonMin: 139.0, lonMax: 142.5}, 
-                weather: { 
-                    pref: "【東北地方】宮城県・福島県・岩手県等", detail: "仙台市・盛岡市・福島市", cond: "曇り", temp: "16.2℃", rain: "30%", wind: "東 4m/s", note: "太平洋側を中心に雲が広がる。" 
-                } 
-            },
-            chubu: { 
-                name: "中部エリアの状況", center: [36.5, 137.0], zoom: 7, bounds: {latMin: 34.5, latMax: 37.5, lonMin: 136.0, lonMax: 139.5}, 
-                weather: { 
-                    pref: "【中部地方】愛知県・静岡県・新潟県等", detail: "名古屋市・新潟市・静岡市", cond: "曇り時々晴れ", temp: "20.1℃", rain: "20%", wind: "東 3m/s", note: "大きな荒天の心配なし。" 
-                } 
-            },
-            kinki: { 
-                name: "近畿エリアの状況", center: [34.7, 135.5], zoom: 8, bounds: {latMin: 33.5, latMax: 35.8, lonMin: 134.0, lonMax: 136.5}, 
-                weather: { 
-                    pref: "【近畿地方】大阪府・京都府・兵庫県等", detail: "大阪市・京都市・神戸市", cond: "曇り", temp: "21.0℃", rain: "40%", wind: "北東 5m/s", note: "台風周辺からの湿った空気が流入。" 
-                } 
-            },
-            chugoku_shikoku: { 
-                name: "中国・四国エリアの状況", center: [34.0, 133.5], zoom: 7, bounds: {latMin: 32.5, latMax: 35.5, lonMin: 131.0, lonMax: 135.0}, 
-                weather: { 
-                    pref: "【中国・四国】広島県・高知県・愛媛県等", detail: "広島市・高知市・松山市", cond: "雨勝ち", temp: "19.8℃", rain: "80%", wind: "東 6m/s", note: "四国南岸を中心に雨脚が強まるおそれ。" 
-                } 
-            },
-            kyushu_okinawa: { 
-                name: "九州・沖縄エリアの状況", center: [32.5, 130.8], zoom: 7, bounds: {latMin: 24.0, latMax: 34.0, lonMin: 122.0, lonMax: 132.0}, 
-                weather: { 
-                    pref: "【九州・沖縄】福岡県・鹿児島県・沖縄県", detail: "福岡市・鹿児島市・那覇市", cond: "雨・風強まる", temp: "24.5℃", rain: "90%", wind: "北東 12m/s", note: "台風第30号の強風域に伴い暴風に警戒。" 
-                } 
-            }
+            all: { name: "全国のモニタリング状況", center: [36.2, 138.2], zoom: 6, weather: { pref: "全国表示", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "台風第30・31号周辺の影響に注意" } },
+            
+            // 北海道・東北
+            hokkaido: { name: "北海道の状況", center: [43.06, 141.35], zoom: 7, bounds: {latMin: 41.3, latMax: 45.5, lonMin: 139.3, lonMax: 145.8}, weather: { pref: "北海道 (札幌市)", cond: "晴れ時々曇り", temp: "14.0℃", rain: "10%", wind: "西 3m/s", note: "高気圧に覆われ比較的安定" } },
+            aomori: { name: "青森県の状況", center: [40.82, 140.74], zoom: 8, bounds: {latMin: 40.2, latMax: 41.5, lonMin: 139.8, lonMax: 141.7}, weather: { pref: "青森県 (青森市)", cond: "曇り", temp: "15.1℃", rain: "20%", wind: "北西 4m/s", note: "大きな荒天なし" } },
+            iwate: { name: "岩手県の状況", center: [39.70, 141.15], zoom: 8, bounds: {latMin: 38.7, latMax: 40.5, lonMin: 140.7, lonMax: 142.1}, weather: { pref: "岩手県 (盛岡市)", cond: "曇り", temp: "15.5℃", rain: "30%", wind: "東 3m/s", note: "沿岸部で雲が厚い" } },
+            miyagi: { name: "宮城県の状況", center: [38.26, 140.87], zoom: 8, bounds: {latMin: 37.7, latMax: 39.0, lonMin: 140.2, lonMax: 141.7}, weather: { pref: "宮城県 (仙台市)", cond: "曇り", temp: "16.2℃", rain: "30%", wind: "東 4m/s", note: "海上波浪注意" } },
+            akita: { name: "秋田県の状況", center: [39.71, 140.10], zoom: 8, bounds: {latMin: 38.8, latMax: 40.5, lonMin: 139.7, lonMax: 140.9}, weather: { pref: "秋田県 (秋田市)", cond: "晴れ時々曇り", temp: "16.8℃", rain: "15%", wind: "南西 3m/s", note: "穏やかな天気" } },
+            yamagata: { name: "山形県の状況", center: [38.24, 140.36], zoom: 8, bounds: {latMin: 37.7, latMax: 39.2, lonMin: 139.5, lonMax: 140.8}, weather: { pref: "山形県 (山形市)", cond: "曇り", temp: "17.0℃", rain: "25%", wind: "東 2m/s", note: "内陸部は安定" } },
+            fukushima: { name: "福島県の状況", center: [37.75, 140.46], zoom: 8, bounds: {latMin: 36.8, latMax: 38.0, lonMin: 139.2, lonMax: 141.0}, weather: { pref: "福島県 (福島市)", cond: "曇り時々雨", temp: "17.5℃", rain: "40%", wind: "北東 4m/s", note: "浜通りで雨の可能性" } },
+
+            // 関東
+            ibaraki: { name: "茨城県の状況", center: [36.34, 140.44], zoom: 8, bounds: {latMin: 35.7, latMax: 36.9, lonMin: 139.6, lonMax: 140.8}, weather: { pref: "茨城県 (水戸市・古河市)", cond: "曇り / 小雨", temp: "18.2℃", rain: "65%", wind: "北東 7m/s", note: "台風周辺の気圧傾度で強風注意" } },
+            tochigi: { name: "栃木県の状況", center: [36.56, 139.88], zoom: 8, bounds: {latMin: 36.2, latMax: 37.1, lonMin: 139.3, lonMax: 140.2}, weather: { pref: "栃木県 (宇都宮市)", cond: "曇り時々雨", temp: "17.8℃", rain: "60%", wind: "北東 5m/s", note: "北部山地で雨脚強まるおそれ" } },
+            gunma: { name: "群馬県の状況", center: [36.39, 139.06], zoom: 8, bounds: {latMin: 36.0, latMax: 37.0, lonMin: 138.4, lonMax: 139.7}, weather: { pref: "群馬県 (前橋市)", cond: "曇り", temp: "18.4℃", rain: "50%", wind: "東 4m/s", note: "午後は雲が広がる" } },
+            saitama: { name: "埼玉県の状況", center: [35.85, 139.65], zoom: 9, bounds: {latMin: 35.7, latMax: 36.3, lonMin: 138.7, lonMax: 139.9}, weather: { pref: "埼玉県 (さいたま市)", cond: "曇り一時雨", temp: "19.0℃", rain: "60%", wind: "北東 5m/s", note: "大気の状態がやや不安定" } },
+            chiba: { name: "千葉県の状況", center: [35.60, 140.12], zoom: 8, bounds: {latMin: 34.9, latMax: 36.0, lonMin: 139.7, lonMax: 140.9}, weather: { pref: "千葉県 (千葉市)", cond: "雨時々曇り", temp: "19.5℃", rain: "75%", wind: "北東 8m/s", note: "沿岸部で風が強く波が高い" } },
+            tokyo: { name: "東京都の状況", center: [35.68, 139.69], zoom: 9, bounds: {latMin: 35.5, latMax: 35.9, lonMin: 138.9, lonMax: 139.9}, weather: { pref: "東京都 (新宿区・都心)", cond: "曇り時々雨", temp: "19.2℃", rain: "60%", wind: "北東 6m/s", note: "傘手放せない天気" } },
+            kanagawa: { name: "神奈川県の状況", center: [35.44, 139.64], zoom: 9, bounds: {latMin: 35.1, latMax: 35.6, lonMin: 138.9, lonMax: 139.8}, weather: { pref: "神奈川県 (横浜市)", cond: "曇り時々雨", temp: "19.6℃", rain: "70%", wind: "北東 7m/s", note: "相模湾沿岸で強風注意" } },
+
+            // 中部・信越・北陸
+            niigata: { name: "新潟県の状況", center: [37.90, 139.02], zoom: 8, bounds: {latMin: 36.8, latMax: 38.6, lonMin: 137.7, lonMax: 139.8}, weather: { pref: "新潟県 (新潟市)", cond: "曇り", temp: "18.5℃", rain: "30%", wind: "北 3m/s", note: "海上穏やか" } },
+            toyama: { name: "富山県の状況", center: [36.69, 137.21], zoom: 9, bounds: {latMin: 36.3, latMax: 36.9, lonMin: 136.7, lonMax: 137.8}, weather: { pref: "富山県 (富山市)", cond: "曇り時々晴れ", temp: "19.0℃", rain: "25%", wind: "東 3m/s", note: "大きな崩れなし" } },
+            ishikawa: { name: "石川県の状況", center: [36.59, 136.62], zoom: 8, bounds: {latMin: 36.0, latMax: 37.8, lonMin: 136.2, lonMax: 137.4}, weather: { pref: "石川県 (金沢市)", cond: "曇り時々晴れ", temp: "19.4℃", rain: "30%", wind: "北東 4m/s", note: "復旧作業エリアも天気落ち着く" } },
+            fukui: { name: "福井県の状況", center: [36.06, 136.22], zoom: 8, bounds: {latMin: 35.3, latMax: 36.3, lonMin: 135.4, lonMax: 136.8}, weather: { pref: "福井県 (福井市)", cond: "曇り", temp: "19.8℃", rain: "35%", wind: "東 3m/s", note: "曇天傾向" } },
+            yamanashi: { name: "山梨県の状況", center: [35.66, 138.56], zoom: 9, bounds: {latMin: 35.1, latMax: 35.9, lonMin: 138.2, lonMax: 139.0}, weather: { pref: "山梨県 (甲府市)", cond: "曇り", temp: "18.9℃", rain: "40%", wind: "東 2m/s", note: "盆地部は風穏やか" } },
+            nagano: { name: "長野県の状況", center: [36.65, 138.18], zoom: 8, bounds: {latMin: 35.2, latMax: 37.0, lonMin: 137.3, lonMax: 138.8}, weather: { pref: "長野県 (長野市)", cond: "曇り時々雨", temp: "16.5℃", rain: "50%", wind: "北 3m/s", note: "山間部で霧に注意" } },
+            gifu: { name: "岐阜県の状況", center: [35.39, 136.72], zoom: 8, bounds: {latMin: 35.1, latMax: 36.5, lonMin: 136.2, lonMax: 137.6}, weather: { pref: "岐阜県 (岐阜市)", cond: "曇り", temp: "20.2℃", rain: "30%", wind: "東 3m/s", note: "飛騨地方で雲多め" } },
+            shizuoka: { name: "静岡県の状況", center: [34.97, 138.38], zoom: 8, bounds: {latMin: 34.6, latMax: 35.6, lonMin: 137.5, lonMax: 139.2}, weather: { pref: "静岡県 (静岡市)", cond: "雨時々曇り", temp: "20.5℃", rain: "75%", wind: "東 7m/s", note: "伊豆半島を中心に雨風注意" } },
+            aichi: { name: "愛知県の状況", center: [35.18, 136.90], zoom: 8, bounds: {latMin: 34.6, latMax: 35.4, lonMin: 136.6, lonMax: 137.7}, weather: { pref: "愛知県 (名古屋市)", cond: "曇り時々雨", temp: "20.8℃", rain: "50%", wind: "東 5m/s", note: "海上強風注意" } },
+
+            // 近畿
+            mie: { name: "三重県の状況", center: [34.73, 136.50], zoom: 8, bounds: {latMin: 33.7, latMax: 35.3, lonMin: 135.9, lonMax: 136.9}, weather: { pref: "三重県 (津市)", cond: "雨時々曇り", temp: "21.0℃", rain: "80%", wind: "東 8m/s", note: "東紀州で雨量多くなるおそれ" } },
+            shiga: { name: "滋賀県の状況", center: [35.00, 135.86], zoom: 9, bounds: {latMin: 34.8, latMax: 35.6, lonMin: 135.8, lonMax: 136.4}, weather: { pref: "滋賀県 (大津市)", cond: "曇り", temp: "19.5℃", rain: "40%", wind: "北 3m/s", note: "湖周辺で風やや強い" } },
+            kyoto: { name: "京都府の状況", center: [35.02, 135.75], zoom: 9, bounds: {latMin: 34.7, latMax: 35.7, lonMin: 134.8, lonMax: 135.9}, weather: { pref: "京都府 (京都市)", cond: "曇り", temp: "20.0℃", rain: "45%", wind: "北東 4m/s", note: "北部で時々雨" } },
+            osaka: { name: "大阪府の状況", center: [34.69, 135.50], zoom: 9, bounds: {latMin: 34.2, latMax: 34.9, lonMin: 135.1, lonMax: 135.6}, weather: { pref: "大阪府 (大阪市)", cond: "曇り一時雨", temp: "21.2℃", rain: "50%", wind: "北東 5m/s", note: "大きな荒天の心配なし" } },
+            hyogo: { name: "兵庫県の状況", center: [34.69, 135.18], zoom: 8, bounds: {latMin: 34.2, latMax: 35.7, lonMin: 134.2, lonMax: 135.6}, weather: { pref: "兵庫県 (神戸市)", cond: "曇り", temp: "20.8℃", rain: "45%", wind: "東 5m/s", note: "瀬戸内側は比較的安定" } },
+            nara: { name: "奈良県の状況", center: [34.68, 135.83], zoom: 9, bounds: {latMin: 33.9, latMax: 34.8, lonMin: 135.6, lonMax: 136.2}, weather: { pref: "奈良県 (奈良市)", cond: "曇り", temp: "19.4℃", rain: "50%", wind: "北東 3m/s", note: "南部山地で雨注意" } },
+            wakayama: { name: "和歌山県の状況", center: [34.22, 135.16], zoom: 8, bounds: {latMin: 33.4, latMax: 34.4, lonMin: 134.8, lonMax: 136.0}, weather: { pref: "和歌山県 (和歌山市)", cond: "雨時々曇り", temp: "21.5℃", rain: "85%", wind: "東 9m/s", note: "南部沿岸で波が高く雨風強い" } },
+
+            // 中国・四国
+            tottori: { name: "鳥取県の状況", center: [35.50, 134.23], zoom: 9, bounds: {latMin: 35.1, latMax: 35.6, lonMin: 133.1, lonMax: 134.5}, weather: { pref: "鳥取県 (鳥取市)", cond: "曇り", temp: "19.8℃", rain: "30%", wind: "西 3m/s", note: "落ち着いた天気" } },
+            shimane: { name: "島根県の状況", center: [35.47, 133.05], zoom: 8, bounds: {latMin: 34.3, latMax: 36.3, lonMin: 131.6, lonMax: 133.4}, weather: { pref: "島根県 (松江市)", cond: "曇り時々晴れ", temp: "19.5℃", rain: "25%", wind: "西 3m/s", note: "大きな崩れなし" } },
+            okayama: { name: "岡山の状況", center: [34.66, 133.93], zoom: 8, bounds: {latMin: 34.3, latMax: 35.4, lonMin: 133.2, lonMax: 134.4}, weather: { pref: "岡山県 (岡山市)", cond: "曇り", temp: "20.4℃", rain: "35%", wind: "東 3m/s", note: "雨は小康状態" } },
+            hiroshima: { name: "広島県の状況", center: [34.39, 132.45], zoom: 8, bounds: {latMin: 34.0, latMax: 35.1, lonMin: 132.0, lonMax: 133.3}, weather: { pref: "広島県 (広島市)", cond: "曇り時々雨", temp: "20.1℃", rain: "60%", wind: "東 4m/s", note: "湿った空気の影響で雲厚い" } },
+            yamaguchi: { name: "山口県の状況", center: [34.18, 131.47], zoom: 8, bounds: {latMin: 33.7, latMax: 34.6, lonMin: 130.8, lonMax: 132.3}, weather: { pref: "山口県 (山口市)", cond: "曇り時々雨", temp: "21.0℃", rain: "55%", wind: "北東 5m/s", note: "海上波注意" } },
+            tokushima: { name: "徳島県の状況", center: [34.06, 134.55], zoom: 9, bounds: {latMin: 33.5, latMax: 34.2, lonMin: 133.6, lonMax: 134.8}, weather: { pref: "徳島県 (徳島市)", cond: "雨", temp: "20.2℃", rain: "85%", wind: "東 8m/s", note: "東部を中心に雨脚強まる" } },
+            kagawa: { name: "香川県の状況", center: [34.34, 134.04], zoom: 9, bounds: {latMin: 34.0, latMax: 34.5, lonMin: 133.4, lonMax: 134.4}, weather: { pref: "香川県 (高松市)", cond: "曇り一時雨", temp: "20.6℃", rain: "60%", wind: "東 5m/s", note: "一時的な雨に注意" } },
+            ehime: { name: "愛媛県の状況", center: [33.84, 132.76], zoom: 8, bounds: {latMin: 32.9, latMax: 34.3, lonMin: 132.0, lonMax: 133.7}, weather: { pref: "愛媛県 (松山市)", cond: "雨時々曇り", temp: "20.8℃", rain: "80%", wind: "北東 7m/s", note: "南予地方で強雨注意" } },
+            kochi: { name: "高知県の状況", center: [33.55, 133.53], zoom: 8, bounds: {latMin: 32.7, latMax: 33.9, lonMin: 132.5, lonMax: 134.3}, weather: { pref: "高知県 (高知市)", cond: "荒れた雨", temp: "20.5℃", rain: "95%", wind: "東 10m/s", note: "台風第30号接近に伴い大雨・暴風警戒" } },
+
+            // 九州・沖縄
+            fukuoka: { name: "福岡県の状況", center: [33.60, 130.41], zoom: 8, bounds: {latMin: 33.0, latMax: 33.9, lonMin: 130.0, lonMax: 131.0}, weather: { pref: "福岡県 (福岡市)", cond: "雨時々曇り", temp: "22.0℃", rain: "75%", wind: "北東 8m/s", note: "風が強まるおそれ" } },
+            saga: { name: "佐賀県の状況", center: [33.24, 130.29], zoom: 9, bounds: {latMin: 33.0, latMax: 33.6, lonMin: 129.8, lonMax: 130.5}, weather: { pref: "佐賀県 (佐賀市)", cond: "曇り時々雨", temp: "21.8℃", rain: "70%", wind: "北東 6m/s", note: "北部で雨" } },
+            nagasaki: { name: "長崎県の状況", center: [32.74, 129.87], zoom: 8, bounds: {latMin: 32.0, latMax: 34.5, lonMin: 128.3, lonMax: 130.4}, weather: { pref: "長崎県 (長崎市)", cond: "雨時々曇り", temp: "22.5℃", rain: "80%", wind: "北東 9m/s", note: "五島列島等で強風注意" } },
+            kumamoto: { name: "熊本県の状況", center: [32.78, 130.74], zoom: 8, bounds: {latMin: 32.0, latMax: 33.2, lonMin: 130.0, lonMax: 131.3}, weather: { pref: "熊本県 (熊本市)", cond: "曇り時々雨", temp: "21.9℃", rain: "70%", wind: "東 5m/s", note: "天草地方で雨脚強まる" } },
+            oita: { name: "大分県の状況", center: [33.23, 131.61], zoom: 8, bounds: {latMin: 32.7, latMax: 33.6, lonMin: 130.8, lonMax: 132.1}, weather: { pref: "大分県 (大分市)", cond: "雨時々曇り", temp: "21.2℃", rain: "80%", wind: "北東 7m/s", note: "豊後水道側で波高い" } },
+            miyazaki: { name: "宮崎県の状況", center: [31.91, 131.42], zoom: 8, bounds: {latMin: 31.3, latMax: 32.8, lonMin: 130.7, lonMax: 131.8}, weather: { pref: "宮崎県 (宮崎市)", cond: "強い雨", temp: "21.5℃", rain: "90%", wind: "北東 11m/s", note: "台風第30号の影響で断続的に強い雨" } },
+            kagoshima: { name: "鹿児島の状況", center: [31.56, 130.55], zoom: 8, bounds: {latMin: 27.0, latMax: 32.2, lonMin: 128.4, lonMax: 131.2}, weather: { pref: "鹿児島県 (鹿児島市)", cond: "暴風雨", temp: "23.0℃", rain: "95%", wind: "北東 14m/s", note: "台風第30号の接近に伴い暴風・大雨厳重警戒" } },
+            okinawa: { name: "沖縄県の状況", center: [26.21, 127.68], zoom: 8, bounds: {latMin: 24.0, latMax: 27.5, lonMin: 123.0, lonMax: 131.5}, weather: { pref: "沖縄県 (那覇市・先島諸島)", cond: "雨・強風", temp: "26.5℃", rain: "90%", wind: "北西 15m/s", note: "台風第30・31号の警戒海域" } }
         };
 
         function initSystem() {
@@ -831,13 +880,12 @@
 
                 map.setView(selected.center, selected.zoom);
 
-                // 🗺️ 地域プルダウンと連動して右上の天気予報ウィジェットに都道府県名・都市名を表示
+                // 🗾 都道府県プルダウンと連動して右上の天気予報ウィジェットを更新
                 if (selected.weather) {
                     const w = selected.weather;
                     document.getElementById('widgetAreaTitle').innerHTML = `🌤️ 都道府県・天気予報 <span style="font-size: 9px; color: #94a3b8;">10/26現在</span>`;
                     document.getElementById('widgetWeatherContent').innerHTML = `
-                        <div class="weather-row"><span>対象エリア:</span> <strong style="color: #38bdf8; font-size: 10.5px;">${w.pref}</strong></div>
-                        <div class="weather-row"><span>主要都市:</span> <strong style="color: #e2e8f0;">${w.detail}</strong></div>
+                        <div class="weather-row"><span>選択地域:</span> <strong style="color: #38bdf8; font-size: 10.5px;">${w.pref}</strong></div>
                         <div class="weather-row"><span>天気 / 気温:</span> <strong>${w.cond} / ${w.temp}</strong></div>
                         <div class="weather-row"><span>降水 / 風速:</span> <strong>${w.rain} / ${w.wind}</strong></div>
                         <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;">
