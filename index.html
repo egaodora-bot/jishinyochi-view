@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（地震一覧・可視化対応版）</title>
+    <title>⚠️自然災害RISK（地震一覧・地図完全連動版）</title>
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%237f1d1d'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='38' letter-spacing='1'%3E災RISK%3C/text%3E%3C/svg%3E">
     
     <style>
@@ -247,9 +247,9 @@
             white-space: pre-line;
         }
         
-        /* 地震一覧リストのスタイル */
+        /* 地震一覧リストのスタイル（高さを少し広げて見やすく調整） */
         .quake-list-container {
-            max-height: 180px;
+            max-height: 220px;
             overflow-y: auto;
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -462,11 +462,11 @@
                 </div>
             </div>
 
-            <!-- 📋 【新機能】直近の地震一覧リスト（集中度可視化） -->
+            <!-- 📋 地震一覧リスト（地図と完全連動・全件表示） -->
             <div id="quakeListCard" class="card" style="border-color: #38bdf8;">
                 <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📊 直近の地震発生一覧 (上位10件)</span>
-                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">連動中</span>
+                    <span>📊 直近の地震発生一覧 (地図連動)</span>
+                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">同期中</span>
                 </h3>
                 <div class="quake-list-container" id="quakeListContainer">
                     <div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">データを読み込み中...</div>
@@ -742,22 +742,37 @@
             updateViewMode();
         }
 
-        // 📋 地震一覧リストのUIを更新する関数
+        // 📋 地震一覧リスト（地図上の表示内容と完全に一致・連動させる）
         function updateQuakeListUI(quakes) {
             const listContainer = document.getElementById('quakeListContainer');
             const countBadge = document.getElementById('quakeCountBadge');
             if (!listContainer) return;
 
-            const top10 = quakes.slice(0, 10);
-            if (countBadge) countBadge.textContent = `${top10.length}件表示`;
+            // 地震モードで現在フィルターされている条件を一覧側にもそのまま反映
+            const targetEl = document.getElementById('targetArea');
+            const areaKey = targetEl ? targetEl.value : 'all';
+            const selected = areaData[areaKey] || areaData['all'];
 
-            if (top10.length === 0) {
-                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">データがありません</div>`;
+            let filtered = [...quakes];
+            if (selected.bounds) {
+                const b = selected.bounds;
+                filtered = filtered.filter(q => q.lat >= b.latMin && q.lat <= b.latMax && q.lng >= b.lonMin && q.lng <= b.lonMax);
+            }
+            filtered = filtered.filter(q => {
+                if (currentMagFilter === '4') return q.mag >= 4.0;
+                if (currentMagFilter === '5') return q.mag >= 5.0;
+                return true;
+            });
+
+            if (countBadge) countBadge.textContent = `${filtered.length}件`;
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">該当する地震データはありません</div>`;
                 return;
             }
 
             let html = '';
-            top10.forEach((q, index) => {
+            filtered.forEach((q, index) => {
                 const magStr = (q.mag && q.mag > 0) ? `M${q.mag}` : "微小";
                 html += `
                     <div class="quake-list-item" onclick="focusOnQuake(${q.lat}, ${q.lng}, '${q.title}', '${magStr}', '${q.depth}', '${q.time}')">
@@ -993,6 +1008,9 @@
                         marker.bindPopup(`<div style="color: #333;"><strong>${q.title}</strong><br>規模: ${magDisplay} / 深さ: ${q.depth}<br>発生時刻: ${q.time}</div>`);
                         markerLayer.addLayer(marker);
                     });
+
+                    // 🗺️ 地図の絞り込み条件と一覧の表示内容を完全に同期
+                    updateQuakeListUI(liveQuakes);
 
                 } else {
                     weatherRiskDataList.forEach(item => {
