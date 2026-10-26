@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（完全統合・台風RISK復活版）</title>
+    <title>⚠️自然災害RISK（モード完全分離・超安定版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -299,44 +299,8 @@
                 <p id="modeStatusDesc">最新の地震データを安定表示しています。</p>
             </div>
 
-            <div id="dynamicCardContainer">
-                <div class="emergency-alert-card alert-active">
-                    <h3 id="alertCardTitle">直近の地震活動情報</h3>
-                    <div id="emergencyInfoText" class="info-text-box">【直近の検知】
-発生時刻: 2026-10-26 13:37:00
-震源地: 千葉県北東部
-規模: M3.1 / 深さ: 40km</div>
-                </div>
-            </div>
-
-            <div id="quakeListCard" class="card" style="border-color: #38bdf8;">
-                <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📊 直近の地震発生一覧 (地図連動)</span>
-                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">7件</span>
-                </h3>
-                <div class="quake-list-container" id="quakeListContainer"></div>
-            </div>
-
-            <div class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
-                <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
-                <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
-                    <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
-                    <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
-                        <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
-                        <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 id="panelTitle">全国の自然RISK状況</h3>
-                <div style="margin-top: 6px;" id="statusListContainer">
-                    <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
-                    <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>直近の地震発生数:</span> <span class="risk-level-low">7件</span></div>
-                    <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
-                </div>
-            </div>
+            <!-- 動的サイドバーコンテンツエリア -->
+            <div id="sidebarContentArea"></div>
         </div>
 
         <div id="map"></div>
@@ -421,6 +385,88 @@
             { name: "🌧️ 降水エリア（東北南部）", lat: 38.0, lng: 140.8, radius: 160000, color: "#38bdf8", peakTime: "本日夕方にかけて" }
         ];
 
+        function renderSidebar() {
+            const container = document.getElementById('sidebarContentArea');
+            if (currentMode === 'earthquake') {
+                container.innerHTML = `
+                    <div class="emergency-alert-card alert-active">
+                        <h3>直近の地震活動情報</h3>
+                        <div class="info-text-box">【直近の検知】
+発生時刻: 2026-10-26 13:37:00
+震源地: 千葉県北東部
+規模: M3.1 / 深さ: 40km</div>
+                    </div>
+
+                    <div class="card" style="border-color: #38bdf8;">
+                        <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
+                            <span>📊 直近の地震発生一覧 (地図連動)</span>
+                            <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">7件</span>
+                        </h3>
+                        <div class="quake-list-container" id="quakeListContainer"></div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
+                        <h3 style="color: #ffffff;">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+                        <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;">
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+                            <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
+                                <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
+                                <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>全国の自然RISK状況</h3>
+                        <div style="margin-top: 6px;">
+                            <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
+                            <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
+                            <div class="risk-item"><span>直近の地震発生数:</span> <span class="risk-level-low">7件</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="emergency-alert-card alert-active" style="border-color: #f59e0b; background: #451a03;">
+                        <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風第31号（強い勢力・西進中）</h3>
+                        <div class="info-text-box" style="border-color: #b45309; color: #fef3c7;">
+                            • 現在位置: マリアナ諸島近海 (中心気圧 970 hPa)
+                            • 動向: 今週末にかけて小笠原諸島近海へ北西進見込み
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-color: #0284c7;">
+                        <h3 style="color: #38bdf8;">🌀 温帯低気圧・雨雲状況</h3>
+                        <div style="font-size: 11px; line-height: 1.4; color: #f1f5f9;">
+                            • 実況: 温帯低気圧へ変化し東日本を通過中。<br>
+                            • 強い雨のピーク: 本日夕方〜夜のはじめ頃（関東中心に注意）。
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #06b6d4; background: linear-gradient(135deg, #082f49 0%, #1e1b4b 100%);">
+                        <h3 style="color: #67e8f9;">🌊🌋 津波・火山モニタリング</h3>
+                        <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;">
+                            <ul style="padding-left: 14px; margin: 0; color: #cbd5e1;">
+                                <li><strong>沿岸津波監視：</strong> 太平洋側の潮位変化を常時追跡（異常なし）</li>
+                                <li><strong>火山活動監視：</strong> 桜島・阿蘇山（噴火警戒レベル3）</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>気象・災害RISK状況</h3>
+                        <div style="margin-top: 6px;">
+                            <div class="risk-item"><span>台風第31号勢力:</span> <span class="risk-level-high">970 hPa (強い)</span></div>
+                            <div class="risk-item"><span>強い雨のピーク:</span> <span class="risk-level-mid">本日夕方〜夜</span></div>
+                            <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">全沿岸で正常</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         function updateViewMode() {
             markerLayer.clearLayers();
             anomalyLayer.clearLayers();
@@ -479,7 +525,6 @@
                     weatherRiskLayer.addLayer(circle);
                     weatherRiskLayer.addLayer(marker);
 
-                    // 台風31号の予報円・進路予測ライン
                     if (item.id === 'typhoon31') {
                         const p0 = [item.lat, item.lng];
                         const p2 = [22.0, 142.0];
@@ -510,81 +555,3 @@
         function updateQuakeListUI(quakes) {
             const listContainer = document.getElementById('quakeListContainer');
             const countBadge = document.getElementById('quakeCountBadge');
-            countBadge.textContent = `${quakes.length}件`;
-
-            if (quakes.length === 0) {
-                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">該当する地震データはありません</div>`;
-                return;
-            }
-
-            let html = '';
-            quakes.forEach((q, index) => {
-                html += `
-                    <div class="quake-item" onclick="map.setView([${q.lat}, ${q.lng}], 9)">
-                        <div>
-                            <strong style="color: #38bdf8;">${index + 1}. ${q.title}</strong>
-                            <div style="font-size: 9.5px; color: #94a3b8;">${q.time}</div>
-                        </div>
-                        <span style="color: #f87171; font-weight: bold;">M${q.mag}</span>
-                    </div>
-                `;
-            });
-            listContainer.innerHTML = html;
-        }
-
-        function switchMode(mode) {
-            currentMode = mode;
-            document.getElementById('btnEarthquakeMode').classList.toggle('active', mode === 'earthquake');
-            document.getElementById('btnWaterMode').classList.toggle('active', mode === 'weather_risk');
-            document.getElementById('magFilterContainer').style.display = mode === 'earthquake' ? 'flex' : 'none';
-            document.getElementById('quakeListCard').style.display = mode === 'earthquake' ? 'block' : 'none';
-
-            const dynamicCardContainer = document.getElementById('dynamicCardContainer');
-            if (mode === 'weather_risk') {
-                dynamicCardContainer.innerHTML = `
-                    <div class="emergency-alert-card alert-active" style="border-color: #f59e0b; background: #451a03;">
-                        <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風第31号（強い勢力・西進中）</h3>
-                        <div class="info-text-box" style="border-color: #b45309; color: #fef3c7;">
-                            • 現在位置: マリアナ諸島近海 (中心気圧 970 hPa)
-                            • 動向: 今週末にかけて小笠原諸島近海へ北西進見込み
-                        </div>
-                    </div>
-                `;
-            } else {
-                dynamicCardContainer.innerHTML = `
-                    <div class="emergency-alert-card alert-active">
-                        <h3>直近の地震活動情報</h3>
-                        <div class="info-text-box">【直近の検知】
-発生時刻: 2026-10-26 13:37:00
-震源地: 千葉県北東部
-規模: M3.1 / 深さ: 40km</div>
-                    </div>
-                `;
-            }
-
-            updateViewMode();
-        }
-
-        function setMagFilter(val, btn) {
-            currentMagFilter = val;
-            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            updateViewMode();
-        }
-
-        function toggleRadar() {
-            isRadarVisible = !isRadarVisible;
-            const btn = document.getElementById('btnRadarToggle');
-            btn.classList.toggle('active', isRadarVisible);
-            btn.textContent = isRadarVisible ? "🌧️ 雨雲レーダー：ON" : "🌧️ 雨雲レーダー：OFF";
-            updateViewMode();
-        }
-
-        updateViewMode();
-
-        window.addEventListener('resize', () => {
-            map.invalidateSize();
-        });
-    </script>
-</body>
-</html>
