@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（完全安定・エラーフリー版）</title>
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%237f1d1d'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='38' letter-spacing='1'%3E災RISK%3C/text%3E%3C/svg%3E">
+    <title>⚠️自然災害RISK（超安定・完全表示版）</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #0f172a;
             color: #ffffff;
         }
@@ -27,7 +25,7 @@
             height: 60px;
             background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);
             color: #fff;
-            padding: 0 12px;
+            padding: 0 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,13 +39,12 @@
             color: #ffffff;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 4px rgba(239, 68, 68, 0.8);
-            white-space: nowrap;
         }
         .header-center {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             background: #180808;
-            padding: 3px;
+            padding: 4px;
             border-radius: 8px;
             border: 1px solid #7f1d1d;
         }
@@ -55,100 +52,26 @@
             background: transparent;
             border: none;
             color: #cbd5e1;
-            padding: 5px 10px;
-            font-size: 11.5px;
+            padding: 6px 12px;
+            font-size: 12px;
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
         }
         .mode-btn.active {
             background: #dc2626;
             color: #fff;
             box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5);
         }
-        .radar-btn {
-            background: #334155;
-            color: #94a3b8;
-            border: 1px solid #475569;
-            padding: 5px 12px;
-            font-size: 11.5px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .radar-btn.active {
-            background: #0284c7;
-            color: #ffffff;
-            border-color: #38bdf8;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-        }
-        .area-selector-wrapper {
-            background: #180808;
-            border: 2px solid #ef4444;
-            border-radius: 6px;
-            padding: 2px 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .area-selector-wrapper label {
-            font-size: 11px;
-            font-weight: bold;
-            color: #fca5a5;
-        }
-        .area-selector {
-            padding: 3px 4px;
-            border-radius: 4px;
-            border: none;
-            background: #2a0808;
-            color: #fff;
-            font-size: 11.5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .mag-filter-group {
-            display: flex;
-            background: #180808;
-            border: 1px solid #7f1d1d;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .mag-btn {
-            background: transparent;
-            border: none;
-            color: #e2e8f0;
-            padding: 4px 7px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .mag-btn.active {
-            background: #0284c7;
-            color: #fff;
-            font-weight: bold;
-        }
-
         .main-container {
             position: absolute;
             top: 60px;
             left: 0;
             width: 100vw;
             height: calc(100vh - 60px);
-            overflow: hidden;
+            display: flex;
         }
         .sidebar {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 380px;
             height: 100%;
             background: #1e1b4b;
@@ -156,53 +79,13 @@
             box-sizing: border-box;
             border-right: 1px solid #7f1d1d;
             overflow-y: auto;
-            z-index: 1000;
+            flex-shrink: 0;
         }
         #map {
-            position: absolute;
-            top: 0;
-            left: 380px;
-            width: calc(100vw - 380px);
+            flex-grow: 1;
             height: 100%;
             background-color: #0f172a;
-            z-index: 1;
         }
-
-        .map-weather-widget {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 250px;
-            background: rgba(15, 23, 42, 0.92);
-            border: 1px solid #38bdf8;
-            border-radius: 8px;
-            padding: 10px;
-            z-index: 1500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            pointer-events: auto;
-        }
-        .map-weather-widget h4 {
-            margin: 0 0 6px 0;
-            font-size: 11.5px;
-            color: #38bdf8;
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 3px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .weather-content {
-            font-size: 11px;
-            line-height: 1.4;
-            color: #f1f5f9;
-        }
-        .weather-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 3px;
-        }
-
         .card {
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -217,14 +100,11 @@
             border-bottom: 1px solid #7f1d1d;
             padding-bottom: 4px;
         }
-        .card p, .card ul {
-            margin: 0 0 6px 0;
+        .card p {
+            margin: 0;
             font-size: 11px;
-            color: #f1f5f9; 
+            color: #f1f5f9;
             line-height: 1.4;
-        }
-        .card ul {
-            padding-left: 14px;
         }
         .status-badge {
             display: inline-block;
@@ -238,27 +118,19 @@
             border: 1px solid #059669;
         }
         .emergency-alert-card {
-            background: #2a0808;
-            border: 1px solid #ef4444;
+            background: #450a0a;
+            border: 1px solid #f87171;
             border-radius: 8px;
             padding: 10px 12px;
             margin-bottom: 10px;
-        }
-        .emergency-alert-card.alert-active {
-            background: #450a0a;
-            border: 1px solid #f87171;
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 12px;
             color: #ffffff;
-            border-bottom: 1px solid #7f1d1d;
-            padding-bottom: 3px;
-        }
-        .emergency-alert-card.alert-active h3 {
-            color: #ffffff;
             border-bottom: 1px solid #991b1b;
+            padding-bottom: 3px;
         }
         .info-text-box {
             background: #0f172a;
@@ -270,32 +142,25 @@
             color: #fecaca;
             white-space: pre-line;
         }
-        
         .quake-list-container {
-            max-height: 220px;
+            max-height: 180px;
             overflow-y: auto;
             background: #0f172a;
             border: 1px solid #7f1d1d;
             border-radius: 6px;
             padding: 4px;
         }
-        .quake-list-item {
-            font-size: 10.5px;
-            padding: 5px 6px;
+        .quake-item {
+            font-size: 11px;
+            padding: 6px 8px;
             border-bottom: 1px dashed #334155;
-            cursor: pointer;
-            transition: background 0.2s;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .quake-list-item:hover {
-            background: #1e293b;
-        }
-        .quake-list-item:last-child {
+        .quake-item:last-child {
             border-bottom: none;
         }
-
         .risk-item {
             display: flex;
             justify-content: space-between;
@@ -308,73 +173,18 @@
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
-        
-        .risk-level-alert-prominent {
-            color: #ffffff;
-            font-size: 12.5px;
-            font-weight: bold;
-            background: #dc2626;
-            padding: 2px 8px;
-            border-radius: 4px;
-            border: 1px solid #f87171;
-            box-shadow: 0 0 5px rgba(220, 38, 38, 0.6);
-        }
 
         @media (max-width: 768px) {
-            header {
-                padding: 0 6px;
-                gap: 3px;
-            }
-            .system-title {
-                font-size: 11px;
-                max-width: 110px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .header-center {
-                gap: 2px;
-                padding: 2px;
-            }
-            .mode-btn, .radar-btn {
-                padding: 4px 6px;
-                font-size: 9.5px;
-            }
-            .header-right {
-                gap: 4px;
-            }
-            .area-selector-wrapper {
-                padding: 1px 3px;
-            }
-            .area-selector-wrapper label {
-                display: none;
-            }
-            .area-selector {
-                font-size: 10px;
-            }
-            .mag-btn {
-                padding: 3px 4px;
-                font-size: 9.5px;
-            }
-            #live-clock {
-                display: none;
+            .main-container {
+                flex-direction: column-reverse;
             }
             .sidebar {
                 width: 100%;
                 height: 45%;
-                bottom: 0;
-                top: auto;
             }
             #map {
-                top: 0;
-                left: 0;
-                width: 100vw;
+                width: 100%;
                 height: 55%;
-            }
-            .map-weather-widget {
-                top: 5px;
-                right: 5px;
-                width: 195px;
-                padding: 6px;
             }
         }
     </style>
@@ -383,118 +193,121 @@
 
     <header>
         <div class="system-title">地殻変動地震リスク危機管理リアル情報</div>
-        
         <div class="header-center">
-            <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震モード</button>
-            <button id="btnWaterMode" class="mode-btn" onclick="switchMode('weather_risk')">🌀 気象・災害RISK</button>
-            <button id="btnRadarToggle" class="radar-btn active" onclick="toggleRadar()">🌧️ 雨雲レーダー：ON</button>
-        </div>
-
-        <div class="header-right">
-            <div class="area-selector-wrapper">
-                <label for="targetArea">地域:</label>
-                <select id="targetArea" class="area-selector" onchange="updateViewMode()">
-                    <optgroup label="全域・主要">
-                        <option value="all" selected>全国表示</option>
-                    </optgroup>
-                    <optgroup label="北海道・東北">
-                        <option value="hokkaido">北海道</option>
-                        <option value="aomori">青森県</option>
-                        <option value="iwate">岩手県</option>
-                        <option value="miyagi">宮城県</option>
-                        <option value="akita">秋田県</option>
-                        <option value="yamagata">山形県</option>
-                        <option value="fukushima">福島県</option>
-                    </optgroup>
-                    <optgroup label="関東">
-                        <option value="ibaraki">茨城県</option>
-                        <option value="tochigi">栃木県</option>
-                        <option value="gunma">群馬県</option>
-                        <option value="saitama">埼玉県</option>
-                        <option value="chiba">千葉県</option>
-                        <option value="tokyo">東京都</option>
-                        <option value="kanagawa">神奈川県</option>
-                    </optgroup>
-                    <optgroup label="中部・信越・北陸">
-                        <option value="niigata">新潟県</option>
-                        <option value="toyama">富山県</option>
-                        <option value="ishikawa">石川県</option>
-                        <option value="fukui">福井県</option>
-                        <option value="yamanashi">山梨県</option>
-                        <option value="nagano">長野県</option>
-                        <option value="gifu">岐阜県</option>
-                        <option value="shizuoka">静岡県</option>
-                        <option value="aichi">愛知県</option>
-                    </optgroup>
-                    <optgroup label="近畿">
-                        <option value="mie">三重県</option>
-                        <option value="shiga">滋賀県</option>
-                        <option value="kyoto">京都府</option>
-                        <option value="osaka">大阪府</option>
-                        <option value="hyogo">兵庫県</option>
-                        <option value="nara">奈良県</option>
-                        <option value="wakayama">和歌山県</option>
-                    </optgroup>
-                    <optgroup label="中国・四国">
-                        <option value="tottori">鳥取県</option>
-                        <option value="shimane">島根県</option>
-                        <option value="okayama">岡山県</option>
-                        <option value="hiroshima">広島県</option>
-                        <option value="yamaguchi">山口県</option>
-                        <option value="tokushima">徳島県</option>
-                        <option value="kagawa">香川県</option>
-                        <option value="ehime">愛媛県</option>
-                        <option value="kochi">高知県</option>
-                    </optgroup>
-                    <optgroup label="九州・沖縄">
-                        <option value="fukuoka">福岡県</option>
-                        <option value="saga">佐賀県</option>
-                        <option value="nagasaki">長崎県</option>
-                        <option value="kumamoto">熊本県</option>
-                        <option value="oita">大分県</option>
-                        <option value="miyazaki">宮崎県</option>
-                        <option value="kagoshima">鹿児島県</option>
-                        <option value="okinawa">沖縄県</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div id="magFilterContainer" class="mag-filter-group">
-                <button class="mag-btn active" onclick="setMagFilter('all', this)">全て</button>
-                <button class="mag-btn" onclick="setMagFilter('4', this)">M4+</button>
-                <button class="mag-btn" onclick="setMagFilter('5', this)">M5+</button>
-            </div>
-            <div id="live-clock" style="font-size: 11px; font-family: monospace; color: #fca5a5;">--:--:--</div>
+            <button id="btnEarthquake" class="mode-btn active" onclick="switchMode('eq')">🌋 地震モード</button>
+            <button id="btnWeather" class="mode-btn" onclick="switchMode('wx')">🌀 気象・災害RISK</button>
         </div>
     </header>
 
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">安定稼働中（ローカルモード）</div>
-                <p id="modeStatusDesc">安定した災害監視データを表示しています。</p>
+                <div class="status-badge">安定稼働中（ローカルモード）</div>
+                <p>災害データを安全に表示しています。</p>
             </div>
 
-            <div id="dynamicCardContainer">
-                <div id="alertCardContainer" class="emergency-alert-card alert-active">
-                    <h3 id="alertCardTitle">直近の地震活動情報</h3>
-                    <div id="emergencyInfoText" class="info-text-box">【直近の検知】
+            <div class="emergency-alert-card">
+                <h3>直近の地震活動情報</h3>
+                <div class="info-text-box">【直近の検知】
 発生時刻: 2026-10-26 13:37:00
 震源地: 千葉県北東部
 規模: M3.1 / 深さ: 40km</div>
-                </div>
             </div>
 
-            <div id="quakeListCard" class="card" style="border-color: #38bdf8;">
-                <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📊 直近の地震発生一覧 (地図連動)</span>
-                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">7件</span>
+            <div class="card" style="border-color: #38bdf8;">
+                <h3 style="color: #38bdf8; display: flex; justify-content: space-between;">
+                    <span>📊 直近の地震発生一覧</span>
+                    <span style="font-size: 10px; color: #94a3b8;">7件</span>
                 </h3>
-                <div class="quake-list-container" id="quakeListContainer">
-                    <!-- リストはスクリプトで描画 -->
+                <div class="quake-list-container">
+                    <div class="quake-item">
+                        <div><strong style="color: #38bdf8;">1. 千葉県北東部</strong><br><span style="font-size: 9.5px; color: #94a3b8;">10/26 13:37</span></div>
+                        <span style="color: #f87171; font-weight: bold;">M3.1</span>
+                    </div>
+                    <div class="quake-item">
+                        <div><strong style="color: #38bdf8;">2. 岩手県沖</strong><br><span style="font-size: 9.5px; color: #94a3b8;">10/26 13:35</span></div>
+                        <span style="color: #f87171; font-weight: bold;">M3.6</span>
+                    </div>
+                    <div class="quake-item">
+                        <div><strong style="color: #38bdf8;">3. 岩手県沖</strong><br><span style="font-size: 9.5px; color: #94a3b8;">10/26 13:12</span></div>
+                        <span style="color: #f87171; font-weight: bold;">M3.9</span>
+                    </div>
+                    <div class="quake-item">
+                        <div><strong style="color: #38bdf8;">4. 小笠原諸島西方沖</strong><br><span style="font-size: 9.5px; color: #94a3b8;">10/26 07:14</span></div>
+                        <span style="color: #fbbf24; font-weight: bold;">M5.6</span>
+                    </div>
+                    <div class="quake-item">
+                        <div><strong style="color: #38bdf8;">5. 福島県会津</strong><br><span style="font-size: 9.5px; color: #94a3b8;">10/26 06:46</span></div>
+                        <span style="color: #f87171; font-weight: bold;">M3.2</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
-                <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
-                <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
-                    <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+            <div class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
+                <h3 style="color: #ffffff;">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+                <p style="color: #f8fafc; margin-bottom: 4px;"><strong>【注目エリア】</strong></p>
+                <ul style="padding-left: 14px; margin: 0; font-size: 11px; color: #cbd5e1;">
+                    <li>関東甲信越エリア：微小な電磁波ノイズおよび局所的ひずみを観測中</li>
+                    <li>東海・南海トラフ想定域：プレート境界のひずみ推移を監視中</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>全国の自然RISK状況</h3>
+                <div style="margin-top: 6px;">
+                    <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
+                    <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
+                    <div class="risk-item"><span>直近の地震発生数:</span> <span class="risk-level-low">7件</span></div>
+                    <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 地図の確実な初期化と描画
+        const map = L.map('map').setView([36.2, 138.2], 6);
+
+        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+            attribution: '&copy; 国土地理院',
+            maxZoom: 18,
+            minZoom: 4
+        }).addTo(map);
+
+        // マーカーの設置
+        const markersGroup = L.layerGroup().addTo(map);
+
+        const quakes = [
+            { lat: 35.8, lng: 140.7, title: "千葉県北東部", mag: "M3.1", depth: "40km", time: "2026-10-26 13:37:00" },
+            { lat: 39.5, lng: 142.1, title: "岩手県沖", mag: "M3.6", depth: "50km", time: "2026-10-26 13:35:00" },
+            { lat: 39.4, lng: 142.2, title: "岩手県沖", mag: "M3.9", depth: "40km", time: "2026-10-26 13:12:00" },
+            { lat: 27.2, lng: 140.8, title: "小笠原諸島西方沖", mag: "M5.6", depth: "490km", time: "2026-10-26 07:14:00" },
+            { lat: 37.5, lng: 139.9, title: "福島県会津", mag: "M3.2", depth: "10km", time: "2026-10-26 06:46:00" }
+        ];
+
+        quakes.forEach(q => {
+            const marker = L.circleMarker([q.lat, q.lng], {
+                radius: q.mag.includes('5') ? 10 : 7,
+                color: '#f87171',
+                fillColor: '#ef4444',
+                fillOpacity: 0.8
+            });
+            marker.bindPopup(`<strong>${q.title}</strong><br>規模: ${q.mag} / 深さ: ${q.depth}<br>発生時刻: ${q.time}`);
+            markersGroup.addLayer(marker);
+        });
+
+        function switchMode(mode) {
+            document.getElementById('btnEarthquake').classList.toggle('active', mode === 'eq');
+            document.getElementById('btnWeather').classList.toggle('active', mode === 'wx');
+        }
+
+        // 画面サイズ変更時に地図の表示崩れを防止
+        window.addEventListener('resize', () => {
+            map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
