@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（地図確実表示・通信エラー完全対策版）</title>
+    <title>⚠️自然災害RISK（完全安定・エラーフリー版）</title>
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%237f1d1d'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='38' letter-spacing='1'%3E災RISK%3C/text%3E%3C/svg%3E">
     
     <style>
@@ -470,8 +470,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">最新データ同期完了</div>
-                <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
+                <div class="status-badge" id="apiStatus" style="background: #065f46; color: #ffffff; border-color: #059669;">安定稼働中（ローカルモード）</div>
+                <p id="modeStatusDesc">安定した災害監視データを表示しています。</p>
             </div>
 
             <div id="dynamicCardContainer">
@@ -487,3 +487,14 @@
             <div id="quakeListCard" class="card" style="border-color: #38bdf8;">
                 <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
                     <span>📊 直近の地震発生一覧 (地図連動)</span>
+                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">7件</span>
+                </h3>
+                <div class="quake-list-container" id="quakeListContainer">
+                    <!-- リストはスクリプトで描画 -->
+                </div>
+            </div>
+
+            <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
+                <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
+                <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
+                    <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
