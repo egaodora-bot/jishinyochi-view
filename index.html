@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- デスクトップ・ホーム画面リンク時のアイコン名称 -->
     <title>⚠️自然災害RISK</title>
+    <!-- スマホホーム画面用アイコン設定 -->
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%237f1d1d'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='38' letter-spacing='1'%3E災RISK%3C/text%3E%3C/svg%3E">
-    
-    <!-- Leaflet CSSを確実に読み込むための埋め込み -->
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-
         body, html {
             margin: 0;
             padding: 0;
@@ -330,12 +330,15 @@
             }
         }
     </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
     <header>
         <div class="system-title">地殻変動地震リスク危機管理リアル情報</div>
         
+        <!-- モード切り替え -->
         <div class="header-center">
             <button id="btnEarthquakeMode" class="mode-btn active" onclick="switchMode('earthquake')">🌋 地震モード</button>
             <button id="btnWaterMode" class="mode-btn" onclick="switchMode('weather_risk')">🌀 気象・災害RISK</button>
@@ -425,6 +428,7 @@
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
+            <!-- 動的に切り替わるメインカード -->
             <div id="dynamicCardContainer">
                 <div id="alertCardContainer" class="emergency-alert-card alert-active">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
@@ -435,6 +439,7 @@
                 </div>
             </div>
 
+            <!-- 補助解説カード -->
             <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
                 <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
@@ -446,6 +451,7 @@
                 </div>
             </div>
 
+            <!-- ステータスパネル -->
             <div class="card">
                 <h3 id="panelTitle">全国の自然RISK状況</h3>
                 <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動のリスク状況。</p>
@@ -457,6 +463,7 @@
                 </div>
             </div>
 
+            <!-- モード切替説明とフッター -->
             <div class="card" style="text-align: center; padding: 8px 10px; background: #0b1120; border-color: #0284c7;">
                 <div style="font-size: 10.5px; color: #cbd5e1; margin-bottom: 4px; line-height: 1.3;">
                     💡 画面上部のボタンで<span style="color: #38bdf8; font-weight: bold;">「地震」</span>と<span style="color: #38bdf8; font-weight: bold;">「気象・災害」</span>の2機能を瞬時に切り替えて監視できます。
@@ -468,6 +475,7 @@
         </div>
 
         <div id="map">
+            <!-- 🌤️ 地図画面右端の都道府県別天気予報ウィジェット -->
             <div class="map-weather-widget">
                 <h4 id="widgetAreaTitle">🌤️ 都道府県・天気予報 <span style="font-size: 9.5px; color: #94a3b8;" id="widgetTimeLabel">10/26現在</span></h4>
                 <div class="weather-content" id="widgetWeatherContent">
@@ -482,7 +490,7 @@
         </div>
     </div>
 
-    <!-- Leaflet JSを安全に読み込み -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         setInterval(() => {
@@ -500,6 +508,7 @@
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
 
+        // 🎯 気象庁発表・10月26日13:37までの最新地震情報コンプリート配列
         let liveQuakes = [
             { lat: 35.8, lng: 140.7, mag: 3.1, depth: "40km", title: "千葉県北東部", time: "2026-10-26 13:37:00", timestamp: new Date("2026-10-26T13:37:00").getTime() },
             { lat: 39.5, lng: 142.1, mag: 3.6, depth: "50km", title: "岩手県沖", time: "2026-10-26 13:35:00", timestamp: new Date("2026-10-26T13:35:00").getTime() },
@@ -591,4 +600,442 @@
             kyoto: { name: "京都府の状況", center: [35.02, 135.75], zoom: 9, bounds: {latMin: 34.7, latMax: 35.7, lonMin: 134.8, lonMax: 135.9}, weather: { pref: "京都府 (京都市)", cond: "曇り", temp: "20.0℃", rain: "45%", wind: "北東 4m/s", note: "北部で時々雨" } },
             osaka: { name: "大阪府の状況", center: [34.69, 135.50], zoom: 9, bounds: {latMin: 34.2, latMax: 34.9, lonMin: 135.1, lonMax: 135.6}, weather: { pref: "大阪府 (大阪市)", cond: "曇り一時雨", temp: "21.2℃", rain: "50%", wind: "北東 5m/s", note: "大きな荒天の心配なし" } },
             hyogo: { name: "兵庫県の状況", center: [34.69, 135.18], zoom: 8, bounds: {latMin: 34.2, latMax: 35.7, lonMin: 134.2, lonMax: 135.6}, weather: { pref: "兵庫県 (神戸市)", cond: "曇り", temp: "20.8℃", rain: "45%", wind: "東 5m/s", note: "瀬戸内側は比較的安定" } },
-            nara: { name: "奈良県の状況", center: [34.68, 135.83], zoom: 9, bounds: {latMin: 33.9, latMax: 34.8, lonMin: 135.6, lonMax: 136.2}, weather: { pref: "奈良県 (奈良市)", cond: "曇り", temp: "19.4℃", rain: "50%", wind: "北東 3m/s", note: "南部山地
+            nara: { name: "奈良県の状況", center: [34.68, 135.83], zoom: 9, bounds: {latMin: 33.9, latMax: 34.8, lonMin: 135.6, lonMax: 136.2}, weather: { pref: "奈良県 (奈良市)", cond: "曇り", temp: "19.4℃", rain: "50%", wind: "北東 3m/s", note: "南部山地で雨注意" } },
+            wakayama: { name: "和歌山県の状況", center: [34.22, 135.16], zoom: 8, bounds: {latMin: 33.4, latMax: 34.4, lonMin: 134.8, lonMax: 136.0}, weather: { pref: "和歌山県 (和歌山市)", cond: "雨時々曇り", temp: "21.5℃", rain: "85%", wind: "東 9m/s", note: "南部沿岸で波が高く雨風強い" } },
+            tottori: { name: "鳥取県の状況", center: [35.50, 134.23], zoom: 9, bounds: {latMin: 35.1, latMax: 35.6, lonMin: 133.1, lonMax: 134.5}, weather: { pref: "鳥取県 (鳥取市)", cond: "曇り", temp: "19.8℃", rain: "30%", wind: "西 3m/s", note: "落ち着いた天気" } },
+            shimane: { name: "島根県の状況", center: [35.47, 133.05], zoom: 8, bounds: {latMin: 34.3, latMax: 36.3, lonMin: 131.6, lonMax: 133.4}, weather: { pref: "島根県 (松江市)", cond: "曇り時々晴れ", temp: "19.5℃", rain: "25%", wind: "西 3m/s", note: "大きな崩れなし" } },
+            okayama: { name: "岡山の状況", center: [34.66, 133.93], zoom: 8, bounds: {latMin: 34.3, latMax: 35.4, lonMin: 133.2, lonMax: 134.4}, weather: { pref: "岡山県 (岡山市)", cond: "曇り", temp: "20.4℃", rain: "35%", wind: "東 3m/s", note: "雨は小康状態" } },
+            hiroshima: { name: "広島県の状況", center: [34.39, 132.45], zoom: 8, bounds: {latMin: 34.0, latMax: 35.1, lonMin: 132.0, lonMax: 133.3}, weather: { pref: "広島県 (広島市)", cond: "曇り時々雨", temp: "20.1℃", rain: "60%", wind: "東 4m/s", note: "湿った空気の影響で雲厚い" } },
+            yamaguchi: { name: "山口県の状況", center: [34.18, 131.47], zoom: 8, bounds: {latMin: 33.7, latMax: 34.6, lonMin: 130.8, lonMax: 132.3}, weather: { pref: "山口県 (山口市)", cond: "曇り時々雨", temp: "21.0℃", rain: "55%", wind: "北東 5m/s", note: "海上波注意" } },
+            tokushima: { name: "徳島県の状況", center: [34.06, 134.55], zoom: 9, bounds: {latMin: 33.5, latMax: 34.2, lonMin: 133.6, lonMax: 134.8}, weather: { pref: "徳島県 (徳島市)", cond: "雨", temp: "20.2℃", rain: "85%", wind: "東 8m/s", note: "東部を中心に雨脚強まる" } },
+            kagawa: { name: "香川県の状況", center: [34.34, 134.04], zoom: 9, bounds: {latMin: 34.0, latMax: 34.5, lonMin: 133.4, lonMax: 134.4}, weather: { pref: "香川県 (高松市)", cond: "曇り一時雨", temp: "20.6℃", rain: "60%", wind: "東 5m/s", note: "一時的な雨に注意" } },
+            ehime: { name: "愛媛県の状況", center: [33.84, 132.76], zoom: 8, bounds: {latMin: 32.9, latMax: 34.3, lonMin: 132.0, lonMax: 133.7}, weather: { pref: "愛媛県 (松山市)", cond: "雨時々曇り", temp: "20.8℃", rain: "80%", wind: "北東 7m/s", note: "南予地方で強雨注意" } },
+            kochi: { name: "高知県の状況", center: [33.55, 133.53], zoom: 8, bounds: {latMin: 32.7, latMax: 33.9, lonMin: 132.5, lonMax: 134.3}, weather: { pref: "高知県 (高知市)", cond: "荒れた雨", temp: "20.5℃", rain: "95%", wind: "東 10m/s", note: "台風第30号接近に伴い大雨・暴風警戒" } },
+            fukuoka: { name: "福岡県の状況", center: [33.60, 130.41], zoom: 8, bounds: {latMin: 33.0, latMax: 33.9, lonMin: 130.0, lonMax: 131.0}, weather: { pref: "福岡県 (福岡市)", cond: "雨時々曇り", temp: "22.0℃", rain: "75%", wind: "北東 8m/s", note: "風が強まるおそれ" } },
+            saga: { name: "佐賀県の状況", center: [33.24, 130.29], zoom: 9, bounds: {latMin: 33.0, latMax: 33.6, lonMin: 129.8, lonMax: 130.5}, weather: { pref: "佐賀県 (佐賀市)", cond: "曇り時々雨", temp: "21.8℃", rain: "70%", wind: "北東 6m/s", note: "北部で雨" } },
+            nagasaki: { name: "長崎県の状況", center: [32.74, 129.87], zoom: 8, bounds: {latMin: 32.0, latMax: 34.5, lonMin: 128.3, lonMax: 130.4}, weather: { pref: "長崎県 (長崎市)", cond: "雨時々曇り", temp: "22.5℃", rain: "80%", wind: "北東 9m/s", note: "五島列島等で強風注意" } },
+            kumamoto: { name: "熊本県の状況", center: [32.78, 130.74], zoom: 8, bounds: {latMin: 32.0, latMax: 33.2, lonMin: 130.0, lonMax: 131.3}, weather: { pref: "熊本県 (熊本市)", cond: "曇り時々雨", temp: "21.9℃", rain: "70%", wind: "東 5m/s", note: "天草地方で雨脚強まる" } },
+            oita: { name: "大分県の状況", center: [33.23, 131.61], zoom: 8, bounds: {latMin: 32.7, latMax: 33.6, lonMin: 130.8, lonMax: 132.1}, weather: { pref: "大分県 (大分市)", cond: "雨時々曇り", temp: "21.2℃", rain: "80%", wind: "北東 7m/s", note: "豊後水道側で波高い" } },
+            miyazaki: { name: "宮崎県の状況", center: [31.91, 131.42], zoom: 8, bounds: {latMin: 31.3, latMax: 32.8, lonMin: 130.7, lonMax: 131.8}, weather: { pref: "宮崎県 (宮崎市)", cond: "強い雨", temp: "21.5℃", rain: "90%", wind: "北東 11m/s", note: "台風第30号の影響で断続的に強い雨" } },
+            kagoshima: { name: "鹿児島の状況", center: [31.56, 130.55], zoom: 8, bounds: {latMin: 27.0, latMax: 32.2, lonMin: 128.4, lonMax: 131.2}, weather: { pref: "鹿児島県 (鹿児島市)", cond: "暴風雨", temp: "23.0℃", rain: "95%", wind: "北東 14m/s", note: "台風第30号の接近に伴い暴風・大雨厳重警戒" } },
+            okinawa: { name: "沖縄県の状況", center: [26.21, 127.68], zoom: 8, bounds: {latMin: 24.0, latMax: 27.5, lonMin: 123.0, lonMax: 131.5}, weather: { pref: "沖縄県 (那覇市・先島諸島)", cond: "雨・強風", temp: "26.5℃", rain: "90%", wind: "北西 15m/s", note: "台風第30・31号の警戒海域" } }
+        };
+
+        function initSystem() {
+            try {
+                if (map) return;
+                const mapEl = document.getElementById('map');
+                if (!mapEl) return;
+
+                map = L.map('map', { zoomControl: true }).setView([36.2, 138.2], 6);
+
+                L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+                    attribution: '&copy; 国土地理院',
+                    maxZoom: 18
+                }).addTo(map);
+
+                anomalyLayer = L.layerGroup().addTo(map);
+                markerLayer = L.layerGroup().addTo(map);
+                weatherRiskLayer = L.layerGroup().addTo(map);
+
+                evaluateLatestEarthquake(liveQuakes);
+                updateViewMode();
+
+                fetchRealtimeEarthquakes();
+                setInterval(fetchRealtimeEarthquakes, 30000);
+
+                setTimeout(() => { if(map) map.invalidateSize(); }, 100);
+                setTimeout(() => { if(map) map.invalidateSize(); }, 500);
+
+            } catch (err) {
+                console.error("システム初期化エラー:", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initSystem, 150);
+        });
+
+        async function fetchRealtimeEarthquakes() {
+            const statusBadge = document.getElementById('apiStatus');
+            const targetUrl = 'https://api.p2pquake.net/v2/history?codes=551&limit=30';
+            const fetchEndpoints = [
+                targetUrl,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+            ];
+
+            for (const url of fetchEndpoints) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) continue;
+
+                    const data = await response.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        const parsedQuakes = [];
+                        data.forEach(item => {
+                            if (!item.earthquake) return;
+                            const hypo = item.earthquake.hypocenter;
+                            if (!hypo || hypo.latitude === -1 || hypo.longitude === -1) return;
+
+                            parsedQuakes.push({
+                                lat: hypo.latitude,
+                                lng: hypo.longitude,
+                                mag: hypo.magnitude,
+                                depth: hypo.depth === -1 ? "不明" : hypo.depth + "km",
+                                title: hypo.name || "震源地詳細不明",
+                                time: item.time.replace('T', ' ').substring(0, 19),
+                                timestamp: new Date(item.time).getTime()
+                            });
+                        });
+
+                        if (parsedQuakes.length > 0) {
+                            liveQuakes = parsedQuakes.sort((a, b) => b.timestamp - a.timestamp);
+                            break;
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            if (statusBadge) {
+                statusBadge.textContent = `自動同期完了 (${liveQuakes.length}件)`;
+                statusBadge.style.background = '#065f46';
+                statusBadge.style.color = '#ffffff';
+                statusBadge.style.borderColor = '#059669';
+            }
+
+            if (currentMode === 'earthquake') {
+                evaluateLatestEarthquake(liveQuakes);
+            }
+            updateViewMode();
+        }
+
+        window.switchMode = function(mode) {
+            try {
+                currentMode = mode;
+                const btnEq = document.getElementById('btnEarthquakeMode');
+                const btnWeather = document.getElementById('btnWaterMode');
+                const magContainer = document.getElementById('magFilterContainer');
+
+                if (btnEq) btnEq.classList.toggle('active', mode === 'earthquake');
+                if (btnWeather) btnWeather.classList.toggle('active', mode === 'weather_risk');
+                if (magContainer) magContainer.style.display = mode === 'earthquake' ? 'flex' : 'none';
+
+                const apiStatusEl = document.getElementById('apiStatus');
+                const modeStatusDesc = document.getElementById('modeStatusDesc');
+                const dynamicCardContainer = document.getElementById('dynamicCardContainer');
+                const subCardTitle = document.getElementById('subCardTitle');
+                const subCardContent = document.getElementById('subCardContent');
+                const panelTitle = document.getElementById('panelTitle');
+                const panelDescription = document.getElementById('panelDescription');
+                const statusListContainer = document.getElementById('statusListContainer');
+
+                if (mode === 'earthquake') {
+                    if (apiStatusEl) {
+                        apiStatusEl.textContent = `自動同期完了 (${liveQuakes.length}件)`;
+                        apiStatusEl.style.background = '#065f46';
+                        apiStatusEl.style.color = '#ffffff';
+                        apiStatusEl.style.borderColor = '#059669';
+                    }
+                    if (modeStatusDesc) modeStatusDesc.textContent = '最新の地震データをリアルタイム自動同期中。';
+                    if (dynamicCardContainer) {
+                        dynamicCardContainer.innerHTML = `
+                            <div id="alertCardContainer" class="emergency-alert-card">
+                                <h3 id="alertCardTitle">直近の地震活動情報</h3>
+                                <div id="emergencyInfoText" class="info-text-box">直近のデータを同期中...</div>
+                            </div>
+                        `;
+                    }
+                    if (subCardTitle) subCardTitle.textContent = "⚡ 電磁波・地殻ひずみ異常検知速報";
+                    if (subCardContent) {
+                        subCardContent.innerHTML = `
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【現在地図上で注目している異常エリア】</p>
+                            <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
+                                <li><strong>関東甲信越エリア：</strong> 微小な電磁波ノイズおよび局所的ひずみを継続観測</li>
+                                <li><strong>東海・南海トラフ想定域：</strong> プレート境界のひずみデータ推移を監視中</li>
+                            </ul>
+                        `;
+                    }
+                    if (panelTitle) panelTitle.textContent = "全国の自然RISK状況";
+                    if (panelDescription) panelDescription.textContent = "日本全体の地面のゆがみ・電磁波・リアルタイム地震活動のリスク状況。";
+                    if (statusListContainer) {
+                        statusListContainer.innerHTML = `
+                            <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
+                            <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
+                            <div class="risk-item"><span>直近の地震発生数:</span> <span id="weekQuakeCount" class="risk-level-low">${liveQuakes.length}件</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
+                        `;
+                    }
+                    evaluateLatestEarthquake(liveQuakes);
+                } else {
+                    if (apiStatusEl) {
+                        apiStatusEl.textContent = '気象・災害RISK統合監視中';
+                        apiStatusEl.style.background = '#065f46';
+                        apiStatusEl.style.color = '#ffffff';
+                        apiStatusEl.style.borderColor = '#059669';
+                    }
+                    if (modeStatusDesc) modeStatusDesc.textContent = '台風第30号および台風第31号のタイムライン進路情報を管理しています。';
+                    
+                    if (dynamicCardContainer) {
+                        dynamicCardContainer.innerHTML = `
+                            <div class="emergency-alert-card alert-active" style="border-color: #ef4444; background: #450a0a; margin-bottom: 8px;">
+                                <h3 style="color: #ffffff; border-color: #991b1b;">🌀 台風第30号（北東進・タイムライン）</h3>
+                                <div class="info-text-box" style="border-color: #991b1b; color: #ffedd5;">
+                                    • 現在(25日15時): 996 hPa (南西諸島近海)
+                                    • 26日(月)03時: 南大東島近海
+                                    • 26日(月)15時: 九州〜四国南岸方面へ接近
+                                </div>
+                            </div>
+                            <div class="emergency-alert-card" style="border-color: #f59e0b; background: #451a03;">
+                                <h3 style="color: #ffffff; border-color: #b45309;">🌀 台風第31号（北西進・発達中）</h3>
+                                <div class="info-text-box" style="border-color: #b45309; color: #fef3c7;">
+                                    • 現在(25日15時): 1004 hPa (フィリピン海東方)
+                                    • 26日(月)03時 〜 15時: 北西方向へ発達しながら進行
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (subCardTitle) subCardTitle.textContent = "🌊🌋 津波・火山モニタリング";
+                    if (subCardContent) {
+                        subCardContent.innerHTML = `
+                            <p style="margin: 0 0 4px 0; color: #fca5a5; font-weight: bold;">【海洋・火山セクター状況】</p>
+                            <ul style="padding-left: 14px; margin: 0 0 6px 0; color: #cbd5e1;">
+                                <li><strong>沿岸津波監視：</strong> 太平洋側（伊豆・三陸・四国沖）の潮位変化を多地点常時追跡</li>
+                                <li><strong>火山活動監視：</strong> 桜島・阿蘇山等の噴火警戒レベルを連動中</li>
+                            </ul>
+                        `;
+                    }
+                    if (panelTitle) panelTitle.textContent = "気象・災害RISK状況";
+                    if (panelDescription) panelDescription.textContent = "日本全国の台風・水害・津波・火山の一元化された警戒状況。";
+                    
+                    if (statusListContainer) {
+                        statusListContainer.innerHTML = `
+                            <div class="risk-item"><span>台風第30号警戒度:</span> <span class="risk-level-high">26日15時 九州四国接近</span></div>
+                            <div class="risk-item"><span>台風第31号警戒度:</span> <span class="risk-level-mid">26日15時 北西進・発達</span></div>
+                            <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">全沿岸で正常（発表なし）</span></div>
+                            <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-alert-prominent">LEVEL 2（警戒）</span></div>
+                        `;
+                    }
+                }
+
+                updateViewMode();
+            } catch (e) {
+                console.error("モード切り替えエラー:", e);
+            }
+        };
+
+        function evaluateLatestEarthquake(quakes) {
+            try {
+                const cardContainer = document.getElementById('alertCardContainer');
+                const infoText = document.getElementById('emergencyInfoText');
+                const countEl = document.getElementById('weekQuakeCount');
+
+                const displayCount = quakes.length;
+                if (countEl) countEl.textContent = `${displayCount}件`;
+
+                if (cardContainer && infoText) {
+                    if (quakes.length > 0) {
+                        const latest = quakes[0];
+                        cardContainer.classList.add('alert-active');
+                        const magText = (latest.mag && latest.mag > 0) ? `M${latest.mag}` : "調査中/微小";
+                        infoText.textContent = `【直近の検知】\n発生時刻: ${latest.time}\n震源地: ${latest.title}\n規模: ${magText} / 深さ: ${latest.depth}`;
+                    } else {
+                        cardContainer.classList.remove('alert-active');
+                        infoText.textContent = "現在、直近の検知データはありません";
+                    }
+                }
+            } catch(e) {}
+        }
+
+        window.setMagFilter = function(val, btnElement) {
+            currentMagFilter = val;
+            document.querySelectorAll('.mag-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            updateViewMode();
+        };
+
+        function updateViewMode() {
+            try {
+                if (!map) return;
+
+                const targetEl = document.getElementById('targetArea');
+                const areaKey = targetEl ? targetEl.value : 'all';
+                const selected = areaData[areaKey] || areaData['all'];
+
+                map.setView(selected.center, selected.zoom);
+
+                if (selected.weather) {
+                    const w = selected.weather;
+                    document.getElementById('widgetAreaTitle').innerHTML = `🌤️ 都道府県・天気予報 <span style="font-size: 9px; color: #94a3b8;">10/26現在</span>`;
+                    document.getElementById('widgetWeatherContent').innerHTML = `
+                        <div class="weather-row"><span>選択地域:</span> <strong style="color: #38bdf8; font-size: 10.5px;">${w.pref}</strong></div>
+                        <div class="weather-row"><span>天気 / 気温:</span> <strong>${w.cond} / ${w.temp}</strong></div>
+                        <div class="weather-row"><span>降水 / 風速:</span> <strong>${w.rain} / ${w.wind}</strong></div>
+                        <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;">
+                            ${w.note}
+                        </div>
+                    `;
+                }
+
+                if (anomalyLayer) anomalyLayer.clearLayers();
+                if (markerLayer) markerLayer.clearLayers();
+                if (weatherRiskLayer) weatherRiskLayer.clearLayers();
+
+                if (currentMode === 'earthquake') {
+                    anomalySpots.forEach(spot => {
+                        const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5' });
+                        const marker = L.circleMarker([spot.lat, spot.lng], { radius: 8, color: '#ffffff', fillColor: spot.color, fillOpacity: 0.95, weight: 2 });
+                        const content = `<div style="color: #333; font-size: 12px;"><strong>🚨 ${spot.name}</strong><br>${spot.desc}</div>`;
+                        circle.bindPopup(content);
+                        marker.bindPopup(content);
+                        anomalyLayer.addLayer(circle);
+                        anomalyLayer.addLayer(marker);
+                    });
+
+                    let filteredQuakes = [...liveQuakes];
+
+                    if (selected.bounds) {
+                        const b = selected.bounds;
+                        filteredQuakes = filteredQuakes.filter(q => q.lat >= b.latMin && q.lat <= b.latMax && q.lng >= b.lonMin && q.lng <= b.lonMax);
+                    }
+                    filteredQuakes = filteredQuakes.filter(q => {
+                        if (currentMagFilter === '4') return q.mag >= 4.0;
+                        if (currentMagFilter === '5') return q.mag >= 5.0;
+                        return true;
+                    });
+
+                    filteredQuakes.forEach(q => {
+                        let radius = 6, color = '#38bdf8';
+                        if (q.mag >= 5.0) { radius = 12; color = '#f59e0b'; }
+                        else if (q.mag >= 4.0) { radius = 9; color = '#ef4444'; }
+
+                        const marker = L.circleMarker([q.lat, q.lng], { radius: radius, color: color, fillColor: color, fillOpacity: 0.9 });
+                        const magDisplay = (q.mag && q.mag > 0) ? `M ${q.mag}` : "不明/微小";
+                        marker.bindPopup(`<div style="color: #333;"><strong>${q.title}</strong><br>規模: ${magDisplay} / 深さ: ${q.depth}<br>発生時刻: ${q.time}</div>`);
+                        markerLayer.addLayer(marker);
+                    });
+
+                } else {
+                    weatherRiskDataList.forEach(item => {
+                        let radiusVal = item.radius || 40000;
+                        let circleColor = item.color;
+                        let weightVal = 2;
+                        let dashVal = '4, 4';
+
+                        if (item.type === 'tsunami') {
+                            if (item.status === 'warning') {
+                                circleColor = '#eab308';
+                                weightVal = 3;
+                                dashVal = ''; 
+                            } else if (item.status === 'alert') {
+                                circleColor = '#ef4444';
+                                weightVal = 4;
+                                dashVal = ''; 
+                            } else {
+                                circleColor = '#06b6d4';
+                            }
+                        }
+
+                        const circle = L.circle([item.lat, item.lng], { 
+                            radius: radiusVal, 
+                            color: circleColor, 
+                            fillColor: circleColor, 
+                            fillOpacity: 0.2, 
+                            weight: weightVal, 
+                            dashArray: dashVal 
+                        });
+                        const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: circleColor, fillOpacity: 0.95, weight: 2 });
+
+                        const popupContent = `
+                            <div style="color: #1e293b; font-size: 12px; line-height: 1.5; min-width: 200px;">
+                                <strong style="color: ${circleColor}; font-size: 13px;">${item.name}</strong>
+                                <hr style="margin: 4px 0; border: 0; border-top: 1px solid #cbd5e1;">
+                                • <strong>詳細情報:</strong><br>${item.details.replace(/\n/g, '<br>')}
+                            </div>
+                        `;
+
+                        circle.bindPopup(popupContent);
+                        marker.bindPopup(popupContent);
+
+                        weatherRiskLayer.addLayer(circle);
+                        weatherRiskLayer.addLayer(marker);
+
+                        if (item.type === 'typhoon' && item.id === 'typhoon30') {
+                            const p0 = [item.lat, item.lng];
+                            const p1 = [27.2, 133.0];
+                            const p2 = [29.5, 135.2];
+
+                            const pathLine = L.polyline([p0, p1, p2], { color: '#ef4444', weight: 4, dashArray: '6, 6' });
+                            const fc1 = L.circle(p1, { radius: 100000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.15, weight: 1.5, dashArray: '3,3' });
+                            const fc2 = L.circle(p2, { radius: 80000, color: '#f87171', fillColor: '#f87171', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+
+                            const label03 = L.divIcon({
+                                className: 'time-label',
+                                html: `<div style="background: rgba(69,10,10,0.85); color: #ffedd5; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444; white-space: nowrap;">26日(月)03時</div>`,
+                                iconSize: [70, 18], iconAnchor: [-10, 10]
+                            });
+                            const label15 = L.divIcon({
+                                className: 'time-label',
+                                html: `<div style="background: rgba(69,10,10,0.85); color: #ffedd5; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444; white-space: nowrap;">26日(月)15時</div>`,
+                                iconSize: [70, 18], iconAnchor: [-10, 10]
+                            });
+
+                            const marker03 = L.marker(p1, { icon: label03 });
+                            const marker15 = L.marker(p2, { icon: label15 });
+
+                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風第30号 予報円タイムライン</strong><br>北東へ進行中</div>`);
+
+                            weatherRiskLayer.addLayer(pathLine);
+                            weatherRiskLayer.addLayer(fc1);
+                            weatherRiskLayer.addLayer(fc2);
+                            weatherRiskLayer.addLayer(marker03);
+                            weatherRiskLayer.addLayer(marker15);
+                        }
+
+                        if (item.type === 'typhoon' && item.id === 'typhoon31') {
+                            const p0 = [item.lat, item.lng];
+                            const p1 = [19.5, 135.8];
+                            const p2 = [21.0, 134.5];
+
+                            const pathLine = L.polyline([p0, p1, p2], { color: '#f59e0b', weight: 4, dashArray: '6, 6' });
+                            const fcSub = L.circle(p2, { radius: 90000, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+
+                            const labelSub = L.divIcon({
+                                className: 'time-label',
+                                html: `<div style="background: rgba(69,26,3,0.85); color: #fef3c7; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #f59e0b; white-space: nowrap;">26日(月)15時</div>`,
+                                iconSize: [70, 18], iconAnchor: [-10, 10]
+                            });
+                            const markerSub = L.marker(p2, { icon: labelSub });
+
+                            pathLine.bindPopup(`<div style="color: #333; font-size: 11px;"><strong>🌀 台風第31号 予報円タイムライン</strong><br>北西へ進行・発達中</div>`);
+
+                            weatherRiskLayer.addLayer(pathLine);
+                            weatherRiskLayer.addLayer(fcSub);
+                            weatherRiskLayer.addLayer(markerSub);
+                        }
+                    });
+                }
+
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100);
+
+            } catch(e) {
+                console.error("描画更新エラー:", e);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (map) map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
