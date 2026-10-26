@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（リアルタイム連動版）</title>
+    <title>⚠️自然災害RISK（地震一覧・可視化対応版）</title>
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%237f1d1d'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='bold' font-size='38' letter-spacing='1'%3E災RISK%3C/text%3E%3C/svg%3E">
     
     <style>
@@ -246,6 +246,33 @@
             color: #fecaca;
             white-space: pre-line;
         }
+        
+        /* 地震一覧リストのスタイル */
+        .quake-list-container {
+            max-height: 180px;
+            overflow-y: auto;
+            background: #0f172a;
+            border: 1px solid #7f1d1d;
+            border-radius: 6px;
+            padding: 4px;
+        }
+        .quake-list-item {
+            font-size: 10.5px;
+            padding: 5px 6px;
+            border-bottom: 1px dashed #334155;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quake-list-item:hover {
+            background: #1e293b;
+        }
+        .quake-list-item:last-child {
+            border-bottom: none;
+        }
+
         .risk-item {
             display: flex;
             justify-content: space-between;
@@ -424,6 +451,7 @@
                 <p id="modeStatusDesc">最新の地震データをリアルタイム自動同期中。</p>
             </div>
 
+            <!-- 動的に切り替わるメインカード -->
             <div id="dynamicCardContainer">
                 <div id="alertCardContainer" class="emergency-alert-card alert-active">
                     <h3 id="alertCardTitle">直近の地震活動情報</h3>
@@ -434,6 +462,18 @@
                 </div>
             </div>
 
+            <!-- 📋 【新機能】直近の地震一覧リスト（集中度可視化） -->
+            <div id="quakeListCard" class="card" style="border-color: #38bdf8;">
+                <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📊 直近の地震発生一覧 (上位10件)</span>
+                    <span style="font-size: 9.5px; color: #94a3b8;" id="quakeCountBadge">連動中</span>
+                </h3>
+                <div class="quake-list-container" id="quakeListContainer">
+                    <div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">データを読み込み中...</div>
+                </div>
+            </div>
+
+            <!-- 補助解説カード -->
             <div id="subInfoCard" class="card" style="border: 1px solid #ef4444; background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);">
                 <h3 style="color: #ffffff;" id="subCardTitle">⚡ 電磁波・地殻ひずみ異常検知速報</h3>
                 <div style="font-size: 11px; line-height: 1.4; color: #f8fafc;" id="subCardContent">
@@ -445,6 +485,7 @@
                 </div>
             </div>
 
+            <!-- ステータスパネル -->
             <div class="card">
                 <h3 id="panelTitle">全国の自然RISK状況</h3>
                 <p id="panelDescription">日本全体の地面のゆがみ・電磁波・リアルタイム地震活動のリスク状況。</p>
@@ -456,6 +497,7 @@
                 </div>
             </div>
 
+            <!-- フッター -->
             <div class="card" style="text-align: center; padding: 8px 10px; background: #0b1120; border-color: #0284c7;">
                 <div style="font-size: 10.5px; color: #cbd5e1; margin-bottom: 4px; line-height: 1.3;">
                     💡 画面上部のボタンで<span style="color: #38bdf8; font-weight: bold;">「地震」</span>と<span style="color: #38bdf8; font-weight: bold;">「気象・災害」</span>の2機能を瞬時に切り替えて監視できます。
@@ -474,7 +516,7 @@
                     <div class="weather-row"><span>天気 / 気温:</span> <strong>曇り時々雨 / 19.2℃</strong></div>
                     <div class="weather-row"><span>降水 / 風速:</span> <strong>60% / 北東 6m/s</strong></div>
                     <div style="margin-top: 4px; font-size: 10px; color: #cbd5e1; border-top: 1px dashed #334155; padding-top: 3px;" id="widgetTyphoonNote">
-                        🌀 台風情報は実況データに連動中
+                        🌀 台風第31号（強い勢力・西進中）
                     </div>
                 </div>
             </div>
@@ -514,26 +556,19 @@
             { name: "【地殻変動監視】東北沖・日本海溝セクター", lat: 38.5, lng: 142.0, radius: 55000, color: "#fca5a5", desc: "東日本大震災余効変動および周辺海溝沿いの活動を監視中。" }
         ];
 
-        // 🌀 【改善】10月26日20時現在の最新実況・予測にアップデートした台風・気象リスクデータ
         const weatherRiskDataList = [
             {
                 type: "typhoon",
                 id: "typhoon30_ex",
                 name: "🌀 温帯低気圧（元・台風第30号）",
-                lat: 33.5, lng: 135.2, 
-                radius: 400000,
-                color: "#94a3b8",
+                lat: 33.5, lng: 135.2, radius: 400000, color: "#94a3b8",
                 details: "【実況：温帯低気圧に変化】\n• 本日午前に温帯低気圧へ変わりました。\n• 東日本・関東甲信エリアにかけて雨雲を形成し、大雨・強風への注意が継続しています。"
             },
             {
                 type: "typhoon",
                 id: "typhoon31",
                 name: "🌀 台風第31号（強い勢力・西進中）",
-                lat: 17.2, lng: 152.0, 
-                maxWindSpeed: 35,
-                pressure: 970,
-                radius: 280000,
-                color: "#f59e0b",
+                lat: 17.2, lng: 152.0, maxWindSpeed: 35, pressure: 970, radius: 280000, color: "#f59e0b",
                 details: "【台風第31号 最新情報】\n• 現在位置: マリアナ諸島近海 (中心気圧 970 hPa)\n• 勢力: 強い勢力で発達中\n• 動向: 今週末（31日頃）にかけて小笠原諸島近海へ北西進する見込み"
             },
             {
@@ -545,9 +580,7 @@
             {
                 type: "tsunami",
                 name: "🌊 津波監視：太平洋沿岸",
-                lat: 34.0, lng: 141.5, radius: 85000,
-                status: "normal",
-                color: "#06b6d4",
+                lat: 34.0, lng: 141.5, radius: 85000, status: "normal", color: "#06b6d4",
                 details: "【海洋津波レーダー】\n• 現在の状態: 正常（津波発表なし）"
             },
             {
@@ -704,9 +737,54 @@
 
             if (currentMode === 'earthquake') {
                 evaluateLatestEarthquake(liveQuakes);
+                updateQuakeListUI(liveQuakes);
             }
             updateViewMode();
         }
+
+        // 📋 地震一覧リストのUIを更新する関数
+        function updateQuakeListUI(quakes) {
+            const listContainer = document.getElementById('quakeListContainer');
+            const countBadge = document.getElementById('quakeCountBadge');
+            if (!listContainer) return;
+
+            const top10 = quakes.slice(0, 10);
+            if (countBadge) countBadge.textContent = `${top10.length}件表示`;
+
+            if (top10.length === 0) {
+                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">データがありません</div>`;
+                return;
+            }
+
+            let html = '';
+            top10.forEach((q, index) => {
+                const magStr = (q.mag && q.mag > 0) ? `M${q.mag}` : "微小";
+                html += `
+                    <div class="quake-list-item" onclick="focusOnQuake(${q.lat}, ${q.lng}, '${q.title}', '${magStr}', '${q.depth}', '${q.time}')">
+                        <div>
+                            <strong style="color: #38bdf8;">${index + 1}. ${q.title}</strong>
+                            <div style="font-size: 9.5px; color: #94a3b8;">${q.time}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="background: #1e293b; padding: 2px 5px; border-radius: 3px; font-weight: bold; color: #f87171; border: 1px solid #7f1d1d;">${magStr}</span>
+                            <div style="font-size: 9px; color: #cbd5e1;">${q.depth}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        // 🎯 一覧から選んだ地震に地図をズームする関数
+        window.focusOnQuake = function(lat, lng, title, mag, depth, time) {
+            if (map) {
+                map.setView([lat, lng], 9);
+                L.popup()
+                    .setLatLng([lat, lng])
+                    .setContent(`<div style="color: #333; font-size: 12px;"><strong>📍 ${title}</strong><br>規模: ${mag} / 深さ: ${depth}<br>発生時刻: ${time}</div>`)
+                    .openOn(map);
+            }
+        };
 
         window.switchMode = function(mode) {
             try {
@@ -714,10 +792,12 @@
                 const btnEq = document.getElementById('btnEarthquakeMode');
                 const btnWeather = document.getElementById('btnWaterMode');
                 const magContainer = document.getElementById('magFilterContainer');
+                const quakeListCard = document.getElementById('quakeListCard');
 
                 if (btnEq) btnEq.classList.toggle('active', mode === 'earthquake');
                 if (btnWeather) btnWeather.classList.toggle('active', mode === 'weather_risk');
                 if (magContainer) magContainer.style.display = mode === 'earthquake' ? 'flex' : 'none';
+                if (quakeListCard) quakeListCard.style.display = mode === 'earthquake' ? 'block' : 'none';
 
                 const apiStatusEl = document.getElementById('apiStatus');
                 const modeStatusDesc = document.getElementById('modeStatusDesc');
@@ -765,6 +845,7 @@
                         `;
                     }
                     evaluateLatestEarthquake(liveQuakes);
+                    updateQuakeListUI(liveQuakes);
                 } else {
                     if (apiStatusEl) {
                         apiStatusEl.textContent = '気象・災害RISK統合監視中';
@@ -958,7 +1039,6 @@
                         weatherRiskLayer.addLayer(circle);
                         weatherRiskLayer.addLayer(marker);
 
-                        // 台風第31号の最新予報進路線
                         if (item.type === 'typhoon' && item.id === 'typhoon31') {
                             const p0 = [item.lat, item.lng];
                             const p1 = [19.0, 147.5];
