@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（国土地理院マップ・完全安定版）</title>
+    <title>⚠️自然災害RISK（台風予報ラベル完全版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -299,8 +299,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge">安定稼働中（地理院マップ標準版）</div>
-                <p>国土地理院マップと災害情報を表示しています。</p>
+                <div class="status-badge">安定稼働中（台風予報ラベル完全版）</div>
+                <p>最新の災害データを安定表示しています。</p>
             </div>
 
             <!-- 🌋 地震モード専用セクション -->
@@ -544,13 +544,32 @@
                     weatherRiskLayer.addLayer(marker);
 
                     if (item.id === 'typhoon31') {
+                        // 現在地の時間ラベル
+                        const startIcon = L.divIcon({
+                            className: 'typo-label',
+                            html: `<div style="background: rgba(69,26,3,0.9); color: #fef3c7; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #f59e0b; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">🌀 現在地 (970 hPa)</div>`,
+                            iconSize: [120, 22], iconAnchor: [-10, 10]
+                        });
+                        weatherRiskLayer.addLayer(L.marker([item.lat, item.lng], { icon: startIcon }));
+
+                        // 予報先（今週末）
                         const p0 = [item.lat, item.lng];
                         const p2 = [22.0, 142.0];
                         const pathLine = L.polyline([p0, p2], { color: '#f59e0b', weight: 4, dashArray: '6, 6' });
                         const fcSub = L.circle(p2, { radius: 120000, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+                        
+                        // 予報先の時間ラベル
+                        const endIcon = L.divIcon({
+                            className: 'typo-label',
+                            html: `<div style="background: rgba(69,26,3,0.9); color: #fef3c7; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #f59e0b; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">📅 今週末 接近予測</div>`,
+                            iconSize: [120, 22], iconAnchor: [-10, 10]
+                        });
+
                         pathLine.bindPopup(`<strong>🌀 台風第31号 予報円タイムライン</strong><br>強い勢力で北西へ進行中`);
+                        
                         weatherRiskLayer.addLayer(pathLine);
                         weatherRiskLayer.addLayer(fcSub);
+                        weatherRiskLayer.addLayer(L.marker(p2, { icon: endIcon }));
                     }
                 });
 
