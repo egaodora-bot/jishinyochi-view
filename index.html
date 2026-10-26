@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（絶対停止回避・完全安定版）</title>
+    <title>⚠️自然災害RISK（国土地理院マップ・完全安定版）</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         body, html {
@@ -151,19 +152,11 @@
             flex-shrink: 0;
             z-index: 1000;
         }
-        #map-container {
+        #map {
             position: relative;
             flex-grow: 1;
             height: 100%;
-            background-color: #091322;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #map-svg {
-            width: 100%;
-            height: 100%;
+            background-color: #0f172a;
         }
         .card {
             background: #0f172a;
@@ -254,22 +247,6 @@
         .mode-section { display: none; }
         .mode-section.active { display: block; }
 
-        /* SVG Tooltip */
-        .tooltip {
-            position: absolute;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid #ef4444;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            pointer-events: none;
-            display: none;
-            z-index: 3000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            line-height: 1.4;
-        }
-
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column-reverse;
@@ -278,7 +255,7 @@
                 width: 100%;
                 height: 45%;
             }
-            #map-container {
+            #map {
                 width: 100%;
                 height: 55%;
             }
@@ -322,8 +299,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge">安定稼働中（高耐久ローカルSVG版）</div>
-                <p>最新の災害データを高精度・超安定で表示しています。</p>
+                <div class="status-badge">安定稼働中（地理院マップ標準版）</div>
+                <p>国土地理院マップと災害情報を表示しています。</p>
             </div>
 
             <!-- 🌋 地震モード専用セクション -->
@@ -380,7 +357,7 @@
                     <h3 style="color: #38bdf8;">🌀 温帯低気圧・雨雲状況</h3>
                     <div style="font-size: 11px; line-height: 1.4; color: #f1f5f9;">
                         • 実況: 10/26午前に温帯低気圧へ変化。<br>
-                        • 雨雲通過状況: 東日本エリアにかかった雨雲帯は移動・通過しました。
+                        • 状況: 東日本エリアに形成された雨雲は通過・拡散しました。
                     </div>
                 </div>
 
@@ -398,7 +375,7 @@
                     <h3>気象・災害RISK状況</h3>
                     <div style="margin-top: 6px;">
                         <div class="risk-item"><span>台風第31号勢力:</span> <span class="risk-level-high">970 hPa (強い)</span></div>
-                        <div class="risk-item"><span>雨雲影響状況:</span> <span class="risk-level-mid">10/26の強雨帯通過</span></div>
+                        <div class="risk-item"><span>雨雲影響状況:</span> <span class="risk-level-mid">10/26の強雨帯通過済</span></div>
                         <div class="risk-item"><span>津波警報発令:</span> <span class="risk-level-low">全沿岸で正常</span></div>
                         <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
                     </div>
@@ -406,137 +383,131 @@
             </div>
         </div>
 
-        <div id="map-container">
-            <div id="tooltip" class="tooltip"></div>
-            <svg id="map-svg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
-                <!-- 背景グリッド -->
-                <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
-                    </pattern>
-                </defs>
-                <rect width="1000" height="800" fill="#091322"/>
-                <rect width="1000" height="800" fill="url(#grid)" />
-
-                <!-- 日本列島シルエット (高耐久ベクトル) -->
-                <g id="japan-map" stroke="#334155" stroke-width="1.5" fill="#1e293b">
-                    <!-- 北海道 -->
-                    <path d="M 720 120 L 790 100 L 850 140 L 830 220 L 760 230 L 700 180 Z"/>
-                    <!-- 本州 -->
-                    <path d="M 690 250 L 750 290 L 720 370 L 680 430 L 590 470 L 480 480 L 420 440 L 460 410 L 530 430 L 610 390 L 650 310 Z"/>
-                    <!-- 四国 -->
-                    <path d="M 460 500 L 520 490 L 530 530 L 470 540 Z"/>
-                    <!-- 九州 -->
-                    <path d="M 390 490 L 440 480 L 440 570 L 380 580 L 370 520 Z"/>
-                    <!-- 沖縄 -->
-                    <path d="M 220 660 L 260 650 L 270 670 L 230 680 Z"/>
-                </g>
-
-                <!-- リアルタイムデータレイヤー -->
-                <g id="layer-raincloud"></g>
-                <g id="layer-anomaly"></g>
-                <g id="layer-weather"></g>
-                <g id="layer-quakes"></g>
-            </svg>
-        </div>
+        <div id="map"></div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // リアルタイム時計
         setInterval(() => {
             const clock = document.getElementById('live-clock');
             if (clock) clock.textContent = new Date().toLocaleTimeString('ja-JP');
         }, 1000);
+
+        let map = null;
+        let markerLayer = null;
+        let anomalyLayer = null;
+        let weatherRiskLayer = null;
+        let rainCloudLayer = null;
 
         let currentMode = 'earthquake';
         let currentMagFilter = 'all';
         let isRadarVisible = true;
 
         const liveQuakes = [
-            { x: 670, y: 390, mag: 3.1, depth: "40km", title: "千葉県北東部", time: "2026-10-26 13:37:00", region: "kanto" },
-            { x: 730, y: 280, mag: 3.6, depth: "50km", title: "岩手県沖", time: "2026-10-26 13:35:00", region: "tohoku" },
-            { x: 735, y: 290, mag: 3.9, depth: "40km", title: "岩手県沖", time: "2026-10-26 13:12:00", region: "tohoku" },
-            { x: 760, y: 640, mag: 5.6, depth: "490km", title: "小笠原諸島西方沖", time: "2026-10-26 07:14:00", region: "kanto" },
-            { x: 680, y: 330, mag: 3.2, depth: "10km", title: "福島県会津", time: "2026-10-26 06:46:00", region: "tohoku" },
-            { x: 675, y: 365, mag: 3.8, depth: "50km", title: "茨城県北部", time: "2026-10-25 19:14:00", region: "kanto" },
-            { x: 720, y: 335, mag: 4.2, depth: "40km", title: "福島県沖", time: "2026-10-25 15:04:00", region: "tohoku" }
+            { lat: 35.8, lng: 140.7, mag: 3.1, depth: "40km", title: "千葉県北東部", time: "2026-10-26 13:37:00", region: "kanto" },
+            { lat: 39.5, lng: 142.1, mag: 3.6, depth: "50km", title: "岩手県沖", time: "2026-10-26 13:35:00", region: "tohoku" },
+            { lat: 39.4, lng: 142.2, mag: 3.9, depth: "40km", title: "岩手県沖", time: "2026-10-26 13:12:00", region: "tohoku" },
+            { lat: 27.2, lng: 140.8, mag: 5.6, depth: "490km", title: "小笠原諸島西方沖", time: "2026-10-26 07:14:00", region: "kanto" },
+            { lat: 37.5, lng: 139.9, mag: 3.2, depth: "10km", title: "福島県会津", time: "2026-10-26 06:46:00", region: "tohoku" },
+            { lat: 36.6, lng: 140.6, mag: 3.8, depth: "50km", title: "茨城県北部", time: "2026-10-25 19:14:00", region: "kanto" },
+            { lat: 37.3, lng: 141.5, mag: 4.2, depth: "40km", title: "福島県沖", time: "2026-10-25 15:04:00", region: "tohoku" }
         ];
 
         const anomalySpots = [
-            { x: 640, y: 380, r: 60, title: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
-            { x: 560, y: 460, r: 80, title: "【プレート境界ひずみ】東海・南海トラフ想定域", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
+            { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#f87171", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
+            { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
         ];
 
-        const weatherRiskList = [
-            { id: 'typhoon31', x: 820, y: 620, r: 70, title: "🌀 台風第31号（強い勢力・西進中）", desc: "中心気圧: 970hPa / 今週末にかけて小笠原諸島近海へ北西進見込み" },
-            { x: 570, y: 440, r: 90, title: "🌀 温帯低気圧（元・台風第30号）", desc: "10/26午前に温帯低気圧へ変化。東日本を通過済。" },
-            { x: 410, y: 540, r: 40, title: "🌋 火山噴火警戒（桜島・阿蘇山）", desc: "火口周辺警報（噴火警戒レベル3）。" }
+        const weatherRiskDataList = [
+            {
+                name: "🌀 温帯低気圧（元・台風第30号）",
+                lat: 33.5, lng: 135.2, radius: 400000, color: "#94a3b8",
+                details: "【実況：温帯低気圧に変化】\n• 10/26午前に温帯低気圧へ変わりました。\n• 東日本エリアの雨雲は通過・拡散しました。"
+            },
+            {
+                id: "typhoon31",
+                name: "🌀 台風第31号（強い勢力・西進中）",
+                lat: 17.2, lng: 152.0, radius: 280000, color: "#f59e0b",
+                details: "• 現在位置: マリアナ諸島近海 (中心気圧 970 hPa)\n• 動向: 今週末にかけて小笠原諸島近海へ北西進見込み"
+            },
+            {
+                name: "🌊 津波監視：太平洋沿岸",
+                lat: 34.0, lng: 141.5, radius: 85000, color: "#06b6d4",
+                details: "【海洋津波レーダー】\n• 現在の状態: 正常（津波発表なし）"
+            },
+            {
+                name: "🌋 火山噴火警戒（桜島・阿蘇山）",
+                lat: 31.58, lng: 130.65, radius: 35000, color: "#f97316",
+                details: "【火山データ】\n火口周辺警報（噴火警戒レベル3）。"
+            }
         ];
 
-        const rainCloudList = [
-            { x: 630, y: 380, rx: 140, ry: 70, title: "☔ 雨雲帯（関東甲信・東海）", desc: "10/26強雨帯通過済" }
-        ];
-
-        const viewBounds = {
-            all: "0 0 1000 800",
-            hokkaido: "650 50 250 220",
-            tohoku: "600 220 200 200",
-            kanto: "580 320 180 150",
-            chubu: "500 350 180 160",
-            kinki: "440 400 160 150",
-            chugoku_shikoku: "400 430 180 140",
-            kyushu_okinawa: "180 470 300 240"
+        const areaCenters = {
+            all: { center: [36.2, 138.2], zoom: 6 },
+            hokkaido: { center: [43.06, 141.35], zoom: 7 },
+            tohoku: { center: [39.7, 141.1], zoom: 7 },
+            kanto: { center: [35.68, 139.69], zoom: 8 },
+            chubu: { center: [36.2, 137.5], zoom: 7 },
+            kinki: { center: [35.0, 135.7], zoom: 8 },
+            chugoku_shikoku: { center: [34.3, 133.5], zoom: 7 },
+            kyushu_okinawa: { center: [32.5, 130.5], zoom: 7 }
         };
 
-        const tooltip = document.getElementById('tooltip');
+        const rainCloudsData = [
+            { name: "☔ 雨雲帯（関東甲信・東海）", lat: 35.4, lng: 139.6, radius: 220000, color: "#0284c7", peakTime: "10/26強雨帯通過済" }
+        ];
 
-        function showTooltip(evt, text) {
-            tooltip.style.display = 'block';
-            tooltip.innerHTML = text;
-            tooltip.style.left = (evt.clientX + 15) + 'px';
-            tooltip.style.top = (evt.clientY + 15) + 'px';
+        function initMap() {
+            if (map) return;
+            try {
+                map = L.map('map', {
+                    zoomControl: true,
+                    fadeAnimation: false,
+                    zoomAnimation: false
+                }).setView([36.2, 138.2], 6);
+
+                L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+                    attribution: '&copy; 国土地理院',
+                    maxZoom: 18,
+                    minZoom: 4
+                }).addTo(map);
+
+                markerLayer = L.layerGroup().addTo(map);
+                anomalyLayer = L.layerGroup().addTo(map);
+                weatherRiskLayer = L.layerGroup().addTo(map);
+                rainCloudLayer = L.layerGroup().addTo(map);
+
+                updateViewMode();
+                setTimeout(() => { if (map) map.invalidateSize(); }, 150);
+            } catch (e) {
+                console.error("マップ初期化エラー:", e);
+            }
         }
 
-        function hideTooltip() {
-            tooltip.style.display = 'none';
-        }
+        function updateViewMode() {
+            if (!map) return;
+            markerLayer.clearLayers();
+            anomalyLayer.clearLayers();
+            weatherRiskLayer.clearLayers();
+            rainCloudLayer.clearLayers();
 
-        function renderMap() {
-            const svg = document.getElementById('map-svg');
-            const layerQuakes = document.getElementById('layer-quakes');
-            const layerAnomaly = document.getElementById('layer-anomaly');
-            const layerWeather = document.getElementById('layer-weather');
-            const layerRain = document.getElementById('layer-raincloud');
-
-            layerQuakes.innerHTML = '';
-            layerAnomaly.innerHTML = '';
-            layerWeather.innerHTML = '';
-            layerRain.innerHTML = '';
+            const areaKey = document.getElementById('targetArea').value;
+            const targetArea = areaCenters[areaKey] || areaCenters['all'];
+            map.setView(targetArea.center, targetArea.zoom);
 
             if (currentMode === 'earthquake') {
-                // 地殻ひずみ異常エリア描画
                 anomalySpots.forEach(spot => {
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", spot.x);
-                    circle.setAttribute("cy", spot.y);
-                    circle.setAttribute("r", spot.r);
-                    circle.setAttribute("fill", "rgba(239, 68, 68, 0.2)");
-                    circle.setAttribute("stroke", "#ef4444");
-                    circle.setAttribute("stroke-width", "1.5");
-                    circle.setAttribute("stroke-dasharray", "4,4");
-                    circle.onmouseover = (e) => showTooltip(e, `<strong>${spot.title}</strong><br>${spot.desc}`);
-                    circle.onmouseout = hideTooltip;
-                    layerAnomaly.appendChild(circle);
+                    const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5' });
+                    circle.bindPopup(`<strong>🚨 ${spot.name}</strong><br>${spot.desc}`);
+                    anomalyLayer.addLayer(circle);
                 });
 
-                // 地震ピン描画
                 let filtered = liveQuakes.filter(q => {
                     if (currentMagFilter === '4') return q.mag >= 4.0;
                     if (currentMagFilter === '5') return q.mag >= 5.0;
                     return true;
                 });
 
-                const areaKey = document.getElementById('targetArea').value;
                 if (areaKey !== 'all') {
                     filtered = filtered.filter(q => q.region === areaKey);
                 }
@@ -544,64 +515,56 @@
                 updateQuakeListUI(filtered);
 
                 filtered.forEach(q => {
-                    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    const r = q.mag >= 5.0 ? 12 : (q.mag >= 4.0 ? 9 : 6);
-                    const color = q.mag >= 5.0 ? "#f59e0b" : "#ef4444";
+                    let radius = 6, color = '#38bdf8';
+                    if (q.mag >= 5.0) { radius = 11; color = '#f59e0b'; }
+                    else if (q.mag >= 4.0) { radius = 9; color = '#ef4444'; }
 
-                    circle.setAttribute("cx", q.x);
-                    circle.setAttribute("cy", q.y);
-                    circle.setAttribute("r", r);
-                    circle.setAttribute("fill", color);
-                    circle.setAttribute("stroke", "#ffffff");
-                    circle.setAttribute("stroke-width", "1.5");
-                    circle.setAttribute("cursor", "pointer");
-
-                    g.appendChild(circle);
-                    g.onmouseover = (e) => showTooltip(e, `<strong>${q.title}</strong><br>規模: M${q.mag} / 深さ: ${q.depth}<br>発生時刻: ${q.time}`);
-                    g.onmouseout = hideTooltip;
-                    layerQuakes.appendChild(g);
+                    const marker = L.circleMarker([q.lat, q.lng], { radius: radius, color: color, fillColor: color, fillOpacity: 0.9 });
+                    marker.bindPopup(`<strong>${q.title}</strong><br>規模: M${q.mag} / 深さ: ${q.depth}<br>発生時刻: ${q.time}`);
+                    markerLayer.addLayer(marker);
                 });
 
             } else {
-                // 気象・台風リスク描画
-                weatherRiskList.forEach(w => {
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", w.x);
-                    circle.setAttribute("cy", w.y);
-                    circle.setAttribute("r", w.r);
-                    circle.setAttribute("fill", w.id === 'typhoon31' ? "rgba(245, 158, 11, 0.25)" : "rgba(56, 189, 248, 0.2)");
-                    circle.setAttribute("stroke", w.id === 'typhoon31' ? "#f59e0b" : "#38bdf8");
-                    circle.setAttribute("stroke-width", "2");
-                    circle.setAttribute("stroke-dasharray", "5,5");
-                    circle.onmouseover = (e) => showTooltip(e, `<strong>${w.title}</strong><br>${w.desc}`);
-                    circle.onmouseout = hideTooltip;
-                    layerWeather.appendChild(circle);
+                weatherRiskDataList.forEach(item => {
+                    const circle = L.circle([item.lat, item.lng], {
+                        radius: item.radius,
+                        color: item.color,
+                        fillColor: item.color,
+                        fillOpacity: 0.2,
+                        weight: 2,
+                        dashArray: '4, 4'
+                    });
+                    const marker = L.circleMarker([item.lat, item.lng], { radius: 10, color: '#ffffff', fillColor: item.color, fillOpacity: 0.95, weight: 2 });
 
-                    if (w.id === 'typhoon31') {
-                        // 台風進路予報線
-                        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        line.setAttribute("d", `M ${w.x} ${w.y} L 740 500`);
-                        line.setAttribute("stroke", "#f59e0b");
-                        line.setAttribute("stroke-width", "3");
-                        line.setAttribute("stroke-dasharray", "6,6");
-                        layerWeather.appendChild(line);
+                    const popupContent = `<div style="color: #1e293b; font-size: 12px; line-height: 1.5;"><strong style="color: ${item.color}; font-size: 13px;">${item.name}</strong><hr style="margin: 4px 0;">${item.details.replace(/\n/g, '<br>')}</div>`;
+                    circle.bindPopup(popupContent);
+                    marker.bindPopup(popupContent);
+
+                    weatherRiskLayer.addLayer(circle);
+                    weatherRiskLayer.addLayer(marker);
+
+                    if (item.id === 'typhoon31') {
+                        const p0 = [item.lat, item.lng];
+                        const p2 = [22.0, 142.0];
+                        const pathLine = L.polyline([p0, p2], { color: '#f59e0b', weight: 4, dashArray: '6, 6' });
+                        const fcSub = L.circle(p2, { radius: 120000, color: '#fbbf24', fillColor: '#fbbf24', fillOpacity: 0.2, weight: 1.5, dashArray: '3,3' });
+                        pathLine.bindPopup(`<strong>🌀 台風第31号 予報円タイムライン</strong><br>強い勢力で北西へ進行中`);
+                        weatherRiskLayer.addLayer(pathLine);
+                        weatherRiskLayer.addLayer(fcSub);
                     }
                 });
 
                 if (isRadarVisible) {
-                    rainCloudList.forEach(rc => {
-                        const ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-                        ellipse.setAttribute("cx", rc.x);
-                        ellipse.setAttribute("cy", rc.y);
-                        ellipse.setAttribute("rx", rc.rx);
-                        ellipse.setAttribute("ry", rc.ry);
-                        ellipse.setAttribute("fill", "rgba(2, 132, 199, 0.35)");
-                        ellipse.setAttribute("stroke", "#0284c7");
-                        ellipse.setAttribute("stroke-width", "2");
-                        ellipse.onmouseover = (e) => showTooltip(e, `<strong>${rc.title}</strong><br>${rc.desc}`);
-                        ellipse.onmouseout = hideTooltip;
-                        layerRain.appendChild(ellipse);
+                    rainCloudsData.forEach(rc => {
+                        const rainCircle = L.circle([rc.lat, rc.lng], {
+                            radius: rc.radius,
+                            color: rc.color,
+                            fillColor: '#0284c7',
+                            fillOpacity: 0.35,
+                            weight: 2
+                        });
+                        rainCircle.bindPopup(`<strong>${rc.name}</strong><br>状況: ${rc.peakTime}`);
+                        rainCloudLayer.addLayer(rainCircle);
                     });
                 }
             }
@@ -622,7 +585,7 @@
             let html = '';
             quakes.forEach((q, index) => {
                 html += `
-                    <div class="quake-item" onclick="zoomToSpot(${q.x}, ${q.y})">
+                    <div class="quake-item" onclick="if(map) map.setView([${q.lat}, ${q.lng}], 9)">
                         <div>
                             <strong style="color: #38bdf8;">${index + 1}. ${q.title}</strong>
                             <div style="font-size: 9.5px; color: #94a3b8;">${q.time}</div>
@@ -632,18 +595,6 @@
                 `;
             });
             listContainer.innerHTML = html;
-        }
-
-        function zoomToSpot(x, y) {
-            const svg = document.getElementById('map-svg');
-            svg.setAttribute("viewBox", `${x - 100} ${y - 80} 200 160`);
-        }
-
-        function updateViewMode() {
-            const areaKey = document.getElementById('targetArea').value;
-            const svg = document.getElementById('map-svg');
-            svg.setAttribute("viewBox", viewBounds[areaKey] || viewBounds['all']);
-            renderMap();
         }
 
         function switchMode(mode) {
@@ -656,6 +607,7 @@
             document.getElementById('weatherSection').classList.toggle('active', mode === 'weather_risk');
 
             updateViewMode();
+            if (map) setTimeout(() => { map.invalidateSize(); }, 50);
         }
 
         function setMagFilter(val, btn) {
@@ -673,8 +625,13 @@
             updateViewMode();
         }
 
-        // 初期表示
-        updateViewMode();
+        window.addEventListener('DOMContentLoaded', initMap);
+        window.addEventListener('load', initMap);
+        setTimeout(initMap, 200);
+
+        window.addEventListener('resize', () => {
+            if (map) map.invalidateSize();
+        });
     </script>
 </body>
 </html>
