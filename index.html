@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（権利表記完備・完全安定版）</title>
+    <title>⚠️自然災害RISK（常時稼働・自動リフレッシュ安定版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -299,8 +299,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">API接続中...</div>
-                <p id="apiStatusDesc">最新の地震情報をリアルタイム取得中。</p>
+                <div class="status-badge" id="apiStatusBadge">API接続中（自動同期）</div>
+                <p id="apiStatusDesc">安定常時稼働モード（数時間毎にメモリ自動リフレッシュ）</p>
             </div>
 
             <!-- 🌋 地震モード専用セクション -->
@@ -473,7 +473,18 @@
                 weatherRiskLayer = L.layerGroup().addTo(map);
                 rainCloudLayer = L.layerGroup().addTo(map);
 
+                // 初回APIデータ取得
                 fetchRealtimeQuakes();
+
+                // 【常時稼働対策】軽量なタイマーによるAPI定期自動更新（約3分おき）
+                setInterval(() => {
+                    fetchRealtimeQuakes();
+                }, 180000);
+
+                // 【メモリリーク防止対策】6時間ごとにページを自動クリーンリフレッシュ
+                setTimeout(() => {
+                    location.reload();
+                }, 21600000);
 
                 setTimeout(() => { if (map) map.invalidateSize(); }, 150);
             } catch (e) {
