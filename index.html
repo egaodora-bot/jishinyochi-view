@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（常時稼働・自動リフレッシュ安定版）</title>
+    <title>⚠️自然災害RISK（公式優先＋自動解析コメント搭載版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -207,9 +207,10 @@
             font-size: 11px;
             color: #fecaca;
             white-space: pre-line;
+            line-height: 1.4;
         }
         .quake-list-container {
-            max-height: 200px;
+            max-height: 180px;
             overflow-y: auto;
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -300,14 +301,18 @@
         <div class="sidebar">
             <div class="card">
                 <div class="status-badge" id="apiStatusBadge">API接続中（自動同期）</div>
-                <p id="apiStatusDesc">安定常時稼働モード（数時間毎にメモリ自動リフレッシュ）</p>
+                <p id="apiStatusDesc" style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">公式優先＋自動解析コメント運用中</p>
             </div>
 
             <!-- 🌋 地震モード専用セクション -->
             <div id="earthquakeSection" class="mode-section active">
                 <div class="emergency-alert-card alert-active">
-                    <h3>直近の地震活動情報</h3>
-                    <div class="info-text-box" id="latestQuakeBox">【最新データ読み込み中】</div>
+                    <h3>📢 防災コメント・リスク分析</h3>
+                    <div class="info-text-box" id="latestQuakeBox">【分析コメント読み込み中】</div>
+                    <!-- コメントの仕組みに関する説明注記を追加 -->
+                    <div style="font-size: 9.5px; color: #cbd5e1; margin-top: 6px; border-top: 1px dashed #991b1b; padding-top: 4px; line-height: 1.3;">
+                        ℹ️ <strong>コメント判定基準：</strong>気象庁公式発表（臨時情報等）がある場合は最優先表示。公式情報がない平常時は、直近の地震発生頻度や規模をもとにシステムが自動解析・コメント生成します。
+                    </div>
                 </div>
 
                 <div class="card" style="border-color: #38bdf8;">
@@ -337,7 +342,7 @@
                         <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                         <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
                         <div class="risk-item"><span>直近の地震発生数:</span> <span class="risk-level-low" id="riskCountText">0件</span></div>
-                        <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
+                        <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high" id="riskLevelText">LEVEL 2（警戒）</span></div>
                     </div>
                 </div>
             </div>
@@ -408,6 +413,7 @@
         let isRadarVisible = true;
 
         let liveQuakes = [];
+        let officialComment = null; // 気象庁等の公式コメント保持用
 
         const anomalySpots = [
             { name: "【電磁波ノイズ・地殻ひずみ】関東甲信越セクター", lat: 35.8, lng: 139.3, radius: 45000, color: "#f87171", desc: "地殻の微小な伸び縮みと、VLF帯電磁波ノイズを観測中。" },
@@ -473,15 +479,14 @@
                 weatherRiskLayer = L.layerGroup().addTo(map);
                 rainCloudLayer = L.layerGroup().addTo(map);
 
-                // 初回APIデータ取得
                 fetchRealtimeQuakes();
 
-                // 【常時稼働対策】軽量なタイマーによるAPI定期自動更新（約3分おき）
+                // 定期自動更新（約3分おき）
                 setInterval(() => {
                     fetchRealtimeQuakes();
                 }, 180000);
 
-                // 【メモリリーク防止対策】6時間ごとにページを自動クリーンリフレッシュ
+                // メモリリーク防止（6時間ごとにページ自動リフレッシュ）
                 setTimeout(() => {
                     location.reload();
                 }, 21600000);
@@ -494,12 +499,19 @@
 
         async function fetchRealtimeQuakes() {
             try {
-                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=10');
+                const response = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=15');
                 if (!response.ok) throw new Error("API通信失敗");
                 const data = await response.json();
 
                 liveQuakes = [];
+                officialComment = null; // 初期化
+
                 data.forEach(item => {
+                    // 気象庁公式のコメントや特記事項があればキャッチ
+                    if (item.issue && item.issue.comment) {
+                        officialComment = item.issue.comment;
+                    }
+
                     if (item.earthquake && item.earthquake.hypocenter) {
                         const h = item.earthquake.hypocenter;
                         if (h.latitude && h.longitude && h.name) {
@@ -518,16 +530,45 @@
 
                 document.getElementById('apiStatusBadge').textContent = "API自動連動中（LIVE）";
                 document.getElementById('apiStatusBadge').style.background = "#0284c7";
-                document.getElementById('apiStatusDesc').textContent = "最新の気象庁・地震速報データを自動同期しています。";
+                document.getElementById('apiStatusDesc').textContent = "公式優先＋自動解析コメント運用中";
 
-                updateLatestQuakeBox();
+                updateAnalysisAndCommentBox();
                 updateViewMode();
             } catch (e) {
                 console.warn("API取得エラー:", e);
                 document.getElementById('apiStatusBadge').textContent = "API接続待機中";
                 document.getElementById('apiStatusBadge').style.background = "#d97706";
-                document.getElementById('latestQuakeBox').textContent = "【最新情報】\n現在、地震情報は発表されていません。";
+                document.getElementById('latestQuakeBox').textContent = "【最新情報】\n現在、接続待機中または地震情報は発表されていません。";
                 updateViewMode();
+            }
+        }
+
+        // 【公式優先 ＋ 自動解析コメント生成ロジック】
+        function updateAnalysisAndCommentBox() {
+            const box = document.getElementById('latestQuakeBox');
+            if (!box) return;
+
+            // 1. 気象庁等の公式コメントがある場合は最優先で表示
+            if (officialComment) {
+                box.innerHTML = `<strong style="color: #fca5a5;">【気象庁公式コメント】</strong><br>${officialComment}`;
+                return;
+            }
+
+            // 2. 公式コメントがない場合は、システムの自動解析ロジックで判定
+            if (liveQuakes.length === 0) {
+                box.textContent = "【自動解析】\n直近で検知された地震情報はありません。安定状態を維持しています。";
+                return;
+            }
+
+            const latest = liveQuakes[0];
+            
+            // 連続発生・群発の簡易自動判定（直近の地震データ数に基づく解析）
+            if (liveQuakes.length >= 5) {
+                box.innerHTML = `<strong style="color: #fbbf24;">⚠️ 【自動解析：群発・連続発生傾向】</strong><br>• 状況: 短時間で複数回（${liveQuakes.length}件）の地震活動を検知。<br>• 直近: ${latest.title} (M${latest.mag})<br>• 見解: 同一エリアまたは周辺での活動がやや活発化しています。今後の推移に注意してください。`;
+            } else if (latest.mag >= 4.5) {
+                box.innerHTML = `<strong style="color: #f87171;">⚠️ 【自動解析：中規模以上の地震検知】</strong><br>• 発生時刻: ${latest.time}<br>• 震源地: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>• 見解: 揺れの大きかった地域では、二次災害や落石・土砂崩れ等に十分注意してください。`;
+            } else {
+                box.innerHTML = `【自動解析：平常時モニタリング】<br>• 直近の検知: ${latest.title} (M${latest.mag})<br>• 状況: 特段の異常傾向は認められません。平常時の観測体制を継続中。`;
             }
         }
 
@@ -539,18 +580,6 @@
             if (lat >= 34.0 && lng >= 134.5 && lng < 136.0) return 'kinki';
             if (lat >= 33.0 && lng >= 131.0 && lng < 134.5) return 'chugoku_shikoku';
             return 'kyushu_okinawa';
-        }
-
-        function updateLatestQuakeBox() {
-            const box = document.getElementById('latestQuakeBox');
-            if (!box) return;
-
-            if (liveQuakes.length > 0) {
-                const q = liveQuakes[0];
-                box.textContent = `【直近の検知】\n発生時刻: ${q.time}\n震源地: ${q.title}\n規模: M${q.mag} / 深さ: ${q.depth}`;
-            } else {
-                box.textContent = "【直近の検知】\n現在、発表されている新しい地震情報はありません。";
-            }
         }
 
         function updateViewMode() {
