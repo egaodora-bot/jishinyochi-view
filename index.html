@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌋 総合地震・気象リスクモニタリングシステム</title>
+    <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        /* 画面レイアウトの基本設定：全画面固定・スクロール防止 */
         body, html {
             margin: 0;
             padding: 0;
@@ -16,6 +18,8 @@
             background-color: #0f172a;
             color: #ffffff;
         }
+
+        /* ヘッダーデザイン：緊急災害カラー（赤紫〜ダークネイビー） */
         header {
             position: absolute;
             top: 0;
@@ -32,11 +36,13 @@
             box-sizing: border-box;
             z-index: 2000;
         }
+
         .header-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .system-title {
             font-size: 15px;
             font-weight: 900;
@@ -45,6 +51,8 @@
             text-shadow: 0 1px 4px rgba(239, 68, 68, 0.8);
             white-space: nowrap;
         }
+
+        /* モード切替ボタングループ */
         .header-center {
             display: flex;
             gap: 6px;
@@ -53,6 +61,7 @@
             border-radius: 8px;
             border: 1px solid #7f1d1d;
         }
+
         .mode-btn {
             background: transparent;
             border: none;
@@ -63,12 +72,15 @@
             border-radius: 6px;
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s;
         }
+
         .mode-btn.active {
             background: #dc2626;
             color: #fff;
             box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5);
         }
+
         .radar-btn {
             background: #334155;
             color: #94a3b8;
@@ -79,18 +91,23 @@
             border-radius: 6px;
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s;
         }
+
         .radar-btn.active {
             background: #0284c7;
             color: #ffffff;
             border-color: #38bdf8;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
         }
+
         .header-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
+
+        /* 地域フィルターセレクトボックス */
         .area-selector-wrapper {
             background: #180808;
             border: 2px solid #ef4444;
@@ -100,11 +117,13 @@
             align-items: center;
             gap: 4px;
         }
+
         .area-selector-wrapper label {
             font-size: 11px;
             font-weight: bold;
             color: #fca5a5;
         }
+
         .area-selector {
             padding: 3px 4px;
             border-radius: 4px;
@@ -115,6 +134,8 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        /* 規模（マグニチュード）フィルターボタン */
         .mag-filter-group {
             display: flex;
             background: #180808;
@@ -122,6 +143,7 @@
             border-radius: 6px;
             overflow: hidden;
         }
+
         .mag-btn {
             background: transparent;
             border: none;
@@ -129,12 +151,15 @@
             padding: 4px 7px;
             font-size: 11px;
             cursor: pointer;
+            transition: background 0.2s;
         }
+
         .mag-btn.active {
             background: #0284c7;
             color: #fff;
             font-weight: bold;
         }
+
         .refresh-sync-btn {
             background: #065f46;
             color: #fff;
@@ -144,8 +169,14 @@
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
+        .refresh-sync-btn:hover {
+            background: #047857;
+        }
+
+        /* メインコンテンツ配置（左側サイドバー ＋ 右側マップ） */
         .main-container {
             position: absolute;
             top: 60px;
@@ -154,6 +185,7 @@
             height: calc(100vh - 60px);
             display: flex;
         }
+
         .sidebar {
             width: 380px;
             height: 100%;
@@ -165,12 +197,15 @@
             flex-shrink: 0;
             z-index: 1000;
         }
+
         #map {
             position: relative;
             flex-grow: 1;
             height: 100%;
             background-color: #0f172a;
         }
+
+        /* サイドバー内カード共通スタイル */
         .card {
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -178,6 +213,7 @@
             padding: 10px 12px;
             margin-bottom: 10px;
         }
+
         .card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
@@ -185,6 +221,7 @@
             border-bottom: 1px solid #7f1d1d;
             padding-bottom: 4px;
         }
+
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -195,6 +232,7 @@
             color: #ffffff;
             margin-bottom: 6px;
         }
+
         .emergency-alert-card {
             background: #380808;
             border: 1.5px solid #f87171;
@@ -203,6 +241,7 @@
             margin-bottom: 10px;
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
+
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 12px;
@@ -210,6 +249,7 @@
             border-bottom: 1px solid #991b1b;
             padding-bottom: 3px;
         }
+
         .info-text-box {
             background: #090d16;
             border-radius: 4px;
@@ -221,6 +261,7 @@
             white-space: pre-line;
             line-height: 1.5;
         }
+
         .quake-list-container {
             max-height: 240px;
             overflow-y: auto;
@@ -229,6 +270,7 @@
             border-radius: 6px;
             padding: 4px;
         }
+
         .quake-item {
             font-size: 11px;
             padding: 6px 8px;
@@ -237,10 +279,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.15s;
         }
+
         .quake-item:hover {
             background: #1e293b;
         }
+
         .risk-item {
             display: flex;
             justify-content: space-between;
@@ -250,10 +295,12 @@
             border-bottom: 1px dashed #7f1d1d;
             padding-bottom: 3px;
         }
+
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
 
+        /* レスポンシブ対応（タブレット・モバイル端末考慮） */
         @media (max-width: 768px) {
             .main-container { flex-direction: column-reverse; }
             .sidebar { width: 100%; height: 45%; }
@@ -263,6 +310,7 @@
 </head>
 <body>
 
+    <!-- ヘッダーエリア -->
     <header>
         <div class="header-left">
             <div class="system-title">🌋 地震・気象リスクモニタ</div>
@@ -298,6 +346,7 @@
         </div>
     </header>
 
+    <!-- メインコンテンツコンテナ -->
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
@@ -305,6 +354,7 @@
                 <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">直近3日間（72時間）の全履歴を網羅中</p>
             </div>
 
+            <!-- 防災コメント・リスク分析カード（群発・連続発生対応版） -->
             <div class="emergency-alert-card">
                 <h3>📢 防災コメント・リスク分析</h3>
                 <div class="info-text-box" id="latestQuakeBox">【分析コメント読み込み中】</div>
@@ -362,6 +412,7 @@
         <div id="map"></div>
     </div>
 
+    <!-- Leaflet JS ライブラリ読み込み -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         setInterval(() => {
@@ -419,7 +470,7 @@
             markerLayer = L.layerGroup().addTo(map);
             anomalyLayer = L.layerGroup().addTo(map);
             weatherRiskLayer = L.layerGroup().addTo(map);
-            rainCloudLayer = L.layerGroup().addTo(map);
+            rainCloudLevel = L.layerGroup().addTo(map);
 
             liveQuakes = safeQuakesBaseline;
             
@@ -474,14 +525,50 @@
             });
         }
 
+        /* 群発地震・同地域連続発生を自動検知して詳細コメントを生成する関数 */
         function updateAnalysisAndCommentBox() {
             const box = document.getElementById('latestQuakeBox');
             if (!box) return;
+
             if (officialComment) {
                 box.innerHTML = `<span style="color: #fde047; font-weight: bold;">【気象庁公式コメント】</span><br>${officialComment}`;
-            } else if (liveQuakes.length > 0) {
+                return;
+            }
+
+            if (liveQuakes.length > 0) {
+                // 直近の地震の発生地名を集計して、同じ場所で立て続けに起きているか（群発・頻発）を判定
+                const locationCounts = {};
+                liveQuakes.forEach(q => {
+                    // 「〜沖」「〜県」などの主要エリア名で簡易グルーピング
+                    const key = q.title.split(' ')[0]; 
+                    locationCounts[key] = (locationCounts[key] || 0) + 1;
+                });
+
+                // 最も頻発している地域を特定
+                let frequentRegion = "";
+                let maxCount = 0;
+                for (const [loc, cnt] of Object.entries(locationCounts)) {
+                    if (cnt > maxCount) {
+                        maxCount = cnt;
+                        frequentRegion = loc;
+                    }
+                }
+
                 const latest = liveQuakes[0];
-                box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析：常時モニタリング中】</span><br>• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>• 発生時刻: ${latest.time}`;
+
+                if (maxCount >= 2) {
+                    // 同地域で複数回（群発・立て続け）検知した場合の詳細コメント
+                    box.innerHTML = `<span style="color: #f87171; font-weight: bold;">⚡【群発・連続発生 警戒警報】</span><br>` +
+                                    `• 注目エリア: <strong>${frequentRegion}周辺</strong><br>` +
+                                    `• 発生頻度: 直近3日間に <strong>${maxCount}回</strong> の地震を観測<br>` +
+                                    `• リスク分析: 同一地域での連続発生を確認。地殻のひずみが集中している可能性があり、今後数日間は同程度またはそれ以上の揺れに厳重注意が必要です。`;
+                } else {
+                    // 通常時の自動解析コメント
+                    box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析：常時モニタリング中】</span><br>` +
+                                    `• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>` +
+                                    `• 発生時刻: ${latest.time}<br>` +
+                                    `• 状況: 各地で安定推移中。継続してバックグラウンド監視を行っています。`;
+                }
             }
         }
 
@@ -497,7 +584,10 @@
 
         function updateViewMode() {
             if (!map) return;
-            markerLayer.clearLayers(); anomalyLayer.clearLayers(); weatherRiskLayer.clearLayers(); rainCloudLayer.clearLayers();
+            markerLayer.clearLayers();
+            anomalyLayer.clearLayers();
+            weatherRiskLayer.clearLayers();
+            rainCloudLayer.clearLayers();
 
             const areaKey = document.getElementById('targetArea').value;
             const targetArea = areaCenters[areaKey] || areaCenters['all'];
@@ -505,7 +595,9 @@
 
             if (currentMode === 'earthquake') {
                 anomalySpots.forEach(spot => {
-                    const circle = L.circle([spot.lat, spot.lng], { radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5' });
+                    const circle = L.circle([spot.lat, spot.lng], {
+                        radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5'
+                    });
                     circle.bindPopup(`<strong>🚨 ${spot.name}</strong><br>${spot.desc}`);
                     anomalyLayer.addLayer(circle);
                 });
@@ -529,7 +621,9 @@
                 });
             } else {
                 weatherRiskDataList.forEach(item => {
-                    const circle = L.circle([item.lat, item.lng], { radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.2, weight: 2, dashArray: '4, 4' });
+                    const circle = L.circle([item.lat, item.lng], {
+                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.2, weight: 2, dashArray: '4, 4'
+                    });
                     circle.bindPopup(`<strong>${item.name}</strong><br>${item.details.replace(/\n/g, '<br>')}`);
                     weatherRiskLayer.addLayer(circle);
                 });
