@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（常時稼働・完全自己防衛版）</title>
+    <title>⚠️自然災害RISK（連続発生コメント連動・完全版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -324,7 +324,7 @@
                     <h3>📢 防災コメント・リスク分析</h3>
                     <div class="info-text-box" id="latestQuakeBox">【分析コメント読み込み中】</div>
                     <div style="font-size: 10px; color: #cbd5e1; margin-top: 8px; border-top: 1px dashed #7f1d1d; padding-top: 6px; line-height: 1.4;">
-                        ℹ️ <strong>コメント判定基準：</strong>気象庁公式発表・直近の地震発生頻度や規模をもとにシステムが自動解析・コメント生成します。
+                        ℹ️ <strong>コメント判定基準：</strong>根室・千葉等での連続発生傾向やマグニチュード規模をもとにシステムが自動解析・コメント生成します。
                     </div>
                 </div>
 
@@ -472,7 +472,6 @@
             { name: "☔ 雨雲帯（関東甲信・東海）", lat: 35.4, lng: 139.6, radius: 220000, color: "#0284c7", peakTime: "雨雲帯通過・低気圧移動中" }
         ];
 
-        // 【自己完結型・堅牢セーフティデータ（直近の主要地震を常に保持）】
         const safeQuakesBaseline = [
             { lat: 42.1, lng: 142.5, mag: 4.2, depth: "50km", title: "根室半島南東沖", time: "2026/10/30 17:45:00", region: "hokkaido" },
             { lat: 39.8, lng: 142.2, mag: 4.1, depth: "40km", title: "岩手県沖", time: "2026/10/30 13:58:00", region: "tohoku" },
@@ -503,20 +502,16 @@
                 weatherRiskLayer = L.layerGroup().addTo(map);
                 rainCloudLayer = L.layerGroup().addTo(map);
 
-                // 起動時は常に安全ベースラインをセット（絶対に空白にならない）
                 liveQuakes = safeQuakesBaseline;
                 updateAnalysisAndCommentBox();
                 updateViewMode();
 
-                // バックグラウンドでAPI取得を試行
                 fetchRealtimeQuakes();
 
-                // 定期自動更新（約3分おき）
                 setInterval(() => {
                     fetchRealtimeQuakes();
                 }, 180000);
 
-                // メモリリーク防止（6時間自動リフレッシュ）
                 setTimeout(() => {
                     location.reload();
                 }, 21600000);
@@ -560,7 +555,6 @@
                     });
 
                     if (fetchedList.length > 0) {
-                        // 取得できた場合はライブデータを優先採用
                         liveQuakes = fetchedList;
                     }
                 }
@@ -572,7 +566,6 @@
                 updateViewMode();
             } catch (e) {
                 console.warn("API取得保護発動（安全データを維持）:", e);
-                // エラー時は安全ベースラインを維持しつつシステムを止めない
                 updateAnalysisAndCommentBox();
                 updateViewMode();
             }
@@ -583,7 +576,6 @@
             badge.textContent = "同期中...";
             badge.style.background = "#f59e0b";
             
-            // 強制同期時は安全ベースライン＋API再取得を安全に実行
             fetchRealtimeQuakes().finally(() => {
                 setTimeout(() => {
                     badge.textContent = "高安定監視中（常時稼働）";
@@ -593,6 +585,7 @@
             });
         }
 
+        // 【連続発生・群発傾向を即座に反映する自動解析コメント生成ロジック】
         function updateAnalysisAndCommentBox() {
             const box = document.getElementById('latestQuakeBox');
             if (!box) return;
@@ -608,7 +601,20 @@
             }
 
             const latest = liveQuakes[0];
-            box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析：常時モニタリング中】</span><br>• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>• 発生時刻: ${latest.time}<br>• 状況: 3日間履歴および地殻変動監視を継続中。`;
+
+            // 根室や千葉など、同一地域名が含まれる件数をカウントして連続発生を判定
+            const chibaCount = liveQuakes.filter(q => q.title.includes('千葉')).length;
+            const nemuroCount = liveQuakes.filter(q => q.title.includes('根室') || q.title.includes('釧路')).length;
+
+            if (chibaCount >= 2) {
+                box.innerHTML = `<span style="color: #fde047; font-weight: bold;">⚠️ 【自動解析：千葉エリア連続発生傾向】</span><br>• 状況: 千葉県周辺において複数回（${chibaCount}件）の地震活動を検知。<br>• 直近: ${latest.title} (M${latest.mag})<br>• 見解: 同一セクターでの活動が継続しています。今後の推移に注意してください。`;
+            } else if (nemuroCount >= 2) {
+                box.innerHTML = `<span style="color: #fde047; font-weight: bold;">⚠️ 【自動解析：根室・道東エリア連続発生傾向】</span><br>• 状況: 道東沖において複数回（${nemuroCount}件）の地震活動を検知。<br>• 直近: ${latest.title} (M${latest.mag})<br>• 見解: プレート境界周辺のひずみ解放活動に注意してください。`;
+            } else if (liveQuakes.length >= 10) {
+                box.innerHTML = `<span style="color: #fde047; font-weight: bold;">⚠️ 【自動解析：広域・多発傾向】</span><br>• 状況: 直近3日間で${liveQuakes.length}件の地震活動を全系観測。<br>• 直近: ${latest.title} (M${latest.mag})<br>• 見解: 地殻のひずみ解放が広範囲で継続しています。`;
+            } else {
+                box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析：常時モニタリング中】</span><br>• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>• 発生時刻: ${latest.time}<br>• 状況: 3日間履歴および地殻変動監視を継続中。`;
+            }
         }
 
         function getRegionFromCoords(lat, lng) {
