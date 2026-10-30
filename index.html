@@ -3,32 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（完全分離・独立二刀流版）</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <title>🚨 総合防災RISKモニタリング・ポータル</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #0f172a;
-            color: #ffffff;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-        header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: linear-gradient(135deg, #450a0a 0%, #1e1b4b 100%);
-            color: #fff;
-            padding: 0 12px;
+        .portal-container {
+            width: 90%;
+            max-width: 800px;
+            background: #1e1b4b;
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+            box-sizing: border-box;
+        }
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            text-align: center;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .subtitle {
+            font-size: 12px;
+            text-align: center;
+            color: #cbd5e1;
+            margin-bottom: 24px;
+        }
+        .system-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .system-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #ef4444;
-            box-sizing: border-box;
-            z-index: 2000;
+            background: #0f172a;
+            border: 1px solid #7f1d1d;
+            border-radius: 8px;
+            padding: 16px 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease-in-out;
+        }
+        .system-card:hover {
+            background: #1e293b;
+            border-color: #ef4444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+        .system-left {
+            font-size: 15px;
+            font-weight: bold;
+            color: #38bdf8;
+            flex-shrink: 0;
+            width: 240px;
+        }
+        .system-right {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            flex-grow: 1;
+            padding-left: 20px;
+            border-left: 1px dashed #334155;
+        }
+        .badge-live {
+            display: inline-block;
+            background: #059669;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .footer-info {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="portal-container">
+        <h1>🚨 総合防災RISKモニタリング・ポータル</h1>
+        <div class="subtitle">監視したいシステムを選択してください（完全独立・高安定稼働）</div>
+
+        <div class="system-list">
+            <!-- システム1：地震・地殻変動 -->
+            <a href="earthquake.html" class="system-card">
+                <div class="system-left">
+                    🌋 地震・地殻変動モニタ
+                    <span class="badge-live">ローカル稼働</span>
+                </div>
+                <div class="system-right">
+                    直近3日間の全国地震履歴、震源マップ連動、電磁波・地殻ひずみ異常検知、および連続発生時の自動分析コメントを提供します。
+                </div>
+            </a>
+
+            <!-- システム2：浸水・河川洪水 -->
+            <a href="https://kansui-flood-system-g3xsaigaitqdhtde9qmymezjto6c.streamlit.app/" target="_blank" class="system-card">
+                <div class="system-left">
+                    🌊 浸水・河川洪水モニタ
+                    <span class="badge-live" style="background: #0284c7;">クラウド連携</span>
+                </div>
+                <div class="system-right">
+                    河川の水位監視や大雨による浸水リスク情報をリアルタイムでクラウド監視します。（クリックで専用システムが起動します）
+                </div>
+            </a>
+
+            <!-- システム3：気象・災害RISK（必要に応じて拡張用） -->
+            <a href="earthquake.html" class="system-card" onclick="sessionStorage.setItem('defaultMode', 'weather_risk');">
+                <div class="system-left">
+                    🌀 気象・災害RISK
+                    <span class="badge-live" style="background: #d97706;">統合ビュー</span>
+                </div>
+                <div class="system-right">
+                    台風進路、温帯低気圧の動向、沿岸津波監視、火山噴火警戒レベル、雨雲レーダーの状況を網羅的に確認します。
+                </div>
+            </a>
+        </div>
+
+        <div class="footer-info">
+            System Created by 林 榮一
+        </div>
+    </div>
+
+</body>
+</html>
