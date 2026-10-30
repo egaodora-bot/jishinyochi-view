@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚠️自然災害RISK（3日間全データ網羅・限界拡張版）</title>
+    <title>⚠️自然災害RISK（日時パース完全安定版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -512,8 +512,7 @@
 
         async function fetchRealtimeQuakes() {
             try {
-                // API最大上限数の 500件 を一括取得（重複・別コードも含め過去3日を確実に包含）
-                const response = await fetch('https://api.p2pquake.net/v2/history?limit=500');
+                const response = await fetch('https://api.p2pquake.net/v2/history?limit=300');
                 if (!response.ok) throw new Error("API通信失敗");
                 const data = await response.json();
 
@@ -521,8 +520,7 @@
                 officialComment = null;
 
                 const now = new Date().getTime();
-                const threeDaysMs = 72 * 60 * 60 * 1000; // 3日間（72時間）
-
+                const threeDaysMs = 72 * 60 * 60 * 1000;
                 const seenQuakeKeys = new Set();
 
                 data.forEach(item => {
@@ -534,16 +532,19 @@
                         const h = item.earthquake.hypocenter;
                         const timeStr = item.earthquake.time || "";
                         
+                        // 【堅牢な日時パース処理】 ブラウザによる日付解釈エラーを完全に回避
                         let quakeTimeMs = 0;
                         if (timeStr) {
-                            quakeTimeMs = new Date(timeStr.replace(/\//g, '-')).getTime();
+                            // "YYYY/MM/DD HH:mm:ss" を "YYYY-MM-DDTHH:mm:ss" に置換して確実なパースを実現
+                            const normalized = timeStr.replace(/\//g, '-').replace(' ', 'T');
+                            quakeTimeMs = new Date(normalized).getTime();
                         }
 
-                        // 同一時間・同一震源地の重複レコードを統合しつつ72時間以内のデータを抽出
                         const uniqueKey = `${timeStr}_${h.latitude}_${h.longitude}_${h.magnitude}`;
 
                         if (h.latitude && h.longitude && h.name && !seenQuakeKeys.has(uniqueKey)) {
-                            if (!quakeTimeMs || (now - quakeTimeMs) <= threeDaysMs) {
+                            // 日時が正しく解析できない場合（または72時間以内）は安全に含める
+                            if (isNaN(quakeTimeMs) || (now - quakeTimeMs) <= threeDaysMs) {
                                 seenQuakeKeys.add(uniqueKey);
                                 liveQuakes.push({
                                     lat: h.latitude,
