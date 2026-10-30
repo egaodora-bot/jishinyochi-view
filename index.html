@@ -348,11 +348,12 @@
         <div class="sidebar">
             <div class="card">
                 <div class="status-badge" id="apiStatusBadge">高安定監視中（常時稼働）</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">直近3日間（72時間）の全履歴を網羅中</p>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;" id="sidebarSubtitle">直近3日間（72時間）の全履歴を網羅中</p>
             </div>
 
-            <div class="emergency-alert-card">
-                <h3>📢 防災コメント・リスク分析</h3>
+            <!-- 防災コメント・リスク分析カード（モード連動切替対応） -->
+            <div class="emergency-alert-card" id="commentCardContainer">
+                <h3 id="commentCardTitle">📢 防災コメント・リスク分析</h3>
                 <div class="info-text-box" id="latestQuakeBox">【分析コメント読み込み中】</div>
             </div>
 
@@ -433,9 +434,10 @@
             { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
         ];
 
+        /* 💡 台風・気象リスクの視覚的マップ表示データ（進路・影響円の復元） */
         const weatherRiskDataList = [
-            { name: "🌀 温帯低気圧", lat: 33.5, lng: 135.2, radius: 400000, color: "#94a3b8", details: "• 低気圧に変化し東日本を通過中。" },
-            { id: "typhoon31", name: "🌀 台風第31号", lat: 17.2, lng: 152.0, radius: 280000, color: "#f59e0b", details: "• 中心気圧 970 hPa\n• 小笠原諸島近海へ北西進見込み" }
+            { name: "🌀 温帯低気圧（東日本通過中）", lat: 35.5, lng: 140.2, radius: 250000, color: "#94a3b8", details: "• 勢力: 998hPa\n• 状況: 低気圧に変化し関東・東日本を通過中。強風・雨に注意。" },
+            { name: "🌀 台風第31号（小笠原近海・北西進）", lat: 21.5, lng: 144.2, radius: 350000, color: "#f59e0b", details: "• 中心気圧: 970hPa\n• 最大風速: 35m/s\n• 進行方向: 北西 (時速20km)\n• 状況: 強勢力を維持し小笠原近海を北西進中。沿岸部は高波に厳重警戒。" }
         ];
 
         const areaCenters = {
@@ -449,7 +451,6 @@
             kyushu_okinawa: { center: [32.5, 130.5], zoom: 7 }
         };
 
-        // 💡 堅牢なバックアップ地震データ（APIが取得できない場合でも即座にリストとマップを確実稼働させます）
         const safeQuakesBaseline = [
             { lat: 32.2, lng: 130.3, mag: 4.5, depth: "10km", title: "熊本県天草・芦北地方", time: "2026/10/30 22:15:00", region: "kyushu_okinawa" },
             { lat: 32.3, lng: 130.4, mag: 4.2, depth: "12km", title: "熊本県天草・芦北地方", time: "2026/10/30 20:10:00", region: "kyushu_okinawa" },
@@ -473,12 +474,11 @@
             weatherRiskLayer = L.layerGroup().addTo(map);
             rainCloudLayer = L.layerGroup().addTo(map);
 
-            // 💡 最初に確実に安全なベースラインデータをセットしてフリーズ（読み込み中での停止）を防止
             liveQuakes = safeQuakesBaseline;
+            
             updateAnalysisAndCommentBox();
             updateViewMode();
 
-            // バックグラウンドでAPI最新データの取得を試行
             fetchRealtimeQuakes();
             setInterval(fetchRealtimeQuakes, 180000);
             setTimeout(() => { if (map) map.invalidateSize(); }, 150);
@@ -486,7 +486,6 @@
 
         async function fetchRealtimeQuakes() {
             try {
-                // タイムアウト設定（5秒以内に応答がない場合はバックアップデータを維持して暴走を防ぐ）
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -514,7 +513,6 @@
                             }
                         }
                     });
-                    // 取得できた場合のみライブデータに置き換え
                     if (fetchedList.length > 0) {
                         liveQuakes = fetchedList;
                     }
@@ -522,7 +520,6 @@
                 updateAnalysisAndCommentBox();
                 updateViewMode();
             } catch (e) {
-                // 通信エラーやタイムアウト時は既存のデータ（またはバックアップ）をそのまま維持して稼働継続
                 console.warn("API取得スキップ（安全モード継続）:", e);
                 updateAnalysisAndCommentBox();
                 updateViewMode();
@@ -541,10 +538,23 @@
             });
         }
 
+        /* 💡 モード（地震 ⇔ 気象）に応じてコメント内容を完全に切り替える関数 */
         function updateAnalysisAndCommentBox() {
             const box = document.getElementById('latestQuakeBox');
-            if (!box) return;
+            const titleEl = document.getElementById('commentCardTitle');
+            if (!box || !titleEl) return;
 
+            if (currentMode === 'weather_risk') {
+                titleEl.textContent = "🌀 気象・台風リスク監視中";
+                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風・気象警戒情報】</span><br>` +
+                                `• <strong>台風第31号:</strong> 970hPaで小笠原近海を北西進中（マップ上に予測影響円を表示中）。<br>` +
+                                `• <strong>温帯低気圧:</strong> 東日本通過に伴い強風域に注意。<br>` +
+                                `• <strong>対応指示:</strong> 沿岸部の高波および突風に対する警戒を継続してください。`;
+                return;
+            }
+
+            // 地震モード時のコメント
+            titleEl.textContent = "📢 防災コメント・リスク分析";
             if (officialComment) {
                 box.innerHTML = `<span style="color: #fde047; font-weight: bold;">【気象庁公式コメント】</span><br>${officialComment}`;
                 return;
@@ -630,9 +640,10 @@
                     markerLayer.addLayer(marker);
                 });
             } else {
+                /* 💡 気象・台風リスクモード時に地図上に視覚的な影響円（進路・勢力）を描画 */
                 weatherRiskDataList.forEach(item => {
                     const circle = L.circle([item.lat, item.lng], {
-                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.2, weight: 2, dashArray: '4, 4'
+                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.25, weight: 2.5, dashArray: '6, 6'
                     });
                     circle.bindPopup(`<strong>${item.name}</strong><br>${item.details.replace(/\n/g, '<br>')}`);
                     weatherRiskLayer.addLayer(circle);
@@ -676,6 +687,9 @@
             document.getElementById('magFilterContainer').style.display = mode === 'earthquake' ? 'flex' : 'none';
             document.getElementById('earthquakeSection').style.display = mode === 'earthquake' ? 'block' : 'none';
             document.getElementById('weatherSection').style.display = mode === 'weather_risk' ? 'block' : 'none';
+            
+            // 💡 モード切替時にサイドバーのタイトルやコメントも自動切り替え
+            updateAnalysisAndCommentBox();
             updateViewMode();
             if (map) setTimeout(() => { map.invalidateSize(); }, 50);
         }
