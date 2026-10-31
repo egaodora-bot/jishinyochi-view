@@ -262,6 +262,29 @@
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
 
+        /* 💡 沿岸ポイント専用の菱形（ダイヤモンド）アイコンスタイル */
+        .coastal-marker-diamond {
+            width: 16px;
+            height: 16px;
+            transform: rotate(45deg);
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 6px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+        .coastal-marker-normal {
+            background-color: #10b981;
+        }
+        .coastal-marker-danger {
+            background-color: #ef4444;
+            animation: pulse-danger 1.2s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0% { transform: rotate(45deg) scale(1); }
+            50% { transform: rotate(45deg) scale(1.3); }
+            100% { transform: rotate(45deg) scale(1); }
+        }
+
         @media (max-width: 768px) {
             .main-container { flex-direction: column-reverse; }
             .sidebar { width: 100%; height: 45%; }
@@ -354,10 +377,10 @@
 
             <!-- 津波・沿岸監視チェックカード -->
             <div class="card" style="border-color: #0284c7;">
-                <h3 style="color: #38bdf8;">🌊 津波・沿岸監視チェック (地図連動)</h3>
+                <h3 style="color: #38bdf8;">🌊 津波・沿岸監視チェック (地図連動◆)</h3>
                 <div style="margin-top: 6px;">
-                    <div class="risk-item"><span>太平洋沿岸エリア:</span> <span class="risk-level-low">異常なし (平常)</span></div>
-                    <div class="risk-item"><span>日本海沿岸エリア:</span> <span class="risk-level-low">異常なし (平常)</span></div>
+                    <div class="risk-item"><span>太平洋沿岸エリア:</span> <span class="risk-level-low">異常なし (平常◆)</span></div>
+                    <div class="risk-item"><span>日本海沿岸エリア:</span> <span class="risk-level-low">異常なし (平常◆)</span></div>
                     <div class="risk-item"><span>津波警報・注意報:</span> <span class="risk-level-low">発表なし</span></div>
                 </div>
             </div>
@@ -392,7 +415,7 @@
         let markerLayer = null;
         let anomalyLayer = null;
         let weatherRiskLayer = null;
-        let tsunamiLayer = null; // 💡 津波・沿岸監視ポイント専用レイヤー
+        let tsunamiLayer = null;
         let rainCloudLayer = null;
 
         let currentMode = 'earthquake';
@@ -406,7 +429,7 @@
             { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
         ];
 
-        /* 💡 日本各地の主要な津波・沿岸監視ポイント（平常時は緑、危険時は赤に自動変化） */
+        /* 日本各地の主要な津波・沿岸監視ポイントデータ */
         const tsunamiCheckPoints = [
             { name: "🌊 太平洋沿岸監視: 北海道東部沿岸", lat: 42.8, lng: 144.3, status: "normal", desc: "平常監視中（異常なし）" },
             { name: "🌊 太平洋沿岸監視: 東北三陸沖沿岸", lat: 39.3, lng: 142.0, status: "normal", desc: "平常監視中（異常なし）" },
@@ -462,7 +485,7 @@
             markerLayer = L.layerGroup().addTo(map);
             anomalyLayer = L.layerGroup().addTo(map);
             weatherRiskLayer = L.layerGroup().addTo(map);
-            tsunamiLayer = L.layerGroup().addTo(map); // 💡 津波監視ポイントレイヤーの初期化
+            tsunamiLayer = L.layerGroup().addTo(map);
             rainCloudLayer = L.layerGroup().addTo(map);
 
             liveQuakes = safeQuakesBaseline;
@@ -541,7 +564,7 @@
                                 `• <strong>📍 24時間後 (11/2):</strong> 北西進し小笠原近海へ (965hPa)<br>` +
                                 `• <strong>📍 48時間後 (11/3):</strong> 北〜北西進し本州南海上へ上昇 (975hPa)<br>` +
                                 `• <strong>📍 72時間後 (11/4):</strong> 近畿・東海・関東沖を通過見込み<br>` +
-                                `<span style="color:#34d399;">※津波の心配なし（沿岸ポイント平常：緑色表示）</span>`;
+                                `<span style="color:#34d399;">※津波の心配なし（沿岸菱形◆ポイント平常）</span>`;
                 return;
             }
 
@@ -598,24 +621,26 @@
             markerLayer.clearLayers();
             anomalyLayer.clearLayers();
             weatherRiskLayer.clearLayers();
-            tsunamiLayer.clearLayers(); // 💡 描画前に津波ポイントレイヤーをクリア
+            tsunamiLayer.clearLayers();
             rainCloudLayer.clearLayers();
 
             const areaKey = document.getElementById('targetArea').value;
 
-            // 💡【津波・沿岸監視ポイントの地図上描画（平常時：緑 / 危険時：赤に自動変化）】
+            // 💡【沿岸監視ポイントを「菱形（ダイヤモンド◆）」のHTMLアイコンで作成】
             tsunamiCheckPoints.forEach(pt => {
-                // 危険度に応じたカラー判定（status === 'danger' の場合は赤色 #ef4444、平常時は緑色 #10b981）
-                const pinColor = pt.status === 'danger' ? '#ef4444' : '#10b981';
-                const statusText = pt.status === 'danger' ? '🚨【警報発令中】要警戒' : '🟢 平常（異常なし）';
+                const isDanger = pt.status === 'danger';
+                const statusClass = isDanger ? 'coastal-marker-danger' : 'coastal-marker-normal';
+                const statusText = isDanger ? '🚨【警報発令中】要警戒' : '🟢 平常（異常なし）';
 
-                const tMarker = L.circleMarker([pt.lat, pt.lng], {
-                    radius: 7,
-                    color: '#ffffff',
-                    fillColor: pinColor,
-                    fillOpacity: 0.95,
-                    weight: 2
+                // LeafletのdivIconを使ってCSS菱形を描画（画像読み込み不要でノーフリーズ）
+                const diamondIcon = L.divIcon({
+                    className: 'custom-coastal-icon',
+                    html: `<div class="coastal-marker-diamond ${statusClass}"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
                 });
+
+                const tMarker = L.marker([pt.lat, pt.lng], { icon: diamondIcon });
                 tMarker.bindPopup(`<strong>${pt.name}</strong><br>状態: ${statusText}<br>詳細: ${pt.desc}`);
                 tsunamiLayer.addLayer(tMarker);
             });
@@ -641,6 +666,7 @@
 
                 updateQuakeListUI(filtered);
 
+                // 地震震源地（丸型〇）
                 filtered.forEach(q => {
                     let radius = 6, color = '#38bdf8';
                     if (q.mag >= 5.0) { radius = 11; color = '#f59e0b'; }
