@@ -7,7 +7,6 @@
     <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* 画面レイアウトの基本設定：全画面固定・スクロール防止 */
         body, html {
             margin: 0;
             padding: 0;
@@ -18,8 +17,6 @@
             background-color: #0f172a;
             color: #ffffff;
         }
-
-        /* ヘッダーデザイン：緊急災害カラー（赤紫〜ダークネイビー） */
         header {
             position: absolute;
             top: 0;
@@ -36,13 +33,11 @@
             box-sizing: border-box;
             z-index: 2000;
         }
-
         .header-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .system-title {
             font-size: 15px;
             font-weight: 900;
@@ -51,8 +46,6 @@
             text-shadow: 0 1px 4px rgba(239, 68, 68, 0.8);
             white-space: nowrap;
         }
-
-        /* モード切替ボタングループ */
         .header-center {
             display: flex;
             gap: 6px;
@@ -61,7 +54,6 @@
             border-radius: 8px;
             border: 1px solid #7f1d1d;
         }
-
         .mode-btn {
             background: transparent;
             border: none;
@@ -74,13 +66,11 @@
             white-space: nowrap;
             transition: all 0.2s;
         }
-
         .mode-btn.active {
             background: #dc2626;
             color: #fff;
             box-shadow: 0 2px 6px rgba(220, 38, 38, 0.5);
         }
-
         .radar-btn {
             background: #334155;
             color: #94a3b8;
@@ -93,21 +83,17 @@
             white-space: nowrap;
             transition: all 0.2s;
         }
-
         .radar-btn.active {
             background: #0284c7;
             color: #ffffff;
             border-color: #38bdf8;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
         }
-
         .header-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        /* 地域フィルターセレクトボックス */
         .area-selector-wrapper {
             background: #180808;
             border: 2px solid #ef4444;
@@ -117,13 +103,11 @@
             align-items: center;
             gap: 4px;
         }
-
         .area-selector-wrapper label {
             font-size: 11px;
             font-weight: bold;
             color: #fca5a5;
         }
-
         .area-selector {
             padding: 3px 4px;
             border-radius: 4px;
@@ -134,8 +118,6 @@
             font-weight: bold;
             cursor: pointer;
         }
-
-        /* 規模（マグニチュード）フィルターボタン */
         .mag-filter-group {
             display: flex;
             background: #180808;
@@ -143,7 +125,6 @@
             border-radius: 6px;
             overflow: hidden;
         }
-
         .mag-btn {
             background: transparent;
             border: none;
@@ -153,13 +134,11 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-
         .mag-btn.active {
             background: #0284c7;
             color: #fff;
             font-weight: bold;
         }
-
         .refresh-sync-btn {
             background: #065f46;
             color: #fff;
@@ -171,12 +150,9 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-
         .refresh-sync-btn:hover {
             background: #047857;
         }
-
-        /* メインコンテンツ配置（左側サイドバー ＋ 右側マップ） */
         .main-container {
             position: absolute;
             top: 60px;
@@ -185,7 +161,6 @@
             height: calc(100vh - 60px);
             display: flex;
         }
-
         .sidebar {
             width: 380px;
             height: 100%;
@@ -197,15 +172,12 @@
             flex-shrink: 0;
             z-index: 1000;
         }
-
         #map {
             position: relative;
             flex-grow: 1;
             height: 100%;
             background-color: #0f172a;
         }
-
-        /* サイドバー内カード共通スタイル */
         .card {
             background: #0f172a;
             border: 1px solid #7f1d1d;
@@ -213,7 +185,6 @@
             padding: 10px 12px;
             margin-bottom: 10px;
         }
-
         .card h3 {
             margin: 0 0 6px 0;
             font-size: 12px;
@@ -221,7 +192,6 @@
             border-bottom: 1px solid #7f1d1d;
             padding-bottom: 4px;
         }
-
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -232,7 +202,6 @@
             color: #ffffff;
             margin-bottom: 6px;
         }
-
         .emergency-alert-card {
             background: #380808;
             border: 1.5px solid #f87171;
@@ -241,7 +210,6 @@
             margin-bottom: 10px;
             box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
-
         .emergency-alert-card h3 {
             margin: 0 0 4px 0;
             font-size: 12px;
@@ -249,7 +217,6 @@
             border-bottom: 1px solid #991b1b;
             padding-bottom: 3px;
         }
-
         .info-text-box {
             background: #090d16;
             border-radius: 4px;
@@ -261,7 +228,6 @@
             white-space: pre-line;
             line-height: 1.5;
         }
-
         .quake-list-container {
             max-height: 240px;
             overflow-y: auto;
@@ -270,7 +236,6 @@
             border-radius: 6px;
             padding: 4px;
         }
-
         .quake-item {
             font-size: 11px;
             padding: 6px 8px;
@@ -281,11 +246,9 @@
             align-items: center;
             transition: background 0.15s;
         }
-
         .quake-item:hover {
             background: #1e293b;
         }
-
         .risk-item {
             display: flex;
             justify-content: space-between;
@@ -295,7 +258,6 @@
             border-bottom: 1px dashed #7f1d1d;
             padding-bottom: 3px;
         }
-
         .risk-level-low { color: #34d399; font-weight: bold; }
         .risk-level-mid { color: #fbbf24; font-weight: bold; }
         .risk-level-high { color: #f87171; font-weight: bold; }
@@ -351,7 +313,6 @@
                 <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;" id="sidebarSubtitle">直近3日間（72時間）の全履歴を網羅中</p>
             </div>
 
-            <!-- 防災コメント・リスク分析カード（モード連動切替対応） -->
             <div class="emergency-alert-card" id="commentCardContainer">
                 <h3 id="commentCardTitle">📢 防災コメント・リスク分析</h3>
                 <div class="info-text-box" id="latestQuakeBox">【分析コメント読み込み中】</div>
@@ -434,14 +395,21 @@
             { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
         ];
 
-        /* 💡 台風・気象リスクの視覚的マップ表示データ（進路・影響円の復元） */
+        /* 💡 台風進路（時間ごとの位置予測・方向性・予報円）を詳細化 */
         const weatherRiskDataList = [
             { name: "🌀 温帯低気圧（東日本通過中）", lat: 35.5, lng: 140.2, radius: 250000, color: "#94a3b8", details: "• 勢力: 998hPa\n• 状況: 低気圧に変化し関東・東日本を通過中。強風・雨に注意。" },
-            { name: "🌀 台風第31号（小笠原近海・北西進）", lat: 21.5, lng: 144.2, radius: 350000, color: "#f59e0b", details: "• 中心気圧: 970hPa\n• 最大風速: 35m/s\n• 進行方向: 北西 (時速20km)\n• 状況: 強勢力を維持し小笠原近海を北西進中。沿岸部は高波に厳重警戒。" }
+            { 
+                name: "🌀 台風第31号（進路・予報円）", 
+                lat: 26.5, lng: 141.2, 
+                radius: 350000, 
+                color: "#f59e0b", 
+                details: "• 中心気圧: 970hPa | 最大風速: 35m/s\n• 進行方向: 北西 (時速20km)\n-----------------------------------\n⏱️【時間ごとの進路・位置予測】\n• 📍 【現在地】小笠原近海 (11/1 0:00)\n• 📍 【24時間後】父島近海を北西へ (11/2 0:00)\n• 📍 【48時間後】日本の南海上へ接近 (11/3 0:00)" 
+            }
         ];
 
         const areaCenters = {
             all: { center: [36.2, 138.2], zoom: 6 },
+            weather_all: { center: [30.5, 138.5], zoom: 5 },
             hokkaido: { center: [43.06, 141.35], zoom: 7 },
             tohoku: { center: [39.7, 141.1], zoom: 7 },
             kanto: { center: [35.68, 139.69], zoom: 8 },
@@ -538,7 +506,6 @@
             });
         }
 
-        /* 💡 モード（地震 ⇔ 気象）に応じてコメント内容を完全に切り替える関数 */
         function updateAnalysisAndCommentBox() {
             const box = document.getElementById('latestQuakeBox');
             const titleEl = document.getElementById('commentCardTitle');
@@ -546,14 +513,14 @@
 
             if (currentMode === 'weather_risk') {
                 titleEl.textContent = "🌀 気象・台風リスク監視中";
-                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風・気象警戒情報】</span><br>` +
-                                `• <strong>台風第31号:</strong> 970hPaで小笠原近海を北西進中（マップ上に予測影響円を表示中）。<br>` +
-                                `• <strong>温帯低気圧:</strong> 東日本通過に伴い強風域に注意。<br>` +
-                                `• <strong>対応指示:</strong> 沿岸部の高波および突風に対する警戒を継続してください。`;
+                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風第31号 進路・タイムライン】</span><br>` +
+                                `• <strong>現在位置 (11/1):</strong> 小笠原近海 (970hPa, 北西へ20km/h)<br>` +
+                                `• <strong>24時間後 (11/2):</strong> 父島近海を北西進中<br>` +
+                                `• <strong>48時間後 (11/3):</strong> 日本南海上へ接近・警戒<br>` +
+                                `• <strong>温帯低気圧:</strong> 東日本通過に伴う強風に注意。`;
                 return;
             }
 
-            // 地震モード時のコメント
             titleEl.textContent = "📢 防災コメント・リスク分析";
             if (officialComment) {
                 box.innerHTML = `<span style="color: #fde047; font-weight: bold;">【気象庁公式コメント】</span><br>${officialComment}`;
@@ -610,10 +577,11 @@
             rainCloudLayer.clearLayers();
 
             const areaKey = document.getElementById('targetArea').value;
-            const targetArea = areaCenters[areaKey] || areaCenters['all'];
-            map.setView(targetArea.center, targetArea.zoom);
 
             if (currentMode === 'earthquake') {
+                const targetArea = areaCenters[areaKey] || areaCenters['all'];
+                map.setView(targetArea.center, targetArea.zoom);
+
                 anomalySpots.forEach(spot => {
                     const circle = L.circle([spot.lat, spot.lng], {
                         radius: spot.radius, color: spot.color, fillColor: spot.color, fillOpacity: 0.25, weight: 2, dashArray: '5, 5'
@@ -640,10 +608,17 @@
                     markerLayer.addLayer(marker);
                 });
             } else {
-                /* 💡 気象・台風リスクモード時に地図上に視覚的な影響円（進路・勢力）を描画 */
+                if (areaKey === 'all') {
+                    map.setView(areaCenters['weather_all'].center, areaCenters['weather_all'].zoom);
+                } else {
+                    const targetArea = areaCenters[areaKey] || areaCenters['weather_all'];
+                    map.setView(targetArea.center, targetArea.zoom);
+                }
+
+                // 気象リスク・台風の予報円および進路方向の描画
                 weatherRiskDataList.forEach(item => {
                     const circle = L.circle([item.lat, item.lng], {
-                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.25, weight: 2.5, dashArray: '6, 6'
+                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.3, weight: 3, dashArray: '6, 6'
                     });
                     circle.bindPopup(`<strong>${item.name}</strong><br>${item.details.replace(/\n/g, '<br>')}`);
                     weatherRiskLayer.addLayer(circle);
@@ -688,7 +663,6 @@
             document.getElementById('earthquakeSection').style.display = mode === 'earthquake' ? 'block' : 'none';
             document.getElementById('weatherSection').style.display = mode === 'weather_risk' ? 'block' : 'none';
             
-            // 💡 モード切替時にサイドバーのタイトルやコメントも自動切り替え
             updateAnalysisAndCommentBox();
             updateViewMode();
             if (map) setTimeout(() => { map.invalidateSize(); }, 50);
