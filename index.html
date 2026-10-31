@@ -395,16 +395,16 @@
             { name: "【プレート境界ひずみ】東海・南海トラフ想定域", lat: 34.4, lng: 137.5, radius: 65000, color: "#ef4444", desc: "フィリピン海プレート沈下帯におけるひずみデータ推移中。" }
         ];
 
-        /* 💡 台風進路（時間ごとの位置予測・方向性・予報円）を詳細化 */
+        /* 💡 台風31号の進路予想ライン（時間別ポイント・予報円・ルート線）の構造体データ */
+        const typhoonTrackPoints = [
+            { lat: 25.0, lng: 142.5, timeStr: "📍【現在地】(11/1 00:00)", pressure: "970hPa", radius: 260000, color: "#ef4444" },
+            { lat: 28.2, lng: 139.8, timeStr: "📍【24時間予報】(11/2 00:00)", pressure: "965hPa", radius: 340000, color: "#f59e0b" },
+            { lat: 31.8, lng: 136.5, timeStr: "📍【48時間予報】(11/3 00:00)", pressure: "975hPa", radius: 450000, color: "#eab308" },
+            { lat: 34.5, lng: 135.0, timeStr: "📍【72時間予報】(11/4 00:00)", pressure: "985hPa", radius: 550000, color: "#84cc16" }
+        ];
+
         const weatherRiskDataList = [
-            { name: "🌀 温帯低気圧（東日本通過中）", lat: 35.5, lng: 140.2, radius: 250000, color: "#94a3b8", details: "• 勢力: 998hPa\n• 状況: 低気圧に変化し関東・東日本を通過中。強風・雨に注意。" },
-            { 
-                name: "🌀 台風第31号（進路・予報円）", 
-                lat: 26.5, lng: 141.2, 
-                radius: 350000, 
-                color: "#f59e0b", 
-                details: "• 中心気圧: 970hPa | 最大風速: 35m/s\n• 進行方向: 北西 (時速20km)\n-----------------------------------\n⏱️【時間ごとの進路・位置予測】\n• 📍 【現在地】小笠原近海 (11/1 0:00)\n• 📍 【24時間後】父島近海を北西へ (11/2 0:00)\n• 📍 【48時間後】日本の南海上へ接近 (11/3 0:00)" 
-            }
+            { name: "🌀 温帯低気圧（東日本通過中）", lat: 35.5, lng: 140.2, radius: 250000, color: "#94a3b8", details: "• 勢力: 998hPa\n• 状況: 低気圧に変化し関東・東日本を通過中。強風・雨に注意。" }
         ];
 
         const areaCenters = {
@@ -512,12 +512,13 @@
             if (!box || !titleEl) return;
 
             if (currentMode === 'weather_risk') {
-                titleEl.textContent = "🌀 気象・台風リスク監視中";
-                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風第31号 進路・タイムライン】</span><br>` +
-                                `• <strong>現在位置 (11/1):</strong> 小笠原近海 (970hPa, 北西へ20km/h)<br>` +
-                                `• <strong>24時間後 (11/2):</strong> 父島近海を北西進中<br>` +
-                                `• <strong>48時間後 (11/3):</strong> 日本南海上へ接近・警戒<br>` +
-                                `• <strong>温帯低気圧:</strong> 東日本通過に伴う強風に注意。`;
+                titleEl.textContent = "🌀 気象・台風31号 進路・予報範囲";
+                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風第31号 予想進路タイムライン】</span><br>` +
+                                `• <strong>📍 現在地 (11/1):</strong> 北緯25.0° 東経142.5° (970hPa)<br>` +
+                                `• <strong>📍 24時間後 (11/2):</strong> 北西進し小笠原近海へ (965hPa)<br>` +
+                                `• <strong>📍 48時間後 (11/3):</strong> 北〜北西進し本州南海上へ上昇 (975hPa)<br>` +
+                                `• <strong>📍 72時間後 (11/4):</strong> 近畿・東海・関東沖を通過見込み<br>` +
+                                `<span style="color:#f87171;">※地図上に進行ルート（赤・オレンジ破線と予想予報円）を表示中</span>`;
                 return;
             }
 
@@ -615,13 +616,49 @@
                     map.setView(targetArea.center, targetArea.zoom);
                 }
 
-                // 気象リスク・台風の予報円および進路方向の描画
+                // 1. 温帯低気圧等の一般気象要素を描画
                 weatherRiskDataList.forEach(item => {
                     const circle = L.circle([item.lat, item.lng], {
-                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.3, weight: 3, dashArray: '6, 6'
+                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.25, weight: 2, dashArray: '6, 6'
                     });
                     circle.bindPopup(`<strong>${item.name}</strong><br>${item.details.replace(/\n/g, '<br>')}`);
                     weatherRiskLayer.addLayer(circle);
+                });
+
+                // 2. 💡【台風進路ルート線（軌跡ポリライン）】を地図上に直接描画
+                const latLngs = typhoonTrackPoints.map(p => [p.lat, p.lng]);
+                const trackLine = L.polyline(latLngs, {
+                    color: '#ef4444',
+                    weight: 4,
+                    opacity: 0.85,
+                    dashArray: '8, 8'
+                });
+                weatherRiskLayer.addLayer(trackLine);
+
+                // 3. 💡【時間別予想位置のマーカーと予報円】を連続配置描画
+                typhoonTrackPoints.forEach((pt, index) => {
+                    // 予報円
+                    const circle = L.circle([pt.lat, pt.lng], {
+                        radius: pt.radius,
+                        color: pt.color,
+                        fillColor: pt.color,
+                        fillOpacity: 0.15 + (index * 0.05),
+                        weight: 2,
+                        dashArray: '5, 5'
+                    });
+                    circle.bindPopup(`<strong>🌀 台風第31号 進行予想</strong><br>${pt.timeStr}<br>中心気圧: ${pt.pressure}`);
+                    weatherRiskLayer.addLayer(circle);
+
+                    // 中心予想マーカー（赤〜黄のアイコン点）
+                    const centerMarker = L.circleMarker([pt.lat, pt.lng], {
+                        radius: 8 - index,
+                        color: '#ffffff',
+                        fillColor: pt.color,
+                        fillOpacity: 1,
+                        weight: 2
+                    });
+                    centerMarker.bindPopup(`<strong>🌀 ${pt.timeStr}</strong><br>中心気圧: ${pt.pressure}`);
+                    weatherRiskLayer.addLayer(centerMarker);
                 });
             }
         }
