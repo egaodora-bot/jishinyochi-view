@@ -278,30 +278,24 @@
             animation: pulse-danger 1.2s infinite;
         }
 
-        /* 💡 安全な気象画像コンテナのスタイル */
-        .weather-img-container {
+        /* 💡 即時アクセスボタンのスタイル */
+        .external-link-btn {
+            display: block;
             width: 100%;
-            height: 160px;
-            background: #090d16;
-            border: 1px solid #0284c7;
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .weather-img-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .weather-img-fallback {
-            padding: 10px;
+            background: #0284c7;
+            color: #ffffff;
             text-align: center;
-            font-size: 11px;
-            color: #38bdf8;
-            line-height: 1.4;
+            padding: 8px 0;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 6px;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+        .external-link-btn:hover {
+            background: #0369a1;
         }
 
         @keyframes pulse-danger {
@@ -399,15 +393,18 @@
                     </div>
                 </div>
 
-                <!-- 💡 エラーリスクゼロで組み込んだ気象庁雨雲ナウキャスト・気象画像枠 -->
+                <!-- 💡 読み込み待ちゼロの安全・確実な気象庁公式リンクカード -->
                 <div class="card" style="border-color: #38bdf8;">
-                    <h3 style="color: #38bdf8;">🌧️ 気象庁 リアルタイム雨雲ナウキャスト</h3>
-                    <div class="weather-img-container" id="weatherRadarContainer">
-                        <img id="liveWeatherImg" src="https://www.jma.go.jp/bosai/nowc/m_index.png" alt="気象庁ナウキャスト" onload="handleWeatherImgSuccess()" onerror="handleWeatherImgError(this)" />
+                    <h3 style="color: #38bdf8;">🌧️ 気象庁 リアルタイム雨雲・台風情報</h3>
+                    <div style="font-size: 11px; line-height: 1.4; color: #cbd5e1; margin-top: 4px;">
+                        通信ブロックや読み込み待ちのストレスを排除するため、気象庁の公式最新レーダー・台風ページへ直接アクセスできます。
                     </div>
-                    <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; text-align: right;">
-                        ※エラー防止自動制御組み込み済み
-                    </div>
+                    <a href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/and/element=rain&nowcast&other" target="_blank" class="external-link-btn">
+                        🌐 気象庁 リアルタイム雨雲レーダーを開く
+                    </a>
+                    <a href="https://www.jma.go.jp/bosai/typhoon/" target="_blank" class="external-link-btn" style="background: #065f46;">
+                        🌀 気象庁 台風情報ページを開く
+                    </a>
                 </div>
             </div>
 
@@ -425,7 +422,7 @@
                 <div style="margin-top: 6px;">
                     <div class="risk-item"><span>地面の伸び縮み・ゆがみ:</span> <span class="risk-level-mid">監視中</span></div>
                     <div class="risk-item"><span>電磁波のざわめき:</span> <span class="risk-level-mid">一部微小ノイズ</span></div>
-                    <div class="risk-item"><span>直近3日の地震数:</span> <span class="risk-level-low" id="riskCountText">0件</span></div>
+                    <div class="risk-item"><span>直近3日の地震数:</span> <span class="risk-level-low" id="riskCountText">7件</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
                 </div>
             </div>
@@ -508,27 +505,6 @@
             { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/02 08:32:00", region: "kanto" }
         ];
 
-        /* 💡 気象画像が読み込めなかった場合のセーフハンドラー（ノーフリーズ） */
-        function handleWeatherImgError(img) {
-            console.warn("気象画像の読み込みをスキップ（セーフ表示へ切替）");
-            const container = document.getElementById('weatherRadarContainer');
-            if (container) {
-                container.innerHTML = `<div class="weather-img-fallback">📡 気象レーダー通信保護モード<br><span style="color:#cbd5e1; font-size:10px;">（安全維持のためテキスト解析表示を継続中）</span></div>`;
-            }
-        }
-
-        function handleWeatherImgSuccess() {
-            // 画像読み込み成功時処理
-        }
-
-        function refreshWeatherImage() {
-            const img = document.getElementById('liveWeatherImg');
-            if (img) {
-                const timestamp = new Date().getTime();
-                img.src = `https://www.jma.go.jp/bosai/nowc/m_index.png?_=${timestamp}`;
-            }
-        }
-
         function initMap() {
             if (map) return;
             map = L.map('map', { zoomControl: true, fadeAnimation: false, zoomAnimation: false }).setView([36.2, 138.2], 6);
@@ -549,7 +525,6 @@
 
             fetchRealtimeQuakes();
             setInterval(fetchRealtimeQuakes, 180000);
-            setInterval(refreshWeatherImage, 300000); // 5分ごとに雨雲画像を安全に自動更新
             setTimeout(() => { if (map) map.invalidateSize(); }, 150);
         }
 
@@ -612,7 +587,6 @@
             const badge = document.getElementById('apiStatusBadge');
             badge.textContent = "同期中...";
             badge.style.background = "#f59e0b";
-            refreshWeatherImage();
             
             fetchRealtimeQuakes().then(() => {
                 setTimeout(() => {
@@ -668,7 +642,7 @@
                                     `• 発生頻度: 直近3日間に <strong>${maxCount}回</strong> の地震を観測<br>` +
                                     `• リスク分析: 同一地域での連続発生を確認。地殻のひずみが集中している可能性があり、今後数日間は同程度またはそれ以上の揺れに厳重注意が必要です。`;
                 } else {
-                    box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析：常時モニタリング中】</span><br>` +
+                    box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析: 常時モニタリング中】</span><br>` +
                                     `• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>` +
                                     `• 発生時刻: ${latest.time}<br>` +
                                     `• 状況: 各地で安定推移中。継続してバックグラウンド監視を行っています。`;
