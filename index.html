@@ -278,7 +278,7 @@
             animation: pulse-danger 1.2s infinite;
         }
 
-        .external-link-btn {
+        .official-link-btn {
             display: block;
             width: 100%;
             background: #0284c7;
@@ -293,7 +293,7 @@
             box-sizing: border-box;
             transition: background 0.2s;
         }
-        .external-link-btn:hover {
+        .official-link-btn:hover {
             background: #0369a1;
         }
 
@@ -384,24 +384,18 @@
 
             <div id="weatherSection" style="display:none;">
                 <div class="card" style="border-color: #f59e0b;">
-                    <h3 style="color: #f59e0b;">🌀 気象・災害リスク詳細</h3>
-                    <div style="font-size: 11.5px; line-height: 1.5; color: #f8fafc;">
-                        <p style="margin: 0 0 6px 0;"><strong>• 温帯低気圧：</strong> 低気圧に変化し東日本を通過中。</p>
-                        <p style="margin: 0 0 6px 0;"><strong>• 台風第31号：</strong> 中心気圧970hPa。強勢力で北西進中。</p>
-                        <p style="margin: 0;"><strong>• 津波・沿岸状況：</strong> 日本沿岸における津波警報・注意報の発表なし。平常監視継続。</p>
+                    <h3 style="color: #f59e0b;">🌀 気象庁 公式リアルタイム防災情報</h3>
+                    <div style="font-size: 11.5px; line-height: 1.5; color: #f8fafc; margin-top: 4px;">
+                        情報の乖離や誤認を防ぐため、気象庁が発表している最新の台風・気象警報・雨雲レーダー（外部公式ポータル）へ直接アクセスし、正確な最新状況をご確認ください。
                     </div>
-                </div>
-
-                <div class="card" style="border-color: #38bdf8;">
-                    <h3 style="color: #38bdf8;">🌧️ 気象庁 リアルタイム雨雲・台風情報</h3>
-                    <div style="font-size: 11px; line-height: 1.4; color: #cbd5e1; margin-top: 4px;">
-                        通信ブロックや読み込み待ちのストレスを排除するため、気象庁の公式最新レーダー・台風ページへ直接アクセスできます。
-                    </div>
-                    <a href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/and/element=rain&nowcast&other" target="_blank" class="external-link-btn">
-                        🌐 気象庁 リアルタイム雨雲レーダーを開く
+                    <a href="https://www.jma.go.jp/bosai/typhoon/" target="_blank" class="official-link-btn" style="background: #dc2626;">
+                        🌀 気象庁 台風情報（公式最新）
                     </a>
-                    <a href="https://www.jma.go.jp/bosai/typhoon/" target="_blank" class="external-link-btn" style="background: #065f46;">
-                        🌀 気象庁 台風情報ページを開く
+                    <a href="https://www.jma.go.jp/bosai/map.html#5/34.5/137/and/element=rain&nowcast&other" target="_blank" class="official-link-btn">
+                        🌧️ 気象庁 リアルタイム雨雲レーダー
+                    </a>
+                    <a href="https://www.jma.go.jp/bosai/warning/" target="_blank" class="official-link-btn" style="background: #065f46;">
+                        ⚠️ 気象庁 気象警報・注意報（全国）
                     </a>
                 </div>
             </div>
@@ -468,18 +462,6 @@
             { name: "🌊 太平洋沿岸監視: 四国太平洋側", lat: 33.3, lng: 133.5, status: "normal", desc: "平常監視中（異常なし）" },
             { name: "🌊 太平洋沿岸監視: 日向灘・南九州沿岸", lat: 31.5, lng: 131.4, status: "normal", desc: "平常監視中（異常なし）" },
             { name: "🌊 日本海沿岸監視: 北陸・新潟沿岸", lat: 37.9, lng: 139.0, status: "normal", desc: "平常監視中（異常なし）" }
-        ];
-
-        /* 💡 台風進路・タイムラインの基準日を「今日（11月4日）」起点に更新 */
-        const typhoonTrackPoints = [
-            { lat: 25.0, lng: 142.5, timeStr: "📍【現在地】(11/4 00:00)", pressure: "970hPa", radius: 260000, color: "#ef4444" },
-            { lat: 28.2, lng: 139.8, timeStr: "📍【24時間予報】(11/5 00:00)", pressure: "965hPa", radius: 340000, color: "#f59e0b" },
-            { lat: 31.8, lng: 136.5, timeStr: "📍【48時間予報】(11/6 00:00)", pressure: "975hPa", radius: 450000, color: "#eab308" },
-            { lat: 34.5, lng: 135.0, timeStr: "📍【72時間予報】(11/7 00:00)", pressure: "985hPa", radius: 550000, color: "#84cc16" }
-        ];
-
-        const weatherRiskDataList = [
-            { name: "🌀 温帯低気圧（東日本通過中）", lat: 35.5, lng: 140.2, radius: 250000, color: "#94a3b8", details: "• 勢力: 998hPa\n• 状況: 低気圧に変化し関東・東日本を通過中。強風・雨に注意。" }
         ];
 
         const areaCenters = {
@@ -601,13 +583,10 @@
             if (!box || !titleEl) return;
 
             if (currentMode === 'weather_risk') {
-                titleEl.textContent = "🌀 気象・台風31号 進路・予報範囲";
-                box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風第31号 予想進路タイムライン】</span><br>` +
-                                `• <strong>📍 現在地 (11/4):</strong> 北緯25.0° 東経142.5° (970hPa)<br>` +
-                                `• <strong>📍 24時間後 (11/5):</strong> 北西進し小笠原近海へ (965hPa)<br>` +
-                                `• <strong>📍 48時間後 (11/6):</strong> 北〜北西進し本州南海上へ上昇 (975hPa)<br>` +
-                                `• <strong>📍 72時間後 (11/7):</strong> 近畿・東海・関東沖を通過見込み<br>` +
-                                `<span style="color:#34d399;">※津波の心配なし（沿岸菱形◆ポイント平常）</span>`;
+                titleEl.textContent = "🌀 気象・台風 防災ポータル連携中";
+                box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【公式リアルタイム情報のご案内】</span><br>` +
+                                `• 誤情報や古い予測の混入を防ぐため、気象庁公式の最新台風・警報情報への直結リンクをご用意しています。<br>` +
+                                `<span style="color:#34d399;">※左記のボタンより最新の正確な気象状況をご確認ください。</span>`;
                 return;
             }
 
@@ -725,46 +704,6 @@
                     const targetArea = areaCenters[areaKey] || areaCenters['weather_all'];
                     map.setView(targetArea.center, targetArea.zoom);
                 }
-
-                weatherRiskDataList.forEach(item => {
-                    const circle = L.circle([item.lat, item.lng], {
-                        radius: item.radius, color: item.color, fillColor: item.color, fillOpacity: 0.25, weight: 2, dashArray: '6, 6'
-                    });
-                    circle.bindPopup(`<strong>${item.name}</strong><br>${item.details.replace(/\n/g, '<br>')}`);
-                    weatherRiskLayer.addLayer(circle);
-                });
-
-                const latLngs = typhoonTrackPoints.map(p => [p.lat, p.lng]);
-                const trackLine = L.polyline(latLngs, {
-                    color: '#ef4444',
-                    weight: 4,
-                    opacity: 0.85,
-                    dashArray: '8, 8'
-                });
-                weatherRiskLayer.addLayer(trackLine);
-
-                typhoonTrackPoints.forEach((pt, index) => {
-                    const circle = L.circle([pt.lat, pt.lng], {
-                        radius: pt.radius,
-                        color: pt.color,
-                        fillColor: pt.color,
-                        fillOpacity: 0.15 + (index * 0.05),
-                        weight: 2,
-                        dashArray: '5, 5'
-                    });
-                    circle.bindPopup(`<strong>🌀 台風第31号 進行予想</strong><br>${pt.timeStr}<br>中心気圧: ${pt.pressure}`);
-                    weatherRiskLayer.addLayer(circle);
-
-                    const centerMarker = L.circleMarker([pt.lat, pt.lng], {
-                        radius: 8 - index,
-                        color: '#ffffff',
-                        fillColor: pt.color,
-                        fillOpacity: 1,
-                        weight: 2
-                    });
-                    centerMarker.bindPopup(`<strong>🌀 ${pt.timeStr}</strong><br>中心気圧: ${pt.pressure}`);
-                    weatherRiskLayer.addLayer(centerMarker);
-                });
             }
         }
 
