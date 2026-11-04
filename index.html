@@ -278,7 +278,6 @@
             animation: pulse-danger 1.2s infinite;
         }
 
-        /* 💡 即時アクセスボタンのスタイル */
         .external-link-btn {
             display: block;
             width: 100%;
@@ -393,7 +392,6 @@
                     </div>
                 </div>
 
-                <!-- 💡 読み込み待ちゼロの安全・確実な気象庁公式リンクカード -->
                 <div class="card" style="border-color: #38bdf8;">
                     <h3 style="color: #38bdf8;">🌧️ 気象庁 リアルタイム雨雲・台風情報</h3>
                     <div style="font-size: 11px; line-height: 1.4; color: #cbd5e1; margin-top: 4px;">
@@ -472,11 +470,12 @@
             { name: "🌊 日本海沿岸監視: 北陸・新潟沿岸", lat: 37.9, lng: 139.0, status: "normal", desc: "平常監視中（異常なし）" }
         ];
 
+        /* 💡 台風進路・タイムラインの基準日を「今日（11月4日）」起点に更新 */
         const typhoonTrackPoints = [
-            { lat: 25.0, lng: 142.5, timeStr: "📍【現在地】(11/3 00:00)", pressure: "970hPa", radius: 260000, color: "#ef4444" },
-            { lat: 28.2, lng: 139.8, timeStr: "📍【24時間予報】(11/4 00:00)", pressure: "965hPa", radius: 340000, color: "#f59e0b" },
-            { lat: 31.8, lng: 136.5, timeStr: "📍【48時間予報】(11/5 00:00)", pressure: "975hPa", radius: 450000, color: "#eab308" },
-            { lat: 34.5, lng: 135.0, timeStr: "📍【72時間予報】(11/6 00:00)", pressure: "985hPa", radius: 550000, color: "#84cc16" }
+            { lat: 25.0, lng: 142.5, timeStr: "📍【現在地】(11/4 00:00)", pressure: "970hPa", radius: 260000, color: "#ef4444" },
+            { lat: 28.2, lng: 139.8, timeStr: "📍【24時間予報】(11/5 00:00)", pressure: "965hPa", radius: 340000, color: "#f59e0b" },
+            { lat: 31.8, lng: 136.5, timeStr: "📍【48時間予報】(11/6 00:00)", pressure: "975hPa", radius: 450000, color: "#eab308" },
+            { lat: 34.5, lng: 135.0, timeStr: "📍【72時間予報】(11/7 00:00)", pressure: "985hPa", radius: 550000, color: "#84cc16" }
         ];
 
         const weatherRiskDataList = [
@@ -496,13 +495,13 @@
         };
 
         const safeQuakesBaseline = [
-            { lat: 32.2, lng: 130.3, mag: 4.5, depth: "10km", title: "熊本県天草・芦北地方", time: "2026/11/03 00:15:00", region: "kyushu_okinawa" },
-            { lat: 32.3, lng: 130.4, mag: 4.2, depth: "12km", title: "熊本県天草・芦北地方", time: "2026/11/02 22:10:00", region: "kyushu_okinawa" },
-            { lat: 35.5, lng: 140.2, mag: 4.1, depth: "50km", title: "千葉県東方沖", time: "2026/11/02 20:30:00", region: "kanto" },
-            { lat: 39.8, lng: 142.2, mag: 4.0, depth: "40km", title: "岩手県沖", time: "2026/11/02 18:20:00", region: "tohoku" },
-            { lat: 42.1, lng: 142.5, mag: 4.2, depth: "50km", title: "根室半島南東沖", time: "2026/11/02 15:45:00", region: "hokkaido" },
-            { lat: 32.1, lng: 130.3, mag: 3.9, depth: "15km", title: "熊本県天草・芦北地方", time: "2026/11/02 12:40:00", region: "kyushu_okinawa" },
-            { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/02 08:32:00", region: "kanto" }
+            { lat: 32.2, lng: 130.3, mag: 4.5, depth: "10km", title: "熊本県天草・芦北地方", time: "2026/11/04 00:15:00", region: "kyushu_okinawa" },
+            { lat: 32.3, lng: 130.4, mag: 4.2, depth: "12km", title: "熊本県天草・芦北地方", time: "2026/11/03 22:10:00", region: "kyushu_okinawa" },
+            { lat: 35.5, lng: 140.2, mag: 4.1, depth: "50km", title: "千葉県東方沖", time: "2026/11/03 20:30:00", region: "kanto" },
+            { lat: 39.8, lng: 142.2, mag: 4.0, depth: "40km", title: "岩手県沖", time: "2026/11/03 18:20:00", region: "tohoku" },
+            { lat: 42.1, lng: 142.5, mag: 4.2, depth: "50km", title: "根室半島南東沖", time: "2026/11/03 15:45:00", region: "hokkaido" },
+            { lat: 32.1, lng: 130.3, mag: 3.9, depth: "15km", title: "熊本県天草・芦北地方", time: "2026/11/03 12:40:00", region: "kyushu_okinawa" },
+            { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/03 08:32:00", region: "kanto" }
         ];
 
         function initMap() {
@@ -604,10 +603,10 @@
             if (currentMode === 'weather_risk') {
                 titleEl.textContent = "🌀 気象・台風31号 進路・予報範囲";
                 box.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">【台風第31号 予想進路タイムライン】</span><br>` +
-                                `• <strong>📍 現在地 (11/3):</strong> 北緯25.0° 東経142.5° (970hPa)<br>` +
-                                `• <strong>📍 24時間後 (11/4):</strong> 北西進し小笠原近海へ (965hPa)<br>` +
-                                `• <strong>📍 48時間後 (11/5):</strong> 北〜北西進し本州南海上へ上昇 (975hPa)<br>` +
-                                `• <strong>📍 72時間後 (11/6):</strong> 近畿・東海・関東沖を通過見込み<br>` +
+                                `• <strong>📍 現在地 (11/4):</strong> 北緯25.0° 東経142.5° (970hPa)<br>` +
+                                `• <strong>📍 24時間後 (11/5):</strong> 北西進し小笠原近海へ (965hPa)<br>` +
+                                `• <strong>📍 48時間後 (11/6):</strong> 北〜北西進し本州南海上へ上昇 (975hPa)<br>` +
+                                `• <strong>📍 72時間後 (11/7):</strong> 近畿・東海・関東沖を通過見込み<br>` +
                                 `<span style="color:#34d399;">※津波の心配なし（沿岸菱形◆ポイント平常）</span>`;
                 return;
             }
