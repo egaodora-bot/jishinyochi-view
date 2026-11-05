@@ -153,6 +153,16 @@
         .refresh-sync-btn:hover {
             background: #047857;
         }
+        .last-sync-badge {
+            background: #0f291e;
+            border: 1px solid #059669;
+            color: #34d399;
+            font-size: 11px;
+            font-family: monospace;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
         .main-container {
             position: absolute;
             top: 60px;
@@ -324,6 +334,8 @@
         </div>
 
         <div class="header-right">
+            <!-- 💡 最終同期時刻バッジを新設 -->
+            <div id="lastSyncBadge" class="last-sync-badge">最終同期: 取得中...</div>
             <button class="refresh-sync-btn" onclick="forceSyncEarthquake()">🔄 強制同期</button>
             <div class="area-selector-wrapper">
                 <label for="targetArea">地域:</label>
@@ -477,14 +489,29 @@
         };
 
         const safeQuakesBaseline = [
-            { lat: 32.2, lng: 130.3, mag: 4.5, depth: "10km", title: "熊本県天草・芦北地方", time: "2026/11/04 00:15:00", region: "kyushu_okinawa" },
-            { lat: 32.3, lng: 130.4, mag: 4.2, depth: "12km", title: "熊本県天草・芦北地方", time: "2026/11/03 22:10:00", region: "kyushu_okinawa" },
-            { lat: 35.5, lng: 140.2, mag: 4.1, depth: "50km", title: "千葉県東方沖", time: "2026/11/03 20:30:00", region: "kanto" },
-            { lat: 39.8, lng: 142.2, mag: 4.0, depth: "40km", title: "岩手県沖", time: "2026/11/03 18:20:00", region: "tohoku" },
-            { lat: 42.1, lng: 142.5, mag: 4.2, depth: "50km", title: "根室半島南東沖", time: "2026/11/03 15:45:00", region: "hokkaido" },
-            { lat: 32.1, lng: 130.3, mag: 3.9, depth: "15km", title: "熊本県天草・芦北地方", time: "2026/11/03 12:40:00", region: "kyushu_okinawa" },
-            { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/03 08:32:00", region: "kanto" }
+            { lat: 32.2, lng: 130.3, mag: 4.5, depth: "10km", title: "熊本県天草・芦北地方", time: "2026/11/05 00:15:00", region: "kyushu_okinawa" },
+            { lat: 32.3, lng: 130.4, mag: 4.2, depth: "12km", title: "熊本県天草・芦北地方", time: "2026/11/04 22:10:00", region: "kyushu_okinawa" },
+            { lat: 35.5, lng: 140.2, mag: 4.1, depth: "50km", title: "千葉県東方沖", time: "2026/11/04 20:30:00", region: "kanto" },
+            { lat: 39.8, lng: 142.2, mag: 4.0, depth: "40km", title: "岩手県沖", time: "2026/11/04 18:20:00", region: "tohoku" },
+            { lat: 42.1, lng: 142.5, mag: 4.2, depth: "50km", title: "根室半島南東沖", time: "2026/11/04 15:45:00", region: "hokkaido" },
+            { lat: 32.1, lng: 130.3, mag: 3.9, depth: "15km", title: "熊本県天草・芦北地方", time: "2026/11/04 12:40:00", region: "kyushu_okinawa" },
+            { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/04 08:32:00", region: "kanto" }
         ];
+
+        /* 💡 最終同期時刻バッジの書き換え処理 */
+        function updateLastSyncTime() {
+            const el = document.getElementById('lastSyncBadge');
+            if (el) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                el.textContent = `最終同期: ${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+            }
+        }
 
         function initMap() {
             if (map) return;
@@ -503,6 +530,7 @@
             liveQuakes = safeQuakesBaseline;
             updateAnalysisAndCommentBox();
             updateViewMode();
+            updateLastSyncTime();
 
             fetchRealtimeQuakes();
             setInterval(fetchRealtimeQuakes, 180000);
@@ -550,6 +578,7 @@
                 }
                 updateAnalysisAndCommentBox();
                 updateViewMode();
+                updateLastSyncTime();
             } catch (e) {
                 console.warn("API接続スキップ（内蔵セーフデータで稼働継続）:", e);
                 if (!liveQuakes || liveQuakes.length === 0) {
@@ -561,6 +590,7 @@
                 }
                 updateAnalysisAndCommentBox();
                 updateViewMode();
+                updateLastSyncTime();
             }
         }
 
