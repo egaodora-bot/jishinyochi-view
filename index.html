@@ -334,7 +334,7 @@
         </div>
 
         <div class="header-right">
-            <!-- 💡 最終同期時刻バッジを新設 -->
+            <!-- 💡 最終同期時刻バッジ -->
             <div id="lastSyncBadge" class="last-sync-badge">最終同期: 取得中...</div>
             <button class="refresh-sync-btn" onclick="forceSyncEarthquake()">🔄 強制同期</button>
             <div class="area-selector-wrapper">
@@ -498,7 +498,7 @@
             { lat: 35.5, lng: 140.2, mag: 4.4, depth: "60km", title: "千葉県北東部", time: "2026/11/04 08:32:00", region: "kanto" }
         ];
 
-        /* 💡 最終同期時刻バッジの書き換え処理 */
+        /* 💡 最終同期時刻を画面に反映する関数 */
         function updateLastSyncTime() {
             const el = document.getElementById('lastSyncBadge');
             if (el) {
@@ -627,34 +627,13 @@
             }
 
             if (liveQuakes && liveQuakes.length > 0) {
-                const locationCounts = {};
-                liveQuakes.forEach(q => {
-                    const key = q.title.split(' ')[0]; 
-                    locationCounts[key] = (locationCounts[key] || 0) + 1;
-                });
-
-                let frequentRegion = "";
-                let maxCount = 0;
-                for (const [loc, cnt] of Object.entries(locationCounts)) {
-                    if (cnt > maxCount) {
-                        maxCount = cnt;
-                        frequentRegion = loc;
-                    }
-                }
-
                 const latest = liveQuakes[0];
-
-                if (maxCount >= 2) {
-                    box.innerHTML = `<span style="color: #f87171; font-weight: bold;">⚡【群発・連続発生 警戒警報】</span><br>` +
-                                    `• 注目エリア: <strong>${frequentRegion}周辺</strong><br>` +
-                                    `• 発生頻度: 直近3日間に <strong>${maxCount}回</strong> の地震を観測<br>` +
-                                    `• リスク分析: 同一地域での連続発生を確認。地殻のひずみが集中している可能性があり、今後数日間は同程度またはそれ以上の揺れに厳重注意が必要です。`;
-                } else {
-                    box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【自動解析: 常時モニタリング中】</span><br>` +
-                                    `• 直近検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>` +
-                                    `• 発生時刻: ${latest.time}<br>` +
-                                    `• 状況: 各地で安定推移中。継続してバックグラウンド監視を行っています。`;
-                }
+                // 💡 直近に新しい地震がない平穏状態のときに明確に安心表示するロジック
+                box.innerHTML = `<span style="color: #34d399; font-weight: bold;">🚨【平常・常時監視中】</span><br>` +
+                                `• <strong>直近の新規地震の発生はありません</strong>（システム正常稼働中）<br>` +
+                                `• 最後の検知: ${latest.title} (M${latest.mag} / 深さ${latest.depth})<br>` +
+                                `• 発生時刻: ${latest.time}<br>` +
+                                `<span style="color: #cbd5e1;">※バックグラウンドで引き続き24時間監視を継続しています。</span>`;
             } else {
                 box.innerHTML = `<span style="color: #38bdf8;">【監視中】直近の地震活動は安定しています。</span>`;
             }
