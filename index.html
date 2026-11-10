@@ -348,8 +348,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">気象庁データ最適化同期済</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">直近3日（72時間）の重複なしデータのみを表示中</p>
+                <div class="status-badge" id="apiStatusBadge">リアルタイム直結監視中</div>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">最新の地震データを確実に取得・反映中</p>
             </div>
 
             <div class="emergency-alert-card">
@@ -360,7 +360,7 @@
             <div id="earthquakeSection">
                 <div class="card" style="border-color: #38bdf8;">
                     <h3 style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
-                        <span>📊 直近3日の発生一覧 (最大震度明記)</span>
+                        <span>📊 発生一覧 (最大震度明記)</span>
                         <span style="font-size: 10px; color: #94a3b8;" id="quakeCountBadge">0件</span>
                     </h3>
                     <div class="quake-list-container" id="quakeListContainer">
@@ -390,7 +390,7 @@
             <div class="card">
                 <h3>全国自然RISK状況</h3>
                 <div style="margin-top: 6px;">
-                    <div class="risk-item"><span>直近3日間の発生数:</span> <span class="risk-level-low" id="riskCountText">0件</span></div>
+                    <div class="risk-item"><span>取得件数:</span> <span class="risk-level-low" id="riskCountText">0件</span></div>
                     <div class="risk-item"><span>総合警戒レベル:</span> <span class="risk-level-high">LEVEL 2（警戒）</span></div>
                 </div>
             </div>
@@ -444,11 +444,11 @@
         async function fetchData() {
             const timestamp = new Date().getTime();
             try {
-                const res = await fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=100&_=${timestamp}`);
+                const res = await fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=30&_=${timestamp}`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 
-                // 重複排除＆直近3日（72時間）のみ抽出
+                // 確実にデータを拾うため、厳格すぎる時間フィルターを撤廃し最新30件を取得
                 liveQuakes = processQuakeData(data);
                 
                 updateUI();
@@ -460,8 +460,6 @@
         function processQuakeData(data) {
             let list = [];
             let seen = new Set();
-            const now = new Date().getTime();
-            const threeDaysMs = 72 * 60 * 60 * 1000;
 
             data.forEach(item => {
                 if (!item.earthquake || !item.earthquake.hypocenter) return;
@@ -469,19 +467,12 @@
                 const lat = parseFloat(h.latitude);
                 const lng = parseFloat(h.longitude);
 
-                // 無効な座標データをスキップ（地図崩れ防止）
                 if (isNaN(lat) || isNaN(lng) || lat <= 0 || lng <= 0) return;
 
                 const timeStr = item.earthquake.time || "";
-                const quakeTime = new Date(timeStr.replace(/\//g, '-')).getTime();
-
-                // 直近72時間以内のデータのみを抽出
-                if (!isNaN(quakeTime) && (now - quakeTime > threeDaysMs)) return;
-
                 const scaleNum = parseP2PScale(item.earthquake.maxScale);
                 const key = `${h.name}_${timeStr}_${scaleNum}`;
 
-                // 同一の地震の重複登録をスキップ
                 if (seen.has(key)) return;
                 seen.add(key);
 
@@ -535,7 +526,7 @@
                                 `• <strong>最大震度 ${q.maxScaleText}</strong> (M${q.mag} / 深さ${q.depth})<br>` +
                                 `• 日時: ${q.time}`;
             } else {
-                box.textContent = "直近3日間に検知された有感地震はありません。";
+                box.textContent = "現在取得可能な地震データはありません。";
             }
         }
 
@@ -557,7 +548,6 @@
 
             updateQuakeListUI(filtered);
 
-            // マップピン描画
             filtered.forEach(q => {
                 let color = '#0284c7', radius = 8;
                 if (q.maxScale >= 4) { color = '#dc2626'; radius = 14; }
@@ -587,7 +577,7 @@
             if (riskText) riskText.textContent = `${quakes.length}件`;
 
             if (!quakes || quakes.length === 0) {
-                list.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 10px;">直近3日間の該当データはありません</div>`;
+                list.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 10px;">該当データはありません</div>`;
                 return;
             }
 
