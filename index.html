@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌋 総合地震・気象リスクモニタリングシステム（堅牢設計版）</title>
+    <title>🌋 総合地震・気象リスクモニタリングシステム（ローカル完全同期版）</title>
     <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -339,8 +339,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">ハイブリッド堅牢監視中</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">通信障害自動回避＆確実なデータ表示設計</p>
+                <div class="status-badge" id="apiStatusBadge">ローカルデータ直結同期中</div>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">quake_latest.json を安全に読み込み表示</p>
             </div>
 
             <div class="emergency-alert-card">
@@ -405,8 +405,8 @@
         let isRadarVisible = true;
         let liveQuakes = [];
 
-        /* 通信エラー時やオフライン時でも瞬時に稼働を保つ堅牢キャッシュデータ */
-        const robustCacheQuakes = [
+        /* 万が一ローカルファイルが見つからない場合のバックアップ用データ */
+        const fallbackQuakes = [
             { title: "愛媛県南予", time: "2026-11-10 16:53", maxScale: 1, maxScaleText: "1", mag: "3.0", depth: "不明", lat: 33.3, lng: 132.5, region: "chugoku_shikoku" },
             { title: "茨城県北部", time: "2026-11-09 03:15", maxScale: 2, maxScaleText: "2", mag: "3.5", depth: "10km", lat: 36.7, lng: 140.7, region: "kanto" },
             { title: "静岡県西部", time: "2026-11-08 01:04", maxScale: 4, maxScaleText: "4", mag: "5.7", depth: "41km", lat: 35.0, lng: 137.0, region: "chubu" },
@@ -434,51 +434,40 @@
 
             markerLayer = L.layerGroup().addTo(map);
 
-            fetchRobustData();
-            setInterval(fetchRobustData, 60000);
+            loadLocalQuakeData();
+            setInterval(loadLocalQuakeData, 30000); // 30秒ごとにローカルJSONを再確認
             
             setTimeout(() => { if (map) map.invalidateSize(); }, 300);
         }
 
-        async function fetchRobustData() {
-            const timestamp = new Date().getTime();
-            const targetUrl = `https://api.p2pquake.net/v2/history?codes=551&limit=30&_=${timestamp}`;
-            const proxyRoutes = [
-                targetUrl,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-            ];
-
-            let success = false;
-
-            for (const url of proxyRoutes) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-                    const res = await fetch(url, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-
-                    if (!res.ok) continue;
-                    let data = await res.json();
-                    if (typeof data === 'string') data = JSON.parse(data);
-
-                    if (Array.isArray(data) && data.length > 0) {
-                        let parsed = processQuakeData(data);
-                        if (parsed.length > 0) {
-                            liveQuakes = parsed;
-                            success = true;
-                            break;
+        /* ローカルに保存された quake_latest.json を安全に読み込む関数 */
+        async function loadLocalQuakeData() {
+            const statusBadge = document.getElementById('apiStatusBadge');
+            try {
+                const timestamp = new Date().getTime();
+                const res = await fetch(`quake_latest.json?_=${timestamp}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error("ローカルファイルが見つかりません");
+                
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    let parsed = processQuakeData(data);
+                    if (parsed.length > 0) {
+                        liveQuakes = parsed;
+                        if (statusBadge) {
+                            statusBadge.textContent = "ローカル同期完了（安定稼働中）";
+                            statusBadge.style.background = "#059669";
                         }
                     }
-                } catch (e) {
-                    console.warn("ルート切替試行中...", e);
                 }
-            }
-
-            // 通信がすべてブロックされた場合は堅牢キャッシュへ自動フォールバック
-            if (!success && liveQuakes.length === 0) {
-                liveQuakes = robustCacheQuakes;
+            } catch (e) {
+                console.warn("ローカルJSON読み込み待機中...バックアップデータを使用します", e);
+                if (liveQuakes.length === 0) {
+                    liveQuakes = fallbackQuakes;
+                }
+                if (statusBadge) {
+                    statusBadge.textContent = "バックアップ稼働中";
+                    statusBadge.style.background = "#0284c7";
+                }
             }
 
             updateUI();
@@ -632,17 +621,10 @@
         function forceSyncEarthquake() {
             const badge = document.getElementById('apiStatusBadge');
             if (badge) {
-                badge.textContent = "強制同期中...";
+                badge.textContent = "ローカル再読込中...";
                 badge.style.background = "#f59e0b";
             }
-            fetchRobustData().then(() => {
-                setTimeout(() => {
-                    if (badge) {
-                        badge.textContent = "ハイブリッド堅牢監視中";
-                        badge.style.background = "#059669";
-                    }
-                }, 400);
-            });
+            loadLocalQuakeData();
         }
 
         function switchMode(mode) {
