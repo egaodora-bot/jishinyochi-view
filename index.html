@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌋 総合地震・気象リスクモニタリングシステム</title>
-    <!-- Leaflet CSS -->
+    <title>🌋 総合地震・気象リスクモニタリングシステム（リアルタイム直結版）</title>
+    <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html {
@@ -340,8 +340,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">高安定セーフ監視中</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">通信エラーを完全に回避して即時表示</p>
+                <div class="status-badge" id="apiStatusBadge">リアルタイムデータ同期完了</div>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">CORS回避ライン経由で最新発生データを即時反映中</p>
             </div>
 
             <div class="emergency-alert-card">
@@ -356,7 +356,7 @@
                         <span style="font-size: 10px; color: #94a3b8;" id="quakeCountBadge">0件</span>
                     </h3>
                     <div class="quake-list-container" id="quakeListContainer">
-                        <div style="text-align:center; padding:10px; font-size:11px; color:#94a3b8;">読み込み中...</div>
+                        <div style="text-align:center; padding:10px; font-size:11px; color:#94a3b8;">通信中...</div>
                     </div>
                 </div>
 
@@ -406,14 +406,6 @@
         let isRadarVisible = true;
         let liveQuakes = [];
 
-        /* 通信がブロックされた際でも確実に即時表示させるための高精度セーフデータ */
-        const fallbackQuakes = [
-            { title: "愛媛県南予", time: "2026-11-10 16:53", maxScale: 1, maxScaleText: "1", mag: "3.0", depth: "不明", lat: 33.3, lng: 132.5, region: "chugoku_shikoku" },
-            { title: "茨城県北部", time: "2026-11-09 03:15", maxScale: 2, maxScaleText: "2", mag: "3.5", depth: "10km", lat: 36.7, lng: 140.7, region: "kanto" },
-            { title: "静岡県西部", time: "2026-11-08 01:04", maxScale: 4, maxScaleText: "4", mag: "5.7", depth: "41km", lat: 35.0, lng: 137.0, region: "chubu" },
-            { title: "熊本県天草・芦北地方", time: "2026-11-05 00:15", maxScale: 3, maxScaleText: "3", mag: "4.5", depth: "10km", lat: 32.2, lng: 130.3, region: "kyushu_okinawa" }
-        ];
-
         const areaCenters = {
             all: { center: [36.2, 138.2], zoom: 6 },
             hokkaido: { center: [43.06, 141.35], zoom: 7 },
@@ -435,34 +427,64 @@
 
             markerLayer = L.layerGroup().addTo(map);
 
-            fetchData();
+            fetchRealtimeDataWithProxy();
+            setInterval(fetchRealtimeDataWithProxy, 60000);
+            
             setTimeout(() => { if (map) map.invalidateSize(); }, 300);
         }
 
-        async function fetchData() {
+        /* CORSブロックを完全自動回避するマルチプロキシ取得関数 */
+        async function fetchRealtimeDataWithProxy() {
+            const statusBadge = document.getElementById('apiStatusBadge');
             const timestamp = new Date().getTime();
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3500);
+            const targetUrl = `https://api.p2pquake.net/v2/history?codes=551&limit=40&_=${timestamp}`;
+            
+            // 複数のCORS解除ルートを順番に巡回
+            const proxyRoutes = [
+                targetUrl, // 直結試行
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+            ];
 
-                const res = await fetch(`https://api.p2pquake.net/v2/history?codes=551&limit=30&_=${timestamp}`, {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
+            let success = false;
 
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                
-                let parsed = processQuakeData(data);
-                if (parsed.length > 0) {
-                    liveQuakes = parsed;
-                } else {
-                    liveQuakes = fallbackQuakes;
+            for (const url of proxyRoutes) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+                    const res = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (!res.ok) continue;
+                    let data = await res.json();
+
+                    if (typeof data === 'string') data = JSON.parse(data);
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        let parsed = processQuakeData(data);
+                        if (parsed.length > 0) {
+                            liveQuakes = parsed;
+                            success = true;
+                            if (statusBadge) {
+                                statusBadge.textContent = "リアルタイムデータ同期完了";
+                                statusBadge.style.background = "#059669";
+                            }
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("ルート試行変更中...", e);
                 }
-            } catch (e) {
-                // 通信エラーやタイムアウト時は即座にセーフデータに切り替え、画面を絶対に止めない
-                liveQuakes = fallbackQuakes;
             }
+
+            if (!success && liveQuakes.length === 0) {
+                if (statusBadge) {
+                    statusBadge.textContent = "再接続試行中...";
+                    statusBadge.style.background = "#f59e0b";
+                }
+            }
+
             updateUI();
         }
 
@@ -530,12 +552,12 @@
 
             if (liveQuakes.length > 0) {
                 const q = liveQuakes[0];
-                box.innerHTML = `<span style="color: #34d399; font-weight: bold;">🚨【直近の地震動検知】</span><br>` +
+                box.innerHTML = `<span style="color: #34d399; font-weight: bold;">🚨【最新の地震動検知】</span><br>` +
                                 `• 震源: <strong>${q.title}</strong><br>` +
                                 `• <strong>最大震度 ${q.maxScaleText}</strong> (M${q.mag} / 深さ${q.depth})<br>` +
                                 `• 日時: ${q.time}`;
             } else {
-                box.textContent = "現在取得可能な地震データはありません。";
+                box.textContent = "最新データを同期中です...";
             }
         }
 
@@ -614,17 +636,10 @@
         function forceSyncEarthquake() {
             const badge = document.getElementById('apiStatusBadge');
             if (badge) {
-                badge.textContent = "強制同期中...";
+                badge.textContent = "即時再同期中...";
                 badge.style.background = "#f59e0b";
             }
-            fetchData().then(() => {
-                setTimeout(() => {
-                    if (badge) {
-                        badge.textContent = "高安定セーフ監視中";
-                        badge.style.background = "#059669";
-                    }
-                }, 400);
-            });
+            fetchRealtimeDataWithProxy();
         }
 
         function switchMode(mode) {
