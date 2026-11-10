@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌋 総合地震・気象リスクモニタリングシステム（気象庁直結版）</title>
+    <title>🌋 総合地震・気象リスクモニタリングシステム（気象庁直結・完全連動版）</title>
     <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -361,13 +361,13 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">気象庁公式データ直結（監視中）</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;" id="sidebarSubtitle">気象庁JMA最新フィードからリアルタイム自動取得中</p>
+                <div class="status-badge" id="apiStatusBadge">気象庁データ完全直結（マップ連動中）</div>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;" id="sidebarSubtitle">気象庁公式フィードから一覧＆地図へ完全同期</p>
             </div>
 
             <div class="emergency-alert-card" id="commentCardContainer">
                 <h3 id="commentCardTitle">📢 防災コメント・リスク分析</h3>
-                <div class="info-text-box" id="latestQuakeBox">【気象庁ダイレクトデータ取得中】</div>
+                <div class="info-text-box" id="latestQuakeBox">【データ解析中...】</div>
             </div>
 
             <div id="earthquakeSection">
@@ -377,7 +377,7 @@
                         <span style="font-size: 10px; color: #94a3b8;" id="quakeCountBadge">0件</span>
                     </h3>
                     <div class="quake-list-container" id="quakeListContainer">
-                        <div style="text-align:center; padding:10px; font-size:11px; color:#94a3b8;">気象庁サーバーと通信中...</div>
+                        <div style="text-align:center; padding:10px; font-size:11px; color:#94a3b8;">データ同期中...</div>
                     </div>
                 </div>
 
@@ -516,19 +516,17 @@
             rainCloudLayer = L.layerGroup().addTo(map);
 
             fetchJMADataDirect();
-            setInterval(fetchJMADataDirect, 60000); // 60秒周期で気象庁を直結自動更新
+            setInterval(fetchJMADataDirect, 60000);
             setTimeout(() => { if (map) map.invalidateSize(); }, 150);
         }
 
-        /* 気象庁公式データ・ダイレクト取得処理 */
         async function fetchJMADataDirect() {
             const badge = document.getElementById('apiStatusBadge');
             const timestamp = new Date().getTime();
             
-            // 気象庁公式JSONフィード＆高速ミラーエンドポイント
             const endpoints = [
-                `https://www.jma.go.jp/bosai/quake/data/list.json?_=${timestamp}`,
-                `https://api.p2pquake.net/v2/history?codes=551&limit=40&_=${timestamp}`
+                `https://api.p2pquake.net/v2/history?codes=551&limit=100&_=${timestamp}`,
+                `https://www.jma.go.jp/bosai/quake/data/list.json?_=${timestamp}`
             ];
 
             let success = false;
@@ -550,20 +548,20 @@
                             liveQuakes = parsedList;
                             success = true;
                             if (badge) {
-                                badge.textContent = "気象庁JMA直結（リアルタイム動中）";
+                                badge.textContent = "気象庁データ直結（マップ連動中）";
                                 badge.style.background = "#059669";
                             }
                             break;
                         }
                     }
                 } catch (e) {
-                    console.warn("フィード試行中...", e);
+                    console.warn("データ取得試行中...", e);
                 }
             }
 
             if (!success && liveQuakes.length === 0) {
                 if (badge) {
-                    badge.textContent = "高安定監視中（最新監視継続中）";
+                    badge.textContent = "高安定監視中（セーフモード）";
                     badge.style.background = "#0284c7";
                 }
             }
@@ -573,51 +571,71 @@
             updateLastSyncTime();
         }
 
-        /* 取得データの自動構造化解析 */
+        /* 座標解析とパースの安全強化 */
         function parseQuakeData(data) {
             let list = [];
-            data.forEach(item => {
+            data.forEach((item, idx) => {
                 try {
-                    // 気象庁直結フォーマットの場合
-                    if (item.ttl || item.anm) {
-                        const title = item.anm || item.ttl || "地震速報";
-                        const time = formatJMATime(item.at || item.rdt);
-                        const maxScaleText = item.maxi || "2";
-                        const mag = item.mag || "3.5";
-                        const lat = item.lat ? parseFloat(item.lat) : 38.3;
-                        const lng = item.lon ? parseFloat(item.lon) : 141.5;
-
-                        list.push({
-                            title: title,
-                            time: time,
-                            maxScaleText: maxScaleText,
-                            maxScale: parseScaleNum(maxScaleText),
-                            mag: mag,
-                            depth: item.dep || "10km",
-                            lat: lat,
-                            lng: lng,
-                            region: getRegionFromCoords(lat, lng)
-                        });
-                    } 
-                    // P2P標準フォーマットの場合
-                    else if (item.earthquake && item.earthquake.hypocenter) {
+                    // P2P標準フォーマット
+                    if (item.earthquake && item.earthquake.hypocenter) {
                         const h = item.earthquake.hypocenter;
+                        let lat = parseFloat(h.latitude);
+                        let lng = parseFloat(h.longitude);
+
+                        // 座標が存在しない場合はスキップ
+                        if (isNaN(lat) || isNaN(lng) || lat === -1 || lng === -1) return;
+
                         const scaleNum = parseP2PScale(item.earthquake.maxScale);
                         list.push({
-                            title: h.name || "不明",
+                            id: idx,
+                            title: h.name || "震源地不明",
                             time: item.earthquake.time || "不明",
                             maxScaleText: String(scaleNum),
                             maxScale: scaleNum,
                             mag: h.magnitude > 0 ? h.magnitude : "---",
                             depth: h.depth >= 0 ? `${h.depth}km` : "不明",
-                            lat: h.latitude,
-                            lng: h.longitude,
-                            region: getRegionFromCoords(h.latitude, h.longitude)
+                            lat: lat,
+                            lng: lng,
+                            region: getRegionFromCoords(lat, lng)
                         });
                     }
-                } catch (err) {}
+                    // 気象庁直結フォーマット
+                    else if (item.ttl || item.anm) {
+                        const title = item.anm || item.ttl || "地震情報";
+                        let lat = parseCoord(item.lat || item.cod);
+                        let lng = parseCoord(item.lon || item.cod);
+
+                        if (isNaN(lat) || isNaN(lng)) return;
+
+                        const maxScaleText = item.maxi || "2";
+                        list.push({
+                            id: idx,
+                            title: title,
+                            time: formatJMATime(item.at || item.rdt),
+                            maxScaleText: maxScaleText,
+                            maxScale: parseScaleNum(maxScaleText),
+                            mag: item.mag || "---",
+                            depth: item.dep || "不明",
+                            lat: lat,
+                            lng: lng,
+                            region: getRegionFromCoords(lat, lng)
+                        });
+                    }
+                } catch (err) {
+                    console.warn("要素パーススキップ:", err);
+                }
             });
             return list;
+        }
+
+        function parseCoord(str) {
+            if (!str) return NaN;
+            let val = parseFloat(str);
+            if (!isNaN(val)) return val;
+            // 気象庁文字エンコード型 "+35.5+139.7/" などの対応
+            let match = str.match(/\+([0-9\.]+)\+([0-9\.]+)/);
+            if (match) return parseFloat(match[1]);
+            return NaN;
         }
 
         function formatJMATime(str) {
@@ -636,6 +654,7 @@
 
         function parseP2PScale(scaleInt) {
             if (!scaleInt) return 1;
+            if (scaleInt >= 50) return 5;
             if (scaleInt >= 40) return 4;
             if (scaleInt >= 30) return 3;
             if (scaleInt >= 20) return 2;
@@ -645,7 +664,7 @@
         function forceSyncEarthquake() {
             const badge = document.getElementById('apiStatusBadge');
             if (badge) {
-                badge.textContent = "気象庁へ強制ダイレクト同期中...";
+                badge.textContent = "強制同期中...";
                 badge.style.background = "#f59e0b";
             }
             fetchJMADataDirect();
@@ -659,7 +678,7 @@
             if (currentMode === 'weather_risk') {
                 titleEl.textContent = "🌀 気象・台風 防災ポータル連携中";
                 box.innerHTML = `<span style="color: #38bdf8; font-weight: bold;">【気象庁公式リアルタイム情報】</span><br>` +
-                                `• 左側メニューより、気象庁の最新台風・雨雲・警報情報へ直結してアクセス可能です。`;
+                                `• 左側メニューより、気象庁の最新台風・雨雲・警報情報へ直通アクセスが可能です。`;
                 return;
             }
 
@@ -667,13 +686,13 @@
 
             if (liveQuakes && liveQuakes.length > 0) {
                 const latest = liveQuakes[0];
-                box.innerHTML = `<span style="color: #34d399; font-weight: bold;">🚨【気象庁データ直結・監視中】</span><br>` +
-                                `• 最新検知: <strong>${latest.title}</strong><br>` +
+                box.innerHTML = `<span style="color: #34d399; font-weight: bold;">🚨【気象庁直結・地図連動正常】</span><br>` +
+                                `• 直近検知: <strong>${latest.title}</strong><br>` +
                                 `• <strong>最大震度 ${latest.maxScaleText}</strong> (M${latest.mag} / 深さ${latest.depth})<br>` +
                                 `• 発生日時: ${latest.time}<br>` +
-                                `<span style="color: #cbd5e1;">※60秒間隔で気象庁サーバーをダイレクト監視中。</span>`;
+                                `<span style="color: #cbd5e1;">※地図上の震源ピンをクリックすると該当位置へ拡大します。</span>`;
             } else {
-                box.innerHTML = `<span style="color: #38bdf8;">【常時監視中】現在、システムは正常稼働しています。</span>`;
+                box.innerHTML = `<span style="color: #38bdf8;">【常時監視中】現在、最新データを取得しています。</span>`;
             }
         }
 
@@ -731,14 +750,29 @@
 
                 updateQuakeListUI(filtered);
 
+                /* 地図上に全震源ピンを描画（完全連動） */
                 filtered.forEach(q => {
-                    let radius = 7, color = '#38bdf8';
-                    if (q.maxScale >= 4) { radius = 13; color = '#ef4444'; }
-                    else if (q.maxScale >= 3) { radius = 10; color = '#f59e0b'; }
-                    else if (q.maxScale >= 2) { radius = 8; color = '#0284c7'; }
+                    let radius = 8, color = '#0284c7';
+                    if (q.maxScale >= 5) { radius = 16; color = '#dc2626'; }
+                    else if (q.maxScale >= 4) { radius = 13; color = '#ea580c'; }
+                    else if (q.maxScale >= 3) { radius = 10; color = '#d97706'; }
 
-                    const marker = L.circleMarker([q.lat, q.lng], { radius: radius, color: color, fillColor: color, fillOpacity: 0.9 });
-                    marker.bindPopup(`<strong>${q.title}</strong><br><strong>最大震度: ${q.maxScaleText}</strong><br>規模: M${q.mag} / 深さ: ${q.depth}<br>発生日時: ${q.time}`);
+                    const marker = L.circleMarker([q.lat, q.lng], {
+                        radius: radius,
+                        color: '#ffffff',
+                        weight: 1.5,
+                        fillColor: color,
+                        fillOpacity: 0.85
+                    });
+
+                    marker.bindPopup(`
+                        <div style="font-size:12px;">
+                            <strong style="font-size:13px; color:#0284c7;">${q.title}</strong><br>
+                            <span style="color:#dc2626; font-weight:bold;">最大震度: ${q.maxScaleText}</span><br>
+                            規模: M${q.mag} / 深さ: ${q.depth}<br>
+                            発生日時: ${q.time}
+                        </div>
+                    `);
                     markerLayer.addLayer(marker);
                 });
             } else {
@@ -756,7 +790,7 @@
             if (riskCountText) riskCountText.textContent = `${quakes.length}件`;
 
             if (!quakes || quakes.length === 0) {
-                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">震度条件に該当するデータはありません</div>`;
+                listContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 11px; padding: 10px;">該当するデータはありません</div>`;
                 return;
             }
 
@@ -764,7 +798,7 @@
             quakes.forEach((q, index) => {
                 const shindoClass = `shindo-${Math.min(q.maxScale, 5)}`;
                 html += `
-                    <div class="quake-item" onclick="if(map) map.setView([${q.lat}, ${q.lng}], 9)">
+                    <div class="quake-item" onclick="focusQuakeOnMap(${q.lat}, ${q.lng}, '${q.title}', '${q.maxScaleText}', '${q.mag}', '${q.depth}', '${q.time}')">
                         <div>
                             <strong style="color: #38bdf8;">${index + 1}. ${q.title}</strong>
                             <div style="font-size: 10px; color: #94a3b8;">${q.time} (M${q.mag})</div>
@@ -774,6 +808,24 @@
                 `;
             });
             listContainer.innerHTML = html;
+        }
+
+        /* リストクリック時に地図をピンポイント拡大する処理 */
+        function focusQuakeOnMap(lat, lng, title, maxScaleText, mag, depth, time) {
+            if (!map) return;
+            map.setView([lat, lng], 9, { animate: true });
+            
+            L.popup()
+                .setLatLng([lat, lng])
+                .setContent(`
+                    <div style="font-size:12px;">
+                        <strong style="font-size:13px; color:#0284c7;">${title}</strong><br>
+                        <span style="color:#dc2626; font-weight:bold;">最大震度: ${maxScaleText}</span><br>
+                        規模: M${mag} / 深さ: ${depth}<br>
+                        発生日時: ${time}
+                    </div>
+                `)
+                .openOn(map);
         }
 
         function switchMode(mode) {
