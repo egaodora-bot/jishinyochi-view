@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌋 総合地震・気象リスクモニタリングシステム（堅牢設計版）</title>
+    <title>🌋 総合地震・気象リスクモニタリングシステム（自動直結版）</title>
     <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -339,8 +339,8 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">ハイブリッド堅牢監視中</div>
-                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">通信障害自動回避＆確実なデータ表示設計</p>
+                <div class="status-badge" id="apiStatusBadge">自動直結リアルタイム同期中</div>
+                <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">プロキシ自動巡回による最新データ常時反映</p>
             </div>
 
             <div class="emergency-alert-card">
@@ -405,14 +405,6 @@
         let isRadarVisible = true;
         let liveQuakes = [];
 
-        /* 通信エラー時やオフライン時でも瞬時に稼働を保つ堅牢キャッシュデータ */
-        const robustCacheQuakes = [
-            { title: "愛媛県南予", time: "2026-11-10 16:53", maxScale: 1, maxScaleText: "1", mag: "3.0", depth: "不明", lat: 33.3, lng: 132.5, region: "chugoku_shikoku" },
-            { title: "茨城県北部", time: "2026-11-09 03:15", maxScale: 2, maxScaleText: "2", mag: "3.5", depth: "10km", lat: 36.7, lng: 140.7, region: "kanto" },
-            { title: "静岡県西部", time: "2026-11-08 01:04", maxScale: 4, maxScaleText: "4", mag: "5.7", depth: "41km", lat: 35.0, lng: 137.0, region: "chubu" },
-            { title: "熊本県天草・芦北地方", time: "2026-11-05 00:15", maxScale: 3, maxScaleText: "3", mag: "4.5", depth: "10km", lat: 32.2, lng: 130.3, region: "kyushu_okinawa" }
-        ];
-
         const areaCenters = {
             all: { center: [36.2, 138.2], zoom: 6 },
             hokkaido: { center: [43.06, 141.35], zoom: 7 },
@@ -434,15 +426,18 @@
 
             markerLayer = L.layerGroup().addTo(map);
 
-            fetchRobustData();
-            setInterval(fetchRobustData, 60000);
+            fetchRealtimeData();
+            setInterval(fetchRealtimeData, 60000); // 1分ごとに自動更新
             
             setTimeout(() => { if (map) map.invalidateSize(); }, 300);
         }
 
-        async function fetchRobustData() {
+        /* 複数の中継プロキシを自動巡回して最新データを直接取得する堅牢関数 */
+        async function fetchRealtimeData() {
+            const statusBadge = document.getElementById('apiStatusBadge');
             const timestamp = new Date().getTime();
-            const targetUrl = `https://api.p2pquake.net/v2/history?codes=551&limit=30&_=${timestamp}`;
+            const targetUrl = `https://api.p2pquake.net/v2/history?codes=551&limit=40&_=${timestamp}`;
+            
             const proxyRoutes = [
                 targetUrl,
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
@@ -454,7 +449,7 @@
             for (const url of proxyRoutes) {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3500);
+                    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
                     const res = await fetch(url, { signal: controller.signal });
                     clearTimeout(timeoutId);
@@ -468,17 +463,23 @@
                         if (parsed.length > 0) {
                             liveQuakes = parsed;
                             success = true;
+                            if (statusBadge) {
+                                statusBadge.textContent = "自動直結リアルタイム同期中";
+                                statusBadge.style.background = "#059669";
+                            }
                             break;
                         }
                     }
                 } catch (e) {
-                    console.warn("ルート切替試行中...", e);
+                    console.warn("プロキシ経路切替中...", e);
                 }
             }
 
-            // 通信がすべてブロックされた場合は堅牢キャッシュへ自動フォールバック
             if (!success && liveQuakes.length === 0) {
-                liveQuakes = robustCacheQuakes;
+                if (statusBadge) {
+                    statusBadge.textContent = "データ取得待機中...";
+                    statusBadge.style.background = "#f59e0b";
+                }
             }
 
             updateUI();
@@ -553,7 +554,7 @@
                                 `• <strong>最大震度 ${q.maxScaleText}</strong> (M${q.mag} / 深さ${q.depth})<br>` +
                                 `• 日時: ${q.time}`;
             } else {
-                box.textContent = "データを読み込んでいます...";
+                box.textContent = "最新データを取得しています...";
             }
         }
 
@@ -635,14 +636,7 @@
                 badge.textContent = "強制同期中...";
                 badge.style.background = "#f59e0b";
             }
-            fetchRobustData().then(() => {
-                setTimeout(() => {
-                    if (badge) {
-                        badge.textContent = "ハイブリッド堅牢監視中";
-                        badge.style.background = "#059669";
-                    }
-                }, 400);
-            });
+            fetchRealtimeData();
         }
 
         function switchMode(mode) {
