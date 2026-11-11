@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌋 総合地震・気象リスクモニタリングシステム（通知・カラー強化版）</title>
+    <title>🌋 総合地震・気象リスクモニタリングシステム（通知音強化版）</title>
     <!-- Leaflet CSS読み込み -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -263,7 +263,6 @@
             background: #1e293b;
         }
 
-        /* 震度別カラータグ（気象庁カラー準拠） */
         .shindo-tag {
             padding: 2px 6px;
             border-radius: 4px;
@@ -271,13 +270,13 @@
             font-size: 11px;
             color: #fff;
         }
-        .shindo-1 { background-color: #475569; } /* 震度1: グレー系 */
-        .shindo-2 { background-color: #2563eb; } /* 震度2: 青 */
-        .shindo-3 { background-color: #0d9488; } /* 震度3: 青緑 */
-        .shindo-4 { background-color: #ca8a04; } /* 震度4: 黄・オレンジ */
-        .shindo-5 { background-color: #ea580c; } /* 震度5弱以上: 濃いオレンジ */
-        .shindo-6 { background-color: #dc2626; } /* 震度6弱以上: 赤 */
-        .shindo-7 { background-color: #7e22ce; } /* 震度7: 紫 */
+        .shindo-1 { background-color: #475569; }
+        .shindo-2 { background-color: #2563eb; }
+        .shindo-3 { background-color: #0d9488; }
+        .shindo-4 { background-color: #ca8a04; }
+        .shindo-5 { background-color: #ea580c; }
+        .shindo-6 { background-color: #dc2626; }
+        .shindo-7 { background-color: #7e22ce; }
         
         .risk-item {
             display: flex;
@@ -327,7 +326,7 @@
         </div>
 
         <div class="header-right">
-            <button class="sound-test-btn" onclick="playAlertSound(true)" title="通知音テスト">🔔 音テスト</button>
+            <button class="sound-test-btn" onclick="playAlertSound(true)" title="警告音テスト">🔔 音テスト</button>
             <div id="lastSyncBadge" class="last-sync-badge">最終同期: 取得中...</div>
             <button class="refresh-sync-btn" onclick="forceSyncEarthquake()">🔄 強制同期</button>
             <div class="area-selector-wrapper">
@@ -355,7 +354,7 @@
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
-                <div class="status-badge" id="apiStatusBadge">音声通知・カラー最適化稼働中</div>
+                <div class="status-badge" id="apiStatusBadge">緊急アラート音声装備稼働中</div>
                 <p style="font-size: 10.5px; margin: 4px 0 0 0; color: #cbd5e1;">公式・オープンデータ安全直結設計</p>
             </div>
 
@@ -420,7 +419,7 @@
         let currentShindoFilter = 'all';
         let isRadarVisible = true;
         let liveQuakes = [];
-        let lastLatestQuakeKey = ""; // 新着判定用
+        let lastLatestQuakeKey = "";
 
         const reliableQuakes = [
             { title: "茨城県北部", time: "2026-11-11 12:30", maxScale: 2, maxScaleText: "2", mag: "3.7", depth: "50km", lat: 36.6, lng: 140.6, region: "kanto" },
@@ -441,28 +440,33 @@
             kyushu_okinawa: { center: [32.5, 130.5], zoom: 7 }
         };
 
-        /* Web Audio API によるブラウザ内蔵アラート音生成 */
+        /* 🔔 改良版：ピピッ、ピピッ と連続して注意を惹く緊急警告音生成 */
         function playAlertSound(isTest = false) {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                
+                // 3回連続でビープ音を鳴らすパターン
+                const beepCount = isTest ? 2 : 3;
+                const beepInterval = 0.18; // 音と音の間隔
+                
+                for (let i = 0; i < beepCount; i++) {
+                    const startTime = audioCtx.currentTime + (i * beepInterval);
+                    
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
 
-                osc.type = 'sine';
-                // テスト時は高めのピッチ、通常時は注意を惹くアラート音程
-                osc.frequency.setValueAtTime(isTest ? 880 : 660, audioCtx.currentTime);
-                if (!isTest) {
-                    osc.frequency.setValueAtTime(440, audioCtx.currentTime + 0.15);
+                    osc.type = 'square'; // 少し目立つ矩形波（電子音らしさアップ）
+                    osc.frequency.setValueAtTime(isTest ? 1046.50 : 880, startTime); // 高めの音程（C6またはA5）
+
+                    gain.gain.setValueAtTime(0.12, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.1);
                 }
-
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.4);
             } catch (e) {
                 console.warn("音声再生がブロックされました", e);
             }
@@ -479,7 +483,7 @@
             markerLayer = L.layerGroup().addTo(map);
 
             fetchDataReliable();
-            setInterval(fetchDataReliable, 60000); // 1分ごとに自動更新チェック
+            setInterval(fetchDataReliable, 60000);
             
             setTimeout(() => { if (map) map.invalidateSize(); }, 300);
         }
@@ -509,11 +513,10 @@
                 newData = reliableQuakes;
             }
 
-            // 新着地震検知時に音声を鳴らす
             if (newData.length > 0) {
                 const latestKey = `${newData[0].title}_${newData[0].time}`;
                 if (lastLatestQuakeKey && lastLatestQuakeKey !== latestKey) {
-                    playAlertSound(false); // 新着地震音
+                    playAlertSound(false); // 新着検知時に連続アラート音
                 }
                 lastLatestQuakeKey = latestKey;
             }
@@ -521,7 +524,7 @@
             liveQuakes = newData;
 
             if (statusBadge) {
-                statusBadge.textContent = fetched ? "音声通知・カラー最適化稼働中" : "安全同期モード稼働中";
+                statusBadge.textContent = fetched ? "緊急アラート音声装備稼働中" : "安全同期モード稼働中";
                 statusBadge.style.background = fetched ? "#059669" : "#0284c7";
             }
 
